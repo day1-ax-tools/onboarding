@@ -869,10 +869,10 @@
         <div class="terminal-icon" aria-hidden="true"></div>
         <div>
           <div class="eyebrow">AI CLI Onboarding</div>
-          <h1>먼저 CLI만 설치합니다.</h1>
+          <h1>먼저 시작 환경을 준비합니다.</h1>
         </div>
       </div>
-      <p class="lead">이 페이지의 역할은 Codex 또는 Claude Code가 터미널에서 실행되는 상태까지 안내하는 것입니다. 설치가 끝나면 이후 온보딩은 CLI 안에서 이어집니다.</p>
+      <p class="lead">이 페이지의 역할은 온보딩 repo를 로컬에 준비하고, Codex 또는 Claude Code가 터미널에서 실행되는 상태까지 안내하는 것입니다. 설치가 끝나면 이후 온보딩은 CLI 안에서 이어집니다.</p>
     </header>
 
     <div class="layout">
@@ -906,15 +906,11 @@
 
       <div>
         <section>
-          <h2>설치 전 확인</h2>
-          <p>먼저 명령어를 입력할 화면을 엽니다. 회사 계정이나 조직 정책이 있다면 해당 계정으로 로그인할 준비를 해주세요.</p>
+          <h2>처음 시작</h2>
+          <p>처음 방문했다면 repo를 미리 받을 필요가 없습니다. 아래 bootstrap 명령 하나가 로컬 작업 폴더를 만들고 onboarding repo를 가져온 뒤, 이 시작 페이지를 로컬에서 다시 엽니다.</p>
           <div class="links">
             <a id="primary-doc" class="button" href="https://developers.openai.com/codex/quickstart" target="_blank" rel="noreferrer">Codex 공식 설치 문서 열기</a>
           </div>
-        </section>
-
-        <section>
-          <h2>설치</h2>
 
           <div class="step">
             <div class="step-head">
@@ -944,6 +940,37 @@
           <div class="step">
             <div class="step-head">
               <span class="num">1</span>
+              <strong>온보딩 키트 받기</strong>
+            </div>
+            <div class="step-body">
+              <p id="bootstrap-note" class="muted">이 명령은 Git이 있으면 clone/pull을 사용하고, Git이 없으면 GitHub zip을 내려받습니다. 완료되면 로컬 시작 페이지가 자동으로 열립니다.</p>
+              <div class="code-window" data-code-window="bootstrap">
+                <div class="code-titlebar">
+                  <div class="window-controls" aria-hidden="true"><span></span><span></span><span></span></div>
+                  <div class="code-meta"><span class="code-window-title" data-window-title="bootstrap">Terminal</span><span class="code-shell-name" data-shell-name="bootstrap">bash</span></div>
+                  <div class="shell-tabs" aria-label="쉘 선택">
+                    <button class="active" data-shell="bash" type="button">bash</button>
+                    <button data-shell="zsh" type="button">zsh</button>
+                  </div>
+                </div>
+                <div class="code-body">
+                  <pre><span class="code-prompt" data-prompt="bootstrap">$</span> <code id="bootstrap-command">/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bootstrap/start.sh)"</code></pre>
+                </div>
+              </div>
+              <div class="copy-action-row">
+                <button type="button" data-copy="bootstrap-command">복사</button>
+              </div>
+              <p class="muted">이미 로컬 페이지가 열려 있다면 이 단계는 다시 실행하지 않아도 됩니다.</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>CLI 설치</h2>
+
+          <div class="step">
+            <div class="step-head">
+              <span class="num">2</span>
               <strong id="install-title">Codex CLI 설치</strong>
             </div>
             <div class="step-body">
@@ -969,7 +996,7 @@
 
           <div class="step">
             <div class="step-head">
-              <span class="num">2</span>
+              <span class="num">3</span>
               <strong>PATH 반영</strong>
             </div>
             <div class="step-body">
@@ -997,7 +1024,7 @@ command -v codex</code></pre>
 
           <div class="step">
             <div class="step-head">
-              <span class="num">3</span>
+              <span class="num">4</span>
               <strong>설치 확인</strong>
             </div>
             <div class="step-body">
@@ -1023,7 +1050,7 @@ command -v codex</code></pre>
 
           <div class="step">
             <div class="step-head">
-              <span class="num">4</span>
+              <span class="num">5</span>
               <strong id="login-title">Codex 실행 및 로그인</strong>
             </div>
             <div class="step-body">
@@ -1213,21 +1240,31 @@ command -v codex</code></pre>
     const tools = ["codex", "claude"];
     const operatingSystems = ["mac", "windows"];
     const shells = ["bash", "zsh"];
+    const entryParams = new URLSearchParams(window.location.search);
     let selectedTool = "codex";
     let selectedOs = "mac";
     let selectedShell = "bash";
 
     try {
+      const paramTool = entryParams.get("tool");
+      const paramOs = entryParams.get("os");
+      const paramShell = entryParams.get("shell");
       const savedTool = localStorage.getItem("onboarding-entry-tool");
       const savedOs = localStorage.getItem("onboarding-entry-os");
       const savedShell = localStorage.getItem("onboarding-entry-shell");
-      if (tools.includes(savedTool)) {
+      if (tools.includes(paramTool)) {
+        selectedTool = paramTool;
+      } else if (tools.includes(savedTool)) {
         selectedTool = savedTool;
       }
-      if (operatingSystems.includes(savedOs)) {
+      if (operatingSystems.includes(paramOs)) {
+        selectedOs = paramOs;
+      } else if (operatingSystems.includes(savedOs)) {
         selectedOs = savedOs;
       }
-      if (shells.includes(savedShell)) {
+      if (shells.includes(paramShell)) {
+        selectedShell = paramShell;
+      } else if (shells.includes(savedShell)) {
         selectedShell = savedShell;
       }
     } catch (_) {
@@ -1256,6 +1293,14 @@ command -v codex</code></pre>
 
     function windowTitle() {
       return selectedOs === "windows" ? "Windows PowerShell" : "Terminal";
+    }
+
+    function bootstrapCommand() {
+      if (selectedOs === "windows") {
+        return `$script = irm https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bootstrap/start.ps1
+& ([scriptblock]::Create($script)) -Tool ${selectedTool}`;
+      }
+      return `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bootstrap/start.sh)" -- --tool ${selectedTool} --os mac --shell ${selectedShell}`;
     }
 
     function persist(key, value) {
@@ -1350,6 +1395,10 @@ command -v codex</code></pre>
       document.getElementById("primary-doc").textContent = `${tool.label} 공식 설치 문서 열기`;
       setText("cli-first-title", tool.firstScreenTitle);
       setText("cli-first-screen", tool.firstScreen);
+      setText("bootstrap-command", bootstrapCommand());
+      setText("bootstrap-note", entryParams.get("bootstrapped") === "1"
+        ? "로컬 온보딩 키트가 준비되었습니다. 아래 CLI 설치 단계로 이어가세요."
+        : "이 명령은 Git이 있으면 clone/pull을 사용하고, Git이 없으면 GitHub zip을 내려받습니다. 완료되면 로컬 시작 페이지가 자동으로 열립니다.");
       setText("install-title", selected.title);
       setText("install-note", selected.note);
       setText("install-command", resolveCode(selected.install));

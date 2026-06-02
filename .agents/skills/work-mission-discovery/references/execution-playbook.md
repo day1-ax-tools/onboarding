@@ -9,11 +9,29 @@ Default to project-level installation. Avoid global installation during onboardi
 Web entry uses two static pages:
 
 ```text
+index.html
 web/index.html
 web/brief-board.html
+bootstrap/start.sh
+bootstrap/start.ps1
 ```
 
-Use `index.html` for CLI installation, PATH refresh, verification, login, and the first handoff prompt. Use `brief-board.html` as a user-facing onboarding board: it visualizes onboarding progress with a git branch graph, captures role/work inputs, shows how those inputs become candidate missions, and generates a copyable CLI summary. The board does not create repos, change files, or call GitHub directly; the AI CLI does that after the user hands off the summary.
+For first-time users, start from the hosted web entry rather than asking them to clone the repo. The user selects OS and AI CLI, then runs one bootstrap command. The bootstrap creates the local work folder, obtains this onboarding repo with `git clone` when Git exists or GitHub zip fallback when Git is missing, and opens the local `web/index.html`.
+
+Use `web/index.html` for bootstrap, CLI installation, PATH refresh, verification, login, and the first handoff prompt. Use `web/brief-board.html` as a preview board before handoff. After project installation, use `.onboarding/brief-board.html` inside the target repo as the state-backed board. The board does not create repos, change files, or call GitHub directly; the AI CLI does that after the user hands off the summary.
+
+Bootstrap commands:
+
+```bash
+# macOS / Linux / WSL
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bootstrap/start.sh)" -- --tool codex --os mac --shell zsh
+```
+
+```powershell
+# Windows PowerShell
+$script = irm https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bootstrap/start.ps1
+& ([scriptblock]::Create($script)) -Tool codex
+```
 
 The board must not depend on user-managed checkboxes. During CLI onboarding, write progress to `.onboarding/state.json` through `.onboarding/update-state.mjs`. The board reads that state and updates the graph. When all required steps are done, the updater disposes the hooks by setting `hooks.enabled=false`.
 

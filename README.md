@@ -57,23 +57,43 @@
 
 ## Stage -2: Web Entry
 
-웹페이지는 진입점 역할만 한다. 사용자가 브라우저에서 설치 명령을 확인하고, `codex` 또는 `claude`가 실행되는 상태까지 도달한 뒤, 온보딩 보드에서 진행 상황과 업무 입력이 어떻게 작업으로 바뀌는지 미리 볼 수 있게 한다. 실제 설치, repo 변경, GitHub 연결, 파일 생성은 CLI에서 진행한다.
+웹페이지는 진입점 역할만 한다. 초보자는 repo를 미리 clone하지 않는다. 먼저 hosted web entry를 열고, 자신의 환경을 고른 뒤 bootstrap 명령 하나를 터미널에 붙여넣는다. bootstrap이 로컬 작업 폴더를 만들고 onboarding repo를 확보한 뒤, 로컬 시작 페이지를 다시 연다. 그 다음 사용자는 브라우저에서 설치 명령을 확인하고, `codex` 또는 `claude`가 실행되는 상태까지 도달한다.
+
+권장 hosted entry:
+
+```text
+https://day1-ax-tools.github.io/onboarding/
+```
+
+GitHub Pages가 아직 설정되지 않았을 때는 URL 대신 아래 bootstrap 명령을 직접 전달한다. Pages는 repository settings에서 `main` branch root를 source로 지정하면 `index.html`이 `web/index.html`로 넘겨준다.
+
 
 정적 페이지:
 
 ```text
+index.html
 web/index.html
 web/brief-board.html
+bootstrap/start.sh
+bootstrap/start.ps1
 ```
 
-로컬에서 열기:
+처음 실행할 bootstrap 명령:
 
 ```bash
-open web/index.html
+# macOS / Linux / WSL
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bootstrap/start.sh)" -- --tool codex --os mac --shell zsh
+```
+
+```powershell
+# Windows PowerShell
+$script = irm https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bootstrap/start.ps1
+& ([scriptblock]::Create($script)) -Tool codex
 ```
 
 `web/index.html`이 담당하는 것:
 
+- repo를 모르는 초보자에게 bootstrap 명령 제공
 - Codex 또는 Claude Code 선택
 - 운영체제별 설치 명령 안내
 - 설치 확인 명령 안내
@@ -82,6 +102,9 @@ open web/index.html
 
 설치 처리 기준:
 
+- bootstrap은 `~/Documents/AI-Work/day1-ax-tools/onboarding` 또는 `Documents\AI-Work\day1-ax-tools\onboarding`을 기본 위치로 쓴다.
+- Git이 있으면 `git clone` 또는 `git pull --ff-only`를 사용한다.
+- Git이 없으면 GitHub zip을 다운로드해서 같은 위치에 둔다.
 - macOS, Linux, WSL은 `bash`와 `zsh` 중 사용자가 쓰는 shell을 선택한다.
 - 실제 CLI 설치 명령은 shell별로 거의 같고, 설치 직후 PATH 반영과 shell refresh만 다르게 제공한다.
 - Windows는 PowerShell만 권장 경로로 둔다. Windows 화면에서는 bash/zsh 선택을 숨기고 PowerShell 명령만 보여준다.
