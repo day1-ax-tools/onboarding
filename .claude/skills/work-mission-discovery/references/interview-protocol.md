@@ -153,7 +153,7 @@ Extract assumptions:
 For each assumption, state:
 
 - If true: what the mission can do.
-- If false: what fallback is needed.
+- If false: what alternate path is needed.
 - How to verify.
 
 ### Phase 6: Mission Scope Agreement

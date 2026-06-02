@@ -1163,8 +1163,8 @@ command -v codex</code></pre>
           },
           loginNote: "브라우저 로그인 안내가 나오면 ChatGPT 계정 또는 API key 흐름을 따라갑니다. 인증이 끝나면 아래 온보딩 문장을 CLI 입력창에 붙여넣습니다.",
           handoff: {
-            bash: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 onboarding 키트 위치를 확인하고, 현재 저장소에 필요한 AGENTS.md, skill, .onboarding 상태 hook, .onboarding/brief-board.html을 설치해주세요.\n상태 hook 설치가 끝난 뒤 온보딩 보드를 열 수 있게 안내하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.",
-            zsh: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 onboarding 키트 위치를 확인하고, 현재 저장소에 필요한 AGENTS.md, skill, .onboarding 상태 hook, .onboarding/brief-board.html을 설치해주세요.\n상태 hook 설치가 끝난 뒤 온보딩 보드를 열 수 있게 안내하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요."
+            bash: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 onboarding 키트 위치를 확인하고, AI와 함께 작업하려는 폴더에 필요한 AGENTS.md, skill, .onboarding 상태 hook, .onboarding/update-board.mjs, .onboarding/brief-board.html을 설치해주세요.\n상태 hook 설치가 끝난 뒤 온보딩 보드를 열 수 있게 안내하고,\n그 다음 작업 폴더 위치, GitHub 연결, 내 컴퓨터와 GitHub 저장소 관계, commit/push/pull 흐름을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.\n업무 산출물을 갱신할 때마다 node .onboarding/update-board.mjs를 실행해서 board-data.json을 갱신해주세요.",
+            zsh: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 onboarding 키트 위치를 확인하고, AI와 함께 작업하려는 폴더에 필요한 AGENTS.md, skill, .onboarding 상태 hook, .onboarding/update-board.mjs, .onboarding/brief-board.html을 설치해주세요.\n상태 hook 설치가 끝난 뒤 온보딩 보드를 열 수 있게 안내하고,\n그 다음 작업 폴더 위치, GitHub 연결, 내 컴퓨터와 GitHub 저장소 관계, commit/push/pull 흐름을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.\n업무 산출물을 갱신할 때마다 node .onboarding/update-board.mjs를 실행해서 board-data.json을 갱신해주세요."
           }
         },
         windows: {
@@ -1186,7 +1186,7 @@ command -v codex</code></pre>
           },
           loginNote: "브라우저 로그인 안내가 나오면 ChatGPT 계정 또는 API key 흐름을 따라갑니다. 인증이 끝나면 아래 온보딩 문장을 CLI 입력창에 붙여넣습니다.",
           handoff: {
-            powershell: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 onboarding 키트 위치를 확인하고, 현재 저장소에 필요한 AGENTS.md, skill, .onboarding 상태 hook, .onboarding/brief-board.html을 설치해주세요.\n상태 hook 설치가 끝난 뒤 온보딩 보드를 열 수 있게 안내하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요."
+            powershell: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 onboarding 키트 위치를 확인하고, AI와 함께 작업하려는 폴더에 필요한 AGENTS.md, skill, .onboarding 상태 hook, .onboarding/update-board.mjs, .onboarding/brief-board.html을 설치해주세요.\n상태 hook 설치가 끝난 뒤 온보딩 보드를 열 수 있게 안내하고,\n그 다음 작업 폴더 위치, GitHub 연결, 내 컴퓨터와 GitHub 저장소 관계, commit/push/pull 흐름을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.\n업무 산출물을 갱신할 때마다 node .onboarding/update-board.mjs를 실행해서 board-data.json을 갱신해주세요."
           }
         }
       },
@@ -1218,8 +1218,8 @@ command -v codex</code></pre>
           },
           loginNote: "Claude Code는 Pro, Max, Team, Enterprise, 또는 Console 계정이 필요합니다. 인증이 끝나면 아래 온보딩 문장을 CLI 입력창에 붙여넣습니다.",
           handoff: {
-            bash: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 onboarding 키트 위치를 확인하고, 현재 저장소에 필요한 CLAUDE.md, AGENTS.md, skill, .onboarding 상태 hook, .onboarding/brief-board.html을 설치해주세요.\n상태 hook 설치가 끝난 뒤 온보딩 보드를 열 수 있게 안내하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.",
-            zsh: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 onboarding 키트 위치를 확인하고, 현재 저장소에 필요한 CLAUDE.md, AGENTS.md, skill, .onboarding 상태 hook, .onboarding/brief-board.html을 설치해주세요.\n상태 hook 설치가 끝난 뒤 온보딩 보드를 열 수 있게 안내하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요."
+            bash: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 onboarding 키트 위치를 확인하고, AI와 함께 작업하려는 폴더에 필요한 CLAUDE.md, AGENTS.md, skill, .onboarding 상태 hook, .onboarding/update-board.mjs, .onboarding/brief-board.html을 설치해주세요.\n상태 hook 설치가 끝난 뒤 온보딩 보드를 열 수 있게 안내하고,\n그 다음 작업 폴더 위치, GitHub 연결, 내 컴퓨터와 GitHub 저장소 관계, commit/push/pull 흐름을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.\n업무 산출물을 갱신할 때마다 node .onboarding/update-board.mjs를 실행해서 board-data.json을 갱신해주세요.",
+            zsh: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 onboarding 키트 위치를 확인하고, AI와 함께 작업하려는 폴더에 필요한 CLAUDE.md, AGENTS.md, skill, .onboarding 상태 hook, .onboarding/update-board.mjs, .onboarding/brief-board.html을 설치해주세요.\n상태 hook 설치가 끝난 뒤 온보딩 보드를 열 수 있게 안내하고,\n그 다음 작업 폴더 위치, GitHub 연결, 내 컴퓨터와 GitHub 저장소 관계, commit/push/pull 흐름을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.\n업무 산출물을 갱신할 때마다 node .onboarding/update-board.mjs를 실행해서 board-data.json을 갱신해주세요."
           }
         },
         windows: {
@@ -1241,7 +1241,7 @@ command -v codex</code></pre>
           },
           loginNote: "Claude Code는 Pro, Max, Team, Enterprise, 또는 Console 계정이 필요합니다. 인증이 끝나면 아래 온보딩 문장을 CLI 입력창에 붙여넣습니다.",
           handoff: {
-            powershell: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 onboarding 키트 위치를 확인하고, 현재 저장소에 필요한 CLAUDE.md, AGENTS.md, skill, .onboarding 상태 hook, .onboarding/brief-board.html을 설치해주세요.\n상태 hook 설치가 끝난 뒤 온보딩 보드를 열 수 있게 안내하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요."
+            powershell: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 onboarding 키트 위치를 확인하고, AI와 함께 작업하려는 폴더에 필요한 CLAUDE.md, AGENTS.md, skill, .onboarding 상태 hook, .onboarding/update-board.mjs, .onboarding/brief-board.html을 설치해주세요.\n상태 hook 설치가 끝난 뒤 온보딩 보드를 열 수 있게 안내하고,\n그 다음 작업 폴더 위치, GitHub 연결, 내 컴퓨터와 GitHub 저장소 관계, commit/push/pull 흐름을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.\n업무 산출물을 갱신할 때마다 node .onboarding/update-board.mjs를 실행해서 board-data.json을 갱신해주세요."
           }
         }
       }
@@ -1436,7 +1436,7 @@ command -v codex</code></pre>
           await navigator.clipboard.writeText(text);
           return true;
         } catch (_) {
-          // Fall through to the textarea fallback for local/static contexts.
+          // Use the textarea copy path for local/static contexts.
         }
       }
 

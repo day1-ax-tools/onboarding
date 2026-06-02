@@ -19,6 +19,7 @@ Use this skill to run a model-neutral onboarding flow that first stabilizes the 
 - When writing artifacts, keep them current-state focused and avoid historical narration.
 - When creating HTML views, use the clearest visual structure for the concept instead of repeating text cards. Prefer git branch graphs for onboarding state, flow diagrams for local/remote movement, folder trees for workspace layout, tables for artifact state, and risk/value matrices for automation candidates.
 - When `.onboarding/update-state.mjs` exists, treat onboarding progress as CLI-owned state. After each verified step completion, call the updater with the matching step id and evidence. Do not ask the user to update progress in the browser.
+- When `.onboarding/update-board.mjs` exists and work or mission artifacts change, run it so `.onboarding/board-data.json` refreshes the brief board. Treat `board-data.json` as display summary data, not the source of truth.
 - After file edits, verify with the closest available check, at minimum `git diff --check`.
 
 ## Workflow
@@ -233,6 +234,14 @@ automation-brief.md
 missions/M001-<slug>.md
 logs/<YYYY-MM-DD>-mission-discovery.md
 ```
+
+After changing `work-map.md`, `ontology-seeds.md`, `mission-backlog.md`, `automation-brief.md`, or `missions/*.md`, run:
+
+```bash
+node .onboarding/update-board.mjs
+```
+
+Then update the matching onboarding state step if the completion condition is verified.
 
 Read `references/execution-playbook.md` when installing instructions/skills, setting up the work environment, resuming an interview, deciding completion, or linking discovery to implementation work. Read `references/artifact-templates.md` before creating files. Read `references/interview-protocol.md` when the interview needs more detailed prompts, phase transitions, or anti-pattern checks.
 

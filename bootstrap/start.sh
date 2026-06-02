@@ -109,16 +109,16 @@ log "AI CLI 온보딩 키트를 준비합니다."
 mkdir -p "$ORG_DIR" || fail "작업 폴더를 만들 수 없습니다: $ORG_DIR"
 
 if [ -d "$TARGET_DIR/.git" ] && have git; then
-  log "이미 받은 onboarding repo를 최신 상태로 갱신합니다."
+  log "이미 받은 onboarding 저장소를 최신 상태로 갱신합니다."
   git -C "$TARGET_DIR" pull --ff-only || log "자동 갱신은 건너뜁니다. 기존 로컬 파일로 계속 진행합니다."
 elif [ -d "$TARGET_DIR" ]; then
   log "이미 onboarding 폴더가 있습니다. 기존 폴더를 사용합니다."
 else
   if have git; then
-    log "Git으로 onboarding repo를 가져옵니다."
+    log "Git으로 onboarding 저장소를 가져옵니다."
     git clone "$REPO_URL" "$TARGET_DIR" || fail "git clone에 실패했습니다."
   else
-    log "Git이 없어 zip 파일로 onboarding repo를 가져옵니다."
+    log "Git이 없어 zip 파일로 onboarding 저장소를 가져옵니다."
     tmpdir="$(mktemp -d)"
     archive="$tmpdir/onboarding.zip"
     download_zip "$archive"

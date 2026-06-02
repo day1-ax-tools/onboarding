@@ -19,6 +19,18 @@ Use concise polite Korean by default. Teach common concepts first, then mention 
 9. Save environment progress to `environment-state.md`, interview progress to `interview-state.md`, and detailed notes to `logs/`.
 10. When a mission is selected, create or update `automation-brief.md`, `work-map.md`, `ontology-seeds.md`, `mission-backlog.md`, and `missions/M001-<slug>.md`.
 
+## CLI Runtime Sequence
+
+Use this sequence while onboarding runs in the CLI:
+
+1. Confirm the current folder and explain what will happen in plain Korean.
+2. Ask only the next 1-3 useful questions.
+3. Use commands to verify installs, auth, Git state, files, and generated artifacts.
+4. Write or update the source artifacts: `environment-state.md`, `interview-state.md`, `work-map.md`, `ontology-seeds.md`, `mission-backlog.md`, `automation-brief.md`, `missions/*.md`, and `logs/*.md`.
+5. If `.onboarding/update-board.mjs` exists, run it after changing work or mission artifacts so the brief board can refresh.
+6. If `.onboarding/update-state.mjs` exists, update the matching onboarding step only after its completion condition is verified.
+7. Tell the user what changed, what evidence was checked, and the next small question or action.
+
 ## Onboarding State Hooks
 
 If `.onboarding/update-state.mjs` exists, update onboarding state after each verified step completion:
@@ -36,6 +48,14 @@ node .onboarding\update-state.mjs <step-id> <status> --evidence "<short evidence
 Do not mark a step `done` just because a command was attempted. Mark it `done` only after the completion condition is verified. Mark it `blocked` when a missing install, permission, auth, path, or user decision prevents the next step. If Node is unavailable, edit `.onboarding/state.json` directly and validate that it remains valid JSON.
 
 Step ids: `cli-install`, `auth`, `cli-handoff`, `kit-install`, `work-root`, `github-auth`, `git-loop`, `role-map`, `task-split`, `mission-select`.
+
+When `role-map`, `task-split`, or `mission-select` changes source artifacts, refresh the brief board display data:
+
+```bash
+node .onboarding/update-board.mjs
+```
+
+`.onboarding/board-data.json` is only a display file for the board. Do not use it as the source of truth.
 
 When all required steps are done, let the updater dispose the hooks by setting `hooks.enabled=false`. After disposal, keep normal project artifacts current but stop forcing onboarding state hook updates.
 

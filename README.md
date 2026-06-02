@@ -48,7 +48,7 @@
 | Git 상태 | 작업 폴더 변경, stage, commit, push는 서로 다른 단계다 |
 | 원격 저장소 | GitHub는 내 컴퓨터 밖에 있는 협업 저장소다 |
 | 작업 루트 | AI와 함께 일할 로컬 기준 폴더를 정한다 |
-| Local/Remote | 내 컴퓨터의 repo와 GitHub repo는 연결된 한 쌍이다 |
+| Local/Remote | 내 컴퓨터의 작업 폴더와 GitHub 저장소는 연결된 한 쌍이다 |
 | 인증과 권한 | CLI가 외부 서비스에 접근하려면 로그인된 권한이 필요하다 |
 | 지침 파일 | 반복해서 말할 작업 방식을 파일로 저장한다 |
 | 안전한 권한 | 읽기, 수정, 실행, 외부 접근은 위험도가 다르다 |
@@ -57,7 +57,7 @@
 
 ## Stage -2: Web Entry
 
-웹페이지는 진입점 역할만 한다. 초보자는 repo를 미리 clone하지 않는다. 먼저 hosted web entry를 열고, 자신의 환경을 고른 뒤 Codex 또는 Claude Code 설치, PATH 반영, 설치 확인을 진행한다. 설치 자체도 이후 다른 상황에서 반복할 학습 경험이므로 온보딩 키트 없이 먼저 진행한다. CLI 명령이 실행 가능한 것을 확인한 뒤 같은 터미널에서 bootstrap 명령으로 onboarding repo를 로컬에 받고, 그 다음 CLI를 실행해 인증한 뒤 지침 파일, skill, 상태 hook, 온보딩 보드를 대상 repo에 설치한다.
+웹페이지는 진입점 역할만 한다. 초보자는 GitHub 저장소를 미리 내려받지 않는다. 먼저 hosted web entry를 열고, 자신의 환경을 고른 뒤 Codex 또는 Claude Code 설치, PATH 반영, 설치 확인을 진행한다. 설치 자체도 이후 다른 상황에서 반복할 학습 경험이므로 온보딩 키트 없이 먼저 진행한다. CLI 명령이 실행 가능한 것을 확인한 뒤 같은 터미널에서 bootstrap 명령으로 onboarding kit를 내 컴퓨터에 받고, 그 다음 CLI를 실행해 인증한 뒤 지침 파일, skill, 상태 hook, 온보딩 보드를 AI와 함께 작업하려는 폴더에 설치한다.
 
 권장 hosted entry:
 
@@ -98,7 +98,7 @@ $script = irm https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bo
 - 설치 확인 명령 안내
 - 설치 확인 뒤 실행할 bootstrap 명령 제공
 - 로그인 시작 명령 안내
-- CLI에 붙여넣을 handoff prompt 제공
+- CLI에 붙여넣을 첫 입력문 제공
 
 설치 처리 기준:
 
@@ -117,13 +117,24 @@ $script = irm https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bo
 - 설치/인증, 환경 설정, 업무 지도, 미션 후보가 어떻게 분기되고 합쳐지는지 시각화한다.
 - CLI가 갱신한 `.onboarding/state.json` 또는 `web/onboarding-state.json`을 읽어 그래프 node 상태를 바꾼다.
 - 상태 파일을 읽지 못하면 `Hook 미설치`로 표시한다. hook 설치 전에는 보드를 활성 상태로 간주하지 않는다.
-- 사용자가 입력한 역할, 성과, 반복 업무, 입력 도구, 위험을 바탕으로 작업 지도와 자동화 후보를 즉시 보여준다.
-- 생성될 산출물인 `environment-state.md`, `work-map.md`, `ontology-seeds.md`, `mission-backlog.md`, `missions/M001-<slug>.md`의 역할을 미리 보여준다.
-- CLI에 붙여넣을 업무 요약문과 프로젝트 단위 지침/skill 수동 설치 fallback 명령을 제공한다.
+- `.onboarding/board-data.json`을 읽어 역할, 성과, 반복 업무, 작업 지도, 자동화 후보, 산출물을 현황판처럼 보여준다.
+- `board-data.json`은 원본이 아니다. `environment-state.md`, `work-map.md`, `ontology-seeds.md`, `mission-backlog.md`, `automation-brief.md`, `missions/*.md`에서 다시 만들 수 있는 화면 표시용 요약 데이터다.
+- CLI에 붙여넣을 업무 요약문과, 자동 설치가 안 될 때 대신 실행할 작업 폴더용 지침/skill 설치 명령을 제공한다.
 
 ### Onboarding State Hooks
 
 진행률과 체크리스트는 사용자가 웹에서 직접 조작하지 않는다. 온보딩의 실제 권위는 CLI가 완료 조건을 검증한 뒤 갱신하는 상태 파일이다.
+
+CLI에서 실제 작업은 아래 순서로 반복된다.
+
+```text
+1. 확인: 현재 작업 폴더, 설치 상태, GitHub 연결, 필요한 파일을 확인한다.
+2. 질문: 사용자에게 다음 1-3개 질문만 묻는다.
+3. 작성: 확인된 내용을 markdown 산출물에 저장한다.
+4. 보드 갱신: node .onboarding/update-board.mjs로 board-data.json을 다시 만든다.
+5. 상태 갱신: 완료 조건이 검증된 단계만 update-state.mjs로 갱신한다.
+6. 안내: 무엇이 바뀌었고 다음 작은 행동이 무엇인지 알려준다.
+```
 
 ```text
 CLI 단계 완료
@@ -142,18 +153,21 @@ CLI 단계 완료
 ```text
 templates/onboarding/state.json
 templates/onboarding/update-state.mjs
+templates/onboarding/update-board.mjs
 web/brief-board.html
 ```
 
-대상 repo에 설치되는 위치:
+AI와 함께 작업하려는 폴더에 설치되는 위치:
 
 ```text
 .onboarding/state.json
 .onboarding/update-state.mjs
+.onboarding/update-board.mjs
+.onboarding/board-data.json
 .onboarding/brief-board.html
 ```
 
-`web/brief-board.html`은 대상 repo에 복사될 보드 템플릿이다. 실제 진행 상태를 보려면 CLI가 상태 hook을 설치한 뒤 대상 repo에 복사된 `.onboarding/brief-board.html`을 로컬 HTTP 서버로 연다. 이 보드는 같은 폴더의 `state.json`을 읽는다. 상태 파일 없이 열리면 `Hook 미설치`로 표시한다.
+`web/brief-board.html`은 AI와 함께 작업하려는 폴더에 복사될 보드 템플릿이다. 실제 진행 상태를 보려면 CLI가 상태 hook을 설치한 뒤 그 작업 폴더에 복사된 `.onboarding/brief-board.html`을 로컬 HTTP 서버로 연다. 이 보드는 같은 폴더의 `state.json`과 `board-data.json`을 읽는다. 상태 파일 없이 열리면 `Hook 미설치`로 표시하고, board-data 없이 열리면 `산출물 대기`로 표시한다.
 
 공통 명령:
 
@@ -166,6 +180,27 @@ Windows PowerShell에서도 같은 updater를 호출한다.
 ```powershell
 node .onboarding\update-state.mjs kit-install done --tool claude --os windows --shell powershell --evidence "CLAUDE.md and skill copied"
 ```
+
+### Board Display Data
+
+brief board는 입력 폼이 아니라 현황판이다. 업무 내용의 원본은 markdown 산출물이고, board는 `.onboarding/update-board.mjs`가 만든 화면 표시용 요약 데이터만 읽는다.
+
+```text
+CLI 인터뷰 진행
+→ environment-state.md, work-map.md, ontology-seeds.md, mission-backlog.md, automation-brief.md, missions/*.md 갱신
+→ node .onboarding/update-board.mjs 실행
+→ .onboarding/board-data.json 갱신
+→ node .onboarding/update-state.mjs <step-id> done 실행
+→ brief-board.html이 state + board-data를 읽어 갱신
+```
+
+권위 구분:
+
+| 파일 | 권위 |
+| --- | --- |
+| `.onboarding/state.json` | 진행 상태, hook 활성 여부, 현재 단계 |
+| `.onboarding/board-data.json` | 화면 표시용 요약 데이터 |
+| `environment-state.md` 등 markdown 산출물 | 업무 정의와 미션의 source of truth |
 
 상태 값:
 
@@ -183,9 +218,9 @@ node .onboarding\update-state.mjs kit-install done --tool claude --os windows --
 | --- | --- |
 | `cli-install` | 선택한 Codex 또는 Claude Code 명령이 실행 가능함 |
 | `auth` | 선택한 AI CLI 인증이 완료됨 |
-| `cli-handoff` | 사용자가 웹 handoff prompt를 CLI에 전달함 |
-| `kit-install` | `AGENTS.md`/`CLAUDE.md`와 `work-mission-discovery` skill이 대상 repo에 설치됨 |
-| `work-root` | 작업 루트와 현재 repo 위치가 정리됨 |
+| `cli-handoff` | 사용자가 웹에서 만든 첫 입력문을 CLI에 전달함 |
+| `kit-install` | `AGENTS.md`/`CLAUDE.md`와 `work-mission-discovery` skill이 AI와 함께 작업하려는 폴더에 설치됨 |
+| `work-root` | 작업 루트와 현재 작업 폴더 위치가 정리됨 |
 | `github-auth` | `gh auth status`, remote, branch 상태가 확인됨 |
 | `git-loop` | status/add/commit/push/pull 흐름을 완료하거나 관찰함 |
 | `role-map` | 역할과 책임지는 결과가 기록됨 |

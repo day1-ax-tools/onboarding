@@ -42,7 +42,7 @@ Write-Step "AI CLI 온보딩 키트를 준비합니다."
 New-Item -ItemType Directory -Force $orgDir | Out-Null
 
 if ((Test-Path (Join-Path $targetDir ".git")) -and (Has-Command "git")) {
-  Write-Step "이미 받은 onboarding repo를 최신 상태로 갱신합니다."
+  Write-Step "이미 받은 onboarding 저장소를 최신 상태로 갱신합니다."
   try {
     git -C $targetDir pull --ff-only
   } catch {
@@ -52,10 +52,10 @@ if ((Test-Path (Join-Path $targetDir ".git")) -and (Has-Command "git")) {
   Write-Step "이미 onboarding 폴더가 있습니다. 기존 폴더를 사용합니다."
 } else {
   if (Has-Command "git") {
-    Write-Step "Git으로 onboarding repo를 가져옵니다."
+    Write-Step "Git으로 onboarding 저장소를 가져옵니다."
     git clone $repoUrl $targetDir
   } else {
-    Write-Step "Git이 없어 zip 파일로 onboarding repo를 가져옵니다."
+    Write-Step "Git이 없어 zip 파일로 onboarding 저장소를 가져옵니다."
     $tempDir = Join-Path $env:TEMP ("onboarding-" + [System.Guid]::NewGuid().ToString("N"))
     $archive = Join-Path $tempDir "onboarding.zip"
     New-Item -ItemType Directory -Force $tempDir | Out-Null

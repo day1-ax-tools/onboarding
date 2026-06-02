@@ -18,7 +18,7 @@ bootstrap/start.ps1
 
 For first-time users, start from the hosted web entry rather than asking them to clone the repo. The user selects OS and AI CLI, then installs the selected CLI, refreshes PATH, and verifies the command first. CLI installation is itself part of the learning experience and must not appear to require the onboarding kit. After command verification, the user runs the bootstrap command in the same terminal to obtain the onboarding repo locally, then launches and authenticates the selected CLI.
 
-Use `web/index.html` for CLI installation, PATH refresh, verification, post-verify bootstrap, login, and the first handoff prompt. Do not send the user to the onboarding board until the target repo has `.onboarding/state.json`, `.onboarding/update-state.mjs`, and `.onboarding/brief-board.html`. After project installation, use `.onboarding/brief-board.html` inside the target repo as the state-backed board. The board does not create repos, change files, or call GitHub directly; the AI CLI does that after the user hands off the summary.
+Use `web/index.html` for CLI installation, PATH refresh, verification, post-verify bootstrap, login, and the first handoff prompt. Do not send the user to the onboarding board until the user's working folder has `.onboarding/state.json`, `.onboarding/update-state.mjs`, `.onboarding/update-board.mjs`, and `.onboarding/brief-board.html`. After project installation, use `.onboarding/brief-board.html` inside the user's working folder as the state-backed board. The board does not create repositories, change files, or call GitHub directly; the AI CLI does that after the user hands off the summary.
 
 Post-verification bootstrap commands:
 
@@ -33,13 +33,27 @@ $script = irm https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bo
 & ([scriptblock]::Create($script)) -Tool codex
 ```
 
-The board must not depend on user-managed checkboxes. During CLI onboarding, write progress to `.onboarding/state.json` through `.onboarding/update-state.mjs`. The board reads that state and updates the graph. If the state file is missing, the board must show hook-not-installed rather than hook-active. When all required steps are done, the updater disposes the hooks by setting `hooks.enabled=false`.
+The board must not depend on user-managed checkboxes or user-entered board forms. During CLI onboarding, write progress to `.onboarding/state.json` through `.onboarding/update-state.mjs`. Keep work understanding and mission content in markdown source artifacts, then run `.onboarding/update-board.mjs` to regenerate `.onboarding/board-data.json` as display summary data. The board reads state plus board-data and updates the graph, work map, mission candidates, and artifact matrix. If the state file is missing, the board must show hook-not-installed rather than hook-active. If board-data is missing, the board must show artifact-waiting rather than invented work content. When all required steps are done, the updater disposes the hooks by setting `hooks.enabled=false`.
 
 Shell policy:
 
 - macOS, Linux, and WSL show bash/zsh choices because PATH refresh differs by shell.
 - Windows shows PowerShell only. Do not ask beginners to choose between PowerShell, cmd, bash, and zsh unless they explicitly need a different shell.
-- Project instruction and skill installation is a normal shell copy operation. Prefer the CLI to inspect paths and perform it; use the board's fallback command only when manual installation is needed.
+- Project instruction and skill installation is a normal shell copy operation. Prefer the CLI to inspect paths and perform it; use the board's alternate command only when manual installation is needed.
+
+## CLI Runtime Loop
+
+Once the user hands the web prompt to the CLI, repeat this loop:
+
+1. Confirm the current folder, selected tool, installation state, Git/GitHub state, and available onboarding files.
+2. Ask only the next 1-3 useful questions.
+3. Use commands to verify facts instead of guessing.
+4. Write confirmed information into source artifacts such as `environment-state.md`, `interview-state.md`, `work-map.md`, `ontology-seeds.md`, `mission-backlog.md`, `automation-brief.md`, `missions/*.md`, and `logs/*.md`.
+5. Run `.onboarding/update-board.mjs` after work or mission artifacts change.
+6. Run `.onboarding/update-state.mjs` only after a step's completion condition is verified.
+7. Tell the user what changed, what evidence was checked, and the next small action.
+
+The brief board is a dashboard, not the place where the user enters work data.
 
 ### Codex
 
@@ -134,6 +148,15 @@ On Windows:
 node .onboarding\update-state.mjs <step-id> <status> --evidence "<short evidence>"
 ```
 
+When `role-map`, `task-split`, or `mission-select` changes markdown artifacts, update the brief board display data before or immediately after the state update:
+
+```bash
+node .onboarding/update-board.mjs
+node .onboarding/update-state.mjs role-map done --evidence "work-map.md updated"
+```
+
+Do not treat `.onboarding/board-data.json` as the source of truth. It is a view generated from `environment-state.md`, `work-map.md`, `ontology-seeds.md`, `mission-backlog.md`, `automation-brief.md`, and `missions/*.md`.
+
 Statuses:
 
 | Status | Meaning |
@@ -161,7 +184,7 @@ Step ids:
 
 When all required steps are `done`, the updater sets `hooks.enabled=false`. After that, do not keep writing onboarding hook updates unless the user explicitly restarts onboarding.
 
-For a live project-local board, serve the target repo root over local HTTP and open `.onboarding/brief-board.html`. The board reads `.onboarding/state.json` from the same folder.
+For a live project-local board, serve the user's working folder over local HTTP and open `.onboarding/brief-board.html`. The board reads `.onboarding/state.json` and `.onboarding/board-data.json` from the same folder.
 
 ## Work Environment Setup Flow
 
@@ -288,7 +311,7 @@ Create these only when they help the user's understanding:
 
 | File | Purpose |
 | --- | --- |
-| `web/brief-board.html` | User-facing onboarding board with git branch graph, role/work inputs, candidate mission preview, artifact matrix, and CLI summary |
+| `web/brief-board.html` | User-facing onboarding board with git branch graph, source-backed work map, candidate mission view, artifact matrix, and CLI summary |
 | `workspace-map.html` | Show the user's local work root and repo folders |
 | `git-local-remote.html` | Explain local repo vs GitHub remote |
 | `git-cycle.html` | Explain edit, status, add, commit, push, pull |

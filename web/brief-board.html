@@ -20,6 +20,14 @@
       --warn: #9a6700;
       --warn-bg: #fff7d6;
       --good: #0e7a5f;
+      --branch-main: #212121;
+      --branch-main-bg: #f1f1f1;
+      --branch-setup: #2563eb;
+      --branch-setup-bg: #eaf1ff;
+      --branch-work: #0e7a5f;
+      --branch-work-bg: #e7f6f1;
+      --branch-mission: #b45309;
+      --branch-mission-bg: #fff2df;
       --font-body: "Sohne", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
       --font-display: "Sohne", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
       --font-code: ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
@@ -43,6 +51,14 @@
       --border: #e6dfd8;
       --accent: #cc785c;
       --good: #9b573e;
+      --branch-main: #141413;
+      --branch-main-bg: #ebe6dd;
+      --branch-setup: #5f6ec7;
+      --branch-setup-bg: #eceefe;
+      --branch-work: #9b573e;
+      --branch-work-bg: #f2e3da;
+      --branch-mission: #9a6700;
+      --branch-mission-bg: #fff4cf;
       --font-body: StyreneB, Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
       --font-display: Copernicus, Georgia, serif;
       --code-window-bg: #181715;
@@ -102,6 +118,10 @@
       min-width: 0;
     }
 
+    .brand > div {
+      min-width: 0;
+    }
+
     .mark {
       display: inline-grid;
       place-items: center;
@@ -134,6 +154,7 @@
       margin: 0;
       color: var(--body);
       word-break: keep-all;
+      overflow-wrap: anywhere;
     }
 
     a,
@@ -178,13 +199,15 @@
       display: inline-flex;
       align-items: center;
       min-height: 30px;
+      max-width: 100%;
       border: 1px solid var(--border);
       border-radius: 999px;
       background: var(--surface-2);
       color: var(--muted);
       padding: 5px 10px;
       font-size: 13px;
-      white-space: nowrap;
+      white-space: normal;
+      overflow-wrap: anywhere;
     }
 
     .layout {
@@ -217,12 +240,19 @@
     .section-head,
     .panel-head {
       display: flex;
+      flex-wrap: wrap;
       gap: 10px;
       align-items: center;
       justify-content: space-between;
       padding: 14px 16px;
       border-bottom: 1px solid var(--border);
       background: var(--surface-2);
+    }
+
+    .section-head h2,
+    .panel-head h2 {
+      min-width: 0;
+      overflow-wrap: anywhere;
     }
 
     h2,
@@ -250,12 +280,67 @@
       gap: 12px;
     }
 
+    .source-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .source-pill {
+      display: inline-flex;
+      max-width: 100%;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface-2);
+      color: var(--muted);
+      padding: 4px 8px;
+      font: 600 12px/1.35 var(--font-body);
+      overflow-wrap: anywhere;
+    }
+
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .insight {
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 12px;
+    }
+
+    .insight strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .insight p,
+    .insight li {
+      color: var(--body);
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .insight ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
     label {
       display: grid;
       gap: 6px;
       color: var(--ink);
       font-size: 13px;
       font-weight: 600;
+      min-width: 0;
     }
 
     input,
@@ -324,6 +409,8 @@
     }
 
     .graph-wrap {
+      max-width: 100%;
+      min-width: 0;
       overflow-x: auto;
       border: 1px solid var(--border);
       border-radius: var(--radius);
@@ -334,10 +421,15 @@
 
     .branch-graph {
       display: block;
-      min-width: 900px;
       width: 100%;
-      height: 330px;
+      min-width: 0;
+      height: auto;
+      aspect-ratio: 980 / 330;
       font-family: var(--font-body);
+    }
+
+    .branch-graph.is-compact {
+      aspect-ratio: 360 / 620;
     }
 
     .branch-line {
@@ -388,17 +480,50 @@
       fill: var(--ink);
       font-size: 13px;
       font-weight: 650;
+      dominant-baseline: middle;
     }
 
     .commit-meta {
       fill: var(--muted);
       font-size: 12px;
+      dominant-baseline: middle;
     }
 
     .branch-name {
       fill: var(--muted);
       font-size: 12px;
       font-family: var(--font-code);
+      font-weight: 650;
+      paint-order: stroke;
+      stroke: var(--surface);
+      stroke-linejoin: round;
+      stroke-width: 3px;
+    }
+
+    .branch-main {
+      color: var(--branch-main);
+      fill: var(--branch-main);
+      font-weight: 800;
+    }
+
+    .branch-setup {
+      color: var(--branch-setup);
+      fill: var(--branch-setup);
+      font-weight: 700;
+    }
+
+    .branch-work {
+      color: var(--branch-work);
+      fill: var(--branch-work);
+      font-family: var(--font-body);
+      font-weight: 800;
+    }
+
+    .branch-mission {
+      color: var(--branch-mission);
+      fill: var(--branch-mission);
+      font-family: var(--font-display);
+      font-weight: 800;
     }
 
     .graph-legend {
@@ -442,6 +567,7 @@
     .state-table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
       margin-top: 12px;
       font-size: 13px;
     }
@@ -452,11 +578,40 @@
       padding: 9px 8px;
       text-align: left;
       vertical-align: top;
+      overflow-wrap: anywhere;
     }
 
     .state-table th {
       color: var(--muted);
       font-weight: 650;
+    }
+
+    .branch-chip {
+      display: inline-flex;
+      max-width: 100%;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font: 700 12px/1.35 var(--font-code);
+      overflow-wrap: anywhere;
+    }
+
+    .branch-chip.branch-main {
+      background: var(--branch-main-bg);
+    }
+
+    .branch-chip.branch-setup {
+      background: var(--branch-setup-bg);
+    }
+
+    .branch-chip.branch-work {
+      background: var(--branch-work-bg);
+      font-family: var(--font-body);
+    }
+
+    .branch-chip.branch-mission {
+      background: var(--branch-mission-bg);
+      font-family: var(--font-display);
     }
 
     .lane,
@@ -475,6 +630,17 @@
       margin-bottom: 6px;
       color: var(--ink);
       font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .lane ul {
+      margin: 0 0 8px 18px;
+      padding: 0;
+    }
+
+    .lane li {
+      margin: 0 0 4px;
+      overflow-wrap: anywhere;
     }
 
     .task-grid,
@@ -488,6 +654,7 @@
       display: inline-flex;
       align-items: center;
       width: fit-content;
+      max-width: 100%;
       min-height: 24px;
       border-radius: 999px;
       background: var(--surface-2);
@@ -495,6 +662,8 @@
       padding: 3px 8px;
       font-size: 12px;
       font-weight: 600;
+      white-space: normal;
+      overflow-wrap: anywhere;
     }
 
     .badge.good {
@@ -772,6 +941,133 @@
       margin-top: 8px;
     }
 
+    .install-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 10px 0;
+    }
+
+    .install-list span {
+      display: inline-flex;
+      max-width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface-2);
+      color: var(--body);
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 650;
+      overflow-wrap: anywhere;
+    }
+
+    .cli-flow {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      counter-reset: cli-flow;
+    }
+
+    .cli-flow li {
+      position: relative;
+      display: grid;
+      grid-template-columns: 54px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      min-width: 0;
+      counter-increment: cli-flow;
+    }
+
+    .cli-flow li::before {
+      content: counter(cli-flow);
+      display: inline-grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: var(--ink);
+      color: var(--accent-ink);
+      font: 700 12px/1 var(--font-body);
+      position: absolute;
+      left: 0;
+      top: 1px;
+    }
+
+    body[data-tool="claude"] .cli-flow li::before {
+      background: var(--accent);
+    }
+
+    .cli-flow li:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      left: 11px;
+      top: 30px;
+      bottom: -8px;
+      width: 2px;
+      background: var(--border);
+    }
+
+    .cli-flow span {
+      grid-column: 1;
+      margin-left: 32px;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .cli-flow p {
+      grid-column: 2;
+      color: var(--body);
+      font-size: 13px;
+    }
+
+    .install-modal {
+      width: min(920px, calc(100% - 28px));
+      max-height: min(760px, calc(100vh - 28px));
+      border: 0;
+      border-radius: var(--radius);
+      background: transparent;
+      color: var(--ink);
+      padding: 0;
+    }
+
+    .install-modal::backdrop {
+      background: rgba(0, 0, 0, 0.42);
+    }
+
+    .modal-card {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+
+    .modal-head > div {
+      min-width: 0;
+    }
+
+    .modal-body {
+      display: grid;
+      gap: 10px;
+      max-height: calc(100vh - 160px);
+      overflow: auto;
+      padding: 16px;
+    }
+
     .empty {
       border: 1px dashed var(--border);
       border-radius: var(--radius);
@@ -783,6 +1079,7 @@
 
     @media (max-width: 900px) {
       .layout,
+      .insight-grid,
       .lane-grid,
       .graph-legend,
       .task-grid,
@@ -792,6 +1089,121 @@
 
       aside {
         position: static;
+      }
+    }
+
+    @media (max-width: 640px) {
+      main {
+        width: min(100% - 20px, 1280px);
+        padding-top: 16px;
+      }
+
+      header {
+        padding-top: 18px;
+      }
+
+      .topline,
+      .actions {
+        align-items: stretch;
+      }
+
+      .actions {
+        width: 100%;
+      }
+
+      .actions a,
+      .actions button {
+        flex: 1 1 140px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .section-head,
+      .panel-head {
+        align-items: flex-start;
+        padding: 12px;
+      }
+
+      .section-body,
+      .panel-body {
+        padding: 12px;
+      }
+
+      .status-row {
+        grid-template-columns: 1fr;
+        gap: 2px;
+        align-items: start;
+      }
+
+      .graph-wrap {
+        overflow-x: hidden;
+      }
+
+      .graph-legend {
+        gap: 6px;
+      }
+
+      .state-table {
+        display: block;
+      }
+
+      .state-table thead {
+        display: none;
+      }
+
+      .state-table tbody,
+      .state-table tr,
+      .state-table td {
+        display: block;
+        width: 100%;
+      }
+
+      .state-table tr {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface);
+        padding: 8px 10px;
+      }
+
+      .state-table tr + tr {
+        margin-top: 8px;
+      }
+
+      .state-table td {
+        border-bottom: 0;
+        padding: 4px 0;
+      }
+
+      .state-table td::before {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 650;
+      }
+
+      .state-table td:nth-child(1)::before {
+        content: "브랜치";
+      }
+
+      .state-table td:nth-child(2)::before {
+        content: "역할";
+      }
+
+      .state-table td:nth-child(3)::before {
+        content: "현재 신호";
+      }
+
+      .code-body,
+      .ai-cli-body,
+      .ai-cli-input,
+      .modal-body {
+        padding: 12px;
+      }
+
+      .install-modal {
+        width: calc(100% - 20px);
       }
     }
   </style>
@@ -809,7 +1221,7 @@
         </div>
         <div class="actions">
           <a href="index.html">설치 화면</a>
-          <button type="button" id="reset-board">초기화</button>
+          <button type="button" id="refresh-board">새로고침</button>
         </div>
       </div>
       <div class="tags" aria-label="현재 선택 상태">
@@ -841,12 +1253,36 @@
         <div class="panel">
           <div class="panel-head">
             <h2>설치 처리</h2>
+            <span class="badge" id="kit-install-label">프로젝트 단위</span>
           </div>
           <div class="panel-body">
+            <p>지금 AI와 함께 작업하려는 폴더에 온보딩용 파일을 넣는 단계입니다. 보통은 CLI가 자동으로 처리하고, 아래 명령은 자동 처리가 안 될 때만 확인합니다.</p>
+            <div class="install-list" aria-label="설치되는 항목">
+              <span>지침 파일</span>
+              <span>work-mission-discovery skill</span>
+              <span>상태 hook</span>
+              <span>brief board</span>
+              <span>보드 데이터 갱신 도구</span>
+            </div>
             <p class="muted" id="shell-policy"></p>
             <div class="copy-row">
-              <button type="button" data-copy="kit-install-command">설치 명령 복사</button>
+              <button type="button" id="open-install-modal">설치 명령 보기</button>
             </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>CLI 진행 방식</h2>
+          </div>
+          <div class="panel-body">
+            <ol class="cli-flow" aria-label="CLI에서 온보딩이 진행되는 순서">
+              <li><span>확인</span><p>현재 작업 폴더, 설치 상태, GitHub 연결을 확인합니다.</p></li>
+              <li><span>질문</span><p>한 번에 1-3개 질문으로 역할과 반복 업무를 이해합니다.</p></li>
+              <li><span>작성</span><p>환경, 업무 지도, 미션 후보를 markdown 파일로 저장합니다.</p></li>
+              <li><span>갱신</span><p>보드 데이터와 온보딩 상태를 갱신해 이 화면에 반영합니다.</p></li>
+              <li><span>다음</span><p>확인한 내용과 다음 작은 행동을 알려주고 이어갑니다.</p></li>
+            </ol>
           </div>
         </div>
       </aside>
@@ -880,27 +1316,12 @@
 
         <section>
           <div class="section-head">
-            <h2>1. 내 업무 입력</h2>
-            <button type="button" id="fill-sample">샘플 채우기</button>
+            <h2>1. 내 업무 현황</h2>
+            <span class="badge" id="board-source">산출물 대기</span>
           </div>
           <div class="section-body">
-            <div class="field-grid">
-              <label>내 역할
-                <input id="role" placeholder="예: B2B SaaS 마케팅 리드">
-              </label>
-              <label>책임지는 결과
-                <textarea id="outcomes" placeholder="한 줄에 하나씩 입력하세요. 예: 신규 리드 품질 향상"></textarea>
-              </label>
-              <label>반복 업무
-                <textarea id="works" placeholder="한 줄에 하나씩 입력하세요. 예: 세일즈 콜 노트를 읽고 CRM 업데이트 항목 정리"></textarea>
-              </label>
-              <label>자주 쓰는 입력/도구
-                <textarea id="inputs" placeholder="예: Google Sheets, Notion, CRM export, 고객 인터뷰 노트"></textarea>
-              </label>
-              <label>막히는 지점 또는 피하고 싶은 위험
-                <textarea id="risks" placeholder="예: 고객 데이터가 섞이면 안 됨, 최종 발송은 사람이 검토해야 함"></textarea>
-              </label>
-            </div>
+            <div class="source-strip" id="board-source-strip"></div>
+            <div class="insight-grid" id="work-profile"></div>
           </div>
         </section>
 
@@ -957,36 +1378,44 @@
             </div>
           </div>
         </section>
-
-        <section>
-          <div class="section-head">
-            <h2>수동 설치 명령</h2>
-            <span class="badge" id="kit-install-label">프로젝트 단위</span>
-          </div>
-          <div class="section-body">
-            <div class="code-window" aria-label="수동 설치 명령 터미널 미리보기">
-              <div class="code-titlebar">
-                <div class="window-controls" aria-hidden="true"><span></span><span></span><span></span></div>
-                <div class="code-meta">
-                  <span class="code-window-title" id="kit-window-title">Terminal</span>
-                  <span class="code-shell-name" id="kit-shell-name">bash</span>
-                </div>
-              </div>
-              <div class="code-body">
-                <pre class="terminal-command"><span class="code-prompt" id="kit-prompt">$</span><code id="kit-install-command"></code></pre>
-              </div>
-            </div>
-            <p class="muted" style="margin-top:10px;">실제 온보딩에서는 CLI가 현재 repo와 onboarding repo 위치를 확인한 뒤 실행합니다. 이 명령은 사용자가 수동으로 설치해야 할 때의 fallback입니다.</p>
-          </div>
-        </section>
       </div>
     </div>
   </main>
 
+  <dialog class="install-modal" id="install-modal" aria-labelledby="install-modal-title">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <h2 id="install-modal-title">프로젝트 설치 명령</h2>
+          <p class="muted">CLI가 자동으로 처리하지 못했을 때, AI와 함께 작업하려는 폴더에서 대신 실행하는 명령입니다.</p>
+        </div>
+        <button type="button" id="close-install-modal">닫기</button>
+      </div>
+      <div class="modal-body">
+        <div class="code-window" aria-label="수동 설치 명령 터미널 미리보기">
+          <div class="code-titlebar">
+            <div class="window-controls" aria-hidden="true"><span></span><span></span><span></span></div>
+            <div class="code-meta">
+              <span class="code-window-title" id="kit-window-title">Terminal</span>
+              <span class="code-shell-name" id="kit-shell-name">bash</span>
+            </div>
+          </div>
+          <div class="code-body">
+            <pre class="terminal-command"><span class="code-prompt" id="kit-prompt">$</span><code id="kit-install-command"></code></pre>
+          </div>
+        </div>
+        <div class="copy-row">
+          <button type="button" data-copy="kit-install-command">명령어 복사</button>
+        </div>
+        <p class="muted">이 명령은 현재 작업 폴더에 지침 파일, skill, 온보딩 상태 파일, 보드, 보드 데이터 갱신 도구를 넣고 설치 완료 상태를 기록합니다.</p>
+      </div>
+    </div>
+  </dialog>
+
   <script>
     const params = new URLSearchParams(window.location.search);
-    const storeKey = "onboarding-brief-board-state";
     const stateRefreshMs = 5000;
+    const boardRefreshMs = 5000;
     const setup = {
       tool: params.get("tool") || localStorage.getItem("onboarding-entry-tool") || "codex",
       os: params.get("os") || localStorage.getItem("onboarding-entry-os") || "mac",
@@ -1005,24 +1434,33 @@
       "/.onboarding/state.json"
     ].filter(Boolean);
 
+    const boardSources = [
+      params.get("board"),
+      "board-data.json",
+      "onboarding-board-data.json",
+      "../.onboarding/board-data.json",
+      "/.onboarding/board-data.json"
+    ].filter(Boolean);
+
     const stepDefinitions = [
       { id: "cli-install", branch: "main", label: "CLI 설치", meta: setup.tool === "claude" ? "Claude Code" : "Codex" },
       { id: "auth", branch: "main", label: "인증", meta: "로그인" },
-      { id: "cli-handoff", branch: "main", label: "CLI 전달", meta: "prompt" },
+      { id: "cli-handoff", branch: "main", label: "CLI 전달", meta: "첫 질문" },
       { id: "kit-install", branch: "setup", label: "지침 설치", meta: setup.tool === "claude" ? "CLAUDE.md" : "AGENTS.md" },
-      { id: "work-root", branch: "setup", label: "작업 repo", meta: "local/remote" },
+      { id: "work-root", branch: "setup", label: "작업 폴더", meta: "내 컴퓨터/GitHub" },
       { id: "github-auth", branch: "setup", label: "GitHub 연결", meta: "gh" },
-      { id: "git-loop", branch: "setup", label: "Git 루프", meta: "commit/push" },
-      { id: "role-map", branch: "work", label: "역할", meta: "outcome" },
-      { id: "task-split", branch: "work", label: "작업 분해", meta: "tasks" },
-      { id: "mission-select", branch: "mission", label: "M001 후보", meta: "backlog" }
+      { id: "git-loop", branch: "setup", label: "Git 루프", meta: "저장/업로드" },
+      { id: "role-map", branch: "work", label: "역할", meta: "목표" },
+      { id: "task-split", branch: "work", label: "작업 분해", meta: "실행 단위" },
+      { id: "mission-select", branch: "mission", label: "M001 후보", meta: "미션 목록" }
     ];
 
-    const fields = ["role", "outcomes", "works", "inputs", "risks"];
-    const saved = readState();
     let onboardingState = defaultOnboardingState(false);
     let stateSource = "상태 파일 대기";
     let hasOnboardingState = false;
+    let boardData = defaultBoardData();
+    let boardSource = "보드 데이터 대기";
+    let hasBoardData = false;
 
     document.body.dataset.tool = setup.tool === "claude" ? "claude" : "codex";
     document.body.dataset.os = setup.os === "windows" ? "windows" : "mac";
@@ -1031,23 +1469,6 @@
     document.getElementById("tag-os").textContent = `환경: ${setup.os === "windows" ? "Windows PowerShell" : "macOS/Linux/WSL"}`;
     document.getElementById("tag-shell").textContent = `Shell: ${setup.shell}`;
     renderSelectedChrome();
-
-    fields.forEach((id) => {
-      const node = document.getElementById(id);
-      node.value = saved[id] || "";
-      node.addEventListener("input", () => {
-        saveState();
-        render();
-      });
-    });
-
-    function readState() {
-      try {
-        return JSON.parse(localStorage.getItem(storeKey)) || {};
-      } catch (_) {
-        return {};
-      }
-    }
 
     function windowTitle() {
       return setup.os === "windows" ? "Windows PowerShell" : "Terminal";
@@ -1200,17 +1621,126 @@
       document.getElementById("tag-phase").textContent = hasOnboardingState ? `현재 단계: ${current.label}` : "현재 단계: hook 설치 전";
     }
 
-    function saveState() {
-      const next = readBoard();
-      localStorage.setItem(storeKey, JSON.stringify(next));
+    function defaultBoardData() {
+      return {
+        version: 1,
+        updatedAt: null,
+        sources: [],
+        role: "",
+        outcomes: [],
+        works: [],
+        inputs: [],
+        risks: [],
+        tasks: [],
+        artifacts: [],
+        firstMission: null,
+        summary: ""
+      };
+    }
+
+    function asList(value) {
+      if (Array.isArray(value)) {
+        return value.map((item) => {
+          if (typeof item === "string") return item.trim();
+          if (item && typeof item === "object") return String(item.text || item.title || item.name || "").trim();
+          return "";
+        }).filter(Boolean);
+      }
+      if (typeof value === "string") {
+        return lines(value);
+      }
+      return [];
+    }
+
+    function normalizeTask(item, index) {
+      const text = typeof item === "string"
+        ? item.trim()
+        : String(item && (item.text || item.title || item.name || item.description) || "").trim();
+      const inferredType = classify(text);
+      const type = typeof item === "object" && item && item.type ? String(item.type) : inferredType;
+      const risk = typeof item === "object" && item && item.risk ? String(item.risk) : riskLabel(type, text);
+      const score = Number.isFinite(Number(item && item.score)) ? Number(item.score) : scoreTask(type, text);
+      return {
+        id: String(item && item.id || `T${String(index + 1).padStart(2, "0")}`),
+        text,
+        type,
+        risk,
+        score,
+        source: item && item.source ? String(item.source) : ""
+      };
+    }
+
+    function normalizeArtifact(item, index) {
+      if (Array.isArray(item)) {
+        return { name: String(item[0] || `artifact-${index + 1}`), desc: String(item[1] || ""), source: "" };
+      }
+      if (typeof item === "string") {
+        return { name: item, desc: "", source: "" };
+      }
+      return {
+        name: String(item && (item.name || item.path || item.file) || `artifact-${index + 1}`),
+        desc: String(item && (item.desc || item.description || item.summary) || ""),
+        source: String(item && item.source || "")
+      };
+    }
+
+    function normalizeBoardData(raw) {
+      const base = defaultBoardData();
+      if (!raw || typeof raw !== "object") {
+        return base;
+      }
+      const tasks = Array.isArray(raw.tasks)
+        ? raw.tasks
+        : Array.isArray(raw.automationCandidates)
+          ? raw.automationCandidates
+          : Array.isArray(raw.candidates)
+            ? raw.candidates
+            : asList(raw.works || raw.recurringWorks);
+      base.version = raw.version || 1;
+      base.updatedAt = raw.updatedAt || null;
+      base.sources = Array.isArray(raw.sources) ? raw.sources : [];
+      base.role = String(raw.role || raw.jobRole || "");
+      base.outcomes = asList(raw.outcomes || raw.responsibleOutcomes);
+      base.works = asList(raw.works || raw.recurringWorks);
+      base.inputs = asList(raw.inputs || raw.tools || raw.inputTools);
+      base.risks = asList(raw.risks || raw.constraints);
+      base.tasks = tasks.map(normalizeTask).filter((task) => task.text).sort((a, b) => b.score - a.score);
+      base.artifacts = (Array.isArray(raw.artifacts) ? raw.artifacts : []).map(normalizeArtifact);
+      base.firstMission = raw.firstMission || raw.mission
+        ? normalizeTask(raw.firstMission || raw.mission, 0)
+        : base.tasks[0] || null;
+      base.summary = String(raw.summary || "");
+      return base;
+    }
+
+    async function refreshBoardData() {
+      for (const source of boardSources) {
+        try {
+          const response = await fetch(`${source}${source.includes("?") ? "&" : "?"}_=${Date.now()}`, { cache: "no-store" });
+          if (!response.ok) {
+            continue;
+          }
+          boardData = normalizeBoardData(await response.json());
+          boardSource = source;
+          hasBoardData = true;
+          render();
+          return;
+        } catch (_) {}
+      }
+      boardData = defaultBoardData();
+      boardSource = location.protocol === "file:" ? "file://에서는 보드 데이터 자동 로드 제한" : "보드 데이터 대기";
+      hasBoardData = false;
+      render();
     }
 
     function readBoard() {
-      const state = {};
-      fields.forEach((id) => {
-        state[id] = document.getElementById(id).value.trim();
-      });
-      return state;
+      return {
+        role: boardData.role,
+        outcomes: boardData.outcomes.join("\n"),
+        works: boardData.works.join("\n"),
+        inputs: boardData.inputs.join("\n"),
+        risks: boardData.risks.join("\n")
+      };
     }
 
     function lines(value) {
@@ -1246,7 +1776,10 @@
     }
 
     function buildTasks() {
-      return lines(readBoard().works).map((text, index) => {
+      if (boardData.tasks.length) {
+        return boardData.tasks;
+      }
+      return boardData.works.map((text, index) => {
         const type = classify(text);
         return {
           id: `T${String(index + 1).padStart(2, "0")}`,
@@ -1258,25 +1791,53 @@
       }).sort((a, b) => b.score - a.score);
     }
 
-    function graphNodes(tasks) {
+    function graphIsCompact() {
+      return window.matchMedia("(max-width: 640px)").matches;
+    }
+
+    function graphNodes(tasks, compact = false) {
       const missionLabel = tasks[0] ? `M001 ${tasks[0].type}` : "M001 후보";
+      if (compact) {
+        return [
+          { id: "cli-install", x: 52, y: 62, labelX: 80, labelY: 62, metaY: 80, label: "CLI 설치", meta: setup.tool === "claude" ? "Claude Code" : "Codex" },
+          { id: "auth", x: 52, y: 126, labelX: 80, labelY: 126, metaY: 144, label: "인증", meta: "로그인" },
+          { id: "cli-handoff", x: 52, y: 190, labelX: 80, labelY: 190, metaY: 208, label: "CLI 전달", meta: "첫 질문" },
+          { id: "kit-install", x: 126, y: 258, labelX: 154, labelY: 258, metaY: 276, label: "지침 설치", meta: setup.tool === "claude" ? "CLAUDE.md" : "AGENTS.md" },
+          { id: "work-root", x: 126, y: 322, labelX: 154, labelY: 322, metaY: 340, label: "작업 폴더", meta: "내 컴퓨터/GitHub" },
+          { id: "github-auth", x: 126, y: 386, labelX: 154, labelY: 386, metaY: 404, label: "GitHub", meta: "로그인 확인" },
+          { id: "git-loop", x: 126, y: 450, labelX: 154, labelY: 450, metaY: 468, label: "Git 루프", meta: "저장/업로드" },
+          { id: "role-map", x: 228, y: 322, labelX: 252, labelY: 322, metaY: 340, label: "역할", meta: "목표" },
+          { id: "task-split", x: 228, y: 386, labelX: 252, labelY: 386, metaY: 404, label: "작업 분해", meta: `작업 ${tasks.length}개` },
+          { id: "mission-select", x: 126, y: 548, labelX: 154, labelY: 548, metaY: 566, label: tasks[0] ? "M001 후보" : missionLabel, meta: tasks[0] ? tasks[0].type : "미션 목록" }
+        ];
+      }
       return [
         { id: "cli-install", x: 90, y: 78, label: "CLI 설치", meta: setup.tool === "claude" ? "Claude Code" : "Codex" },
         { id: "auth", x: 220, y: 78, label: "인증", meta: "로그인" },
-        { id: "cli-handoff", x: 350, y: 78, label: "CLI 전달", meta: "prompt" },
+        { id: "cli-handoff", x: 350, y: 78, label: "CLI 전달", meta: "첫 질문" },
         { id: "kit-install", x: 350, y: 168, label: "지침 설치", meta: setup.tool === "claude" ? "CLAUDE.md" : "AGENTS.md" },
-        { id: "work-root", x: 490, y: 168, label: "작업 repo", meta: "local/remote" },
-        { id: "github-auth", x: 585, y: 168, label: "GitHub", meta: "gh auth" },
-        { id: "git-loop", x: 690, y: 168, label: "Git 루프", meta: "commit/push" },
-        { id: "role-map", x: 490, y: 252, label: "역할", meta: "outcome" },
-        { id: "task-split", x: 630, y: 252, label: "작업 분해", meta: `${tasks.length} tasks` },
-        { id: "mission-select", x: 800, y: 168, label: missionLabel, meta: "backlog" }
+        { id: "work-root", x: 490, y: 168, label: "작업 폴더", meta: "내 컴퓨터/GitHub" },
+        { id: "github-auth", x: 585, y: 168, label: "GitHub", meta: "로그인 확인" },
+        { id: "git-loop", x: 690, y: 168, label: "Git 루프", meta: "저장/업로드" },
+        { id: "role-map", x: 490, y: 252, label: "역할", meta: "목표" },
+        { id: "task-split", x: 630, y: 252, label: "작업 분해", meta: `작업 ${tasks.length}개` },
+        { id: "mission-select", x: 800, y: 168, label: missionLabel, meta: "미션 목록" }
       ];
+    }
+
+    function branchClass(branch) {
+      return {
+        "main/onboarding": "branch-main",
+        "setup/env": "branch-setup",
+        "work-map": "branch-work",
+        "mission": "branch-mission"
+      }[branch] || "branch-main";
     }
 
     function renderBranchGraph(tasks) {
       renderStatePanel();
-      const nodes = graphNodes(tasks);
+      const compact = graphIsCompact();
+      const nodes = graphNodes(tasks, compact);
       const lineActive = (...ids) => ids.some((id) => isLitStatus(stepStatus(id))) ? " active" : "";
       const nodeClass = (id) => {
         const status = stepStatus(id);
@@ -1287,9 +1848,34 @@
         return "";
       };
       const svg = document.getElementById("branch-graph");
-      svg.innerHTML = `
-        <title id="branch-graph-title">온보딩과 작업 생성 흐름을 보여주는 Git 브랜치 그래프</title>
-        <desc id="branch-graph-desc">설치, 환경 설정, 업무 입력, 작업 분해, 미션 선택 흐름이 브랜치처럼 갈라졌다가 첫 미션으로 합쳐진다.</desc>
+      svg.classList.toggle("is-compact", compact);
+      svg.setAttribute("viewBox", compact ? "0 0 360 620" : "0 0 980 330");
+      const nodeMarkup = nodes.map((node) => {
+        const cls = nodeClass(node.id);
+        const labelX = node.labelX ?? node.x - 44;
+        const labelY = node.labelY ?? node.y + 35;
+        const metaY = node.metaY ?? node.y + 53;
+        return `
+          <g>
+            <circle class="commit-node ${cls}" cx="${node.x}" cy="${node.y}" r="12" />
+            <text class="commit-label" x="${labelX}" y="${labelY}">${escapeSvg(node.label)}</text>
+            <text class="commit-meta" x="${labelX}" y="${metaY}">${escapeSvg(node.meta)}</text>
+          </g>`;
+      }).join("");
+      const compactMarkup = `
+        <path class="branch-line${lineActive("auth", "cli-handoff")}" d="M52 62 V190" />
+        <path class="branch-line merge${lineActive("kit-install")}" d="M52 190 C52 232 88 258 126 258" />
+        <path class="branch-line${lineActive("work-root", "github-auth", "git-loop")}" d="M126 258 V450" />
+        <path class="branch-line merge${lineActive("role-map")}" d="M126 322 C154 322 188 322 228 322" />
+        <path class="branch-line${lineActive("task-split")}" d="M228 322 V386" />
+        <path class="branch-line merge${lineActive("mission-select")}" d="M126 450 C126 494 126 516 126 548" />
+        <path class="branch-line merge${lineActive("mission-select")}" d="M228 386 C228 470 184 548 126 548" />
+        <text class="branch-name branch-main" x="18" y="34">main/onboarding</text>
+        <text class="branch-name branch-setup" x="92" y="236">setup/env</text>
+        <text class="branch-name branch-work" x="194" y="300">work-map</text>
+        <text class="branch-name branch-mission" x="92" y="526">mission</text>
+        ${nodeMarkup}`;
+      const wideMarkup = `
         <path class="branch-line${lineActive("auth", "cli-handoff")}" d="M90 78 H350" />
         <path class="branch-line merge${lineActive("kit-install")}" d="M350 78 C350 118 350 132 350 168" />
         <path class="branch-line${lineActive("work-root", "github-auth", "git-loop")}" d="M350 168 H690" />
@@ -1297,19 +1883,15 @@
         <path class="branch-line${lineActive("task-split")}" d="M490 252 H630" />
         <path class="branch-line merge${lineActive("mission-select")}" d="M690 168 C724 168 750 168 800 168" />
         <path class="branch-line merge${lineActive("mission-select")}" d="M630 252 C700 252 730 188 800 168" />
-        <text class="branch-name" x="28" y="82">main/onboarding</text>
-        <text class="branch-name" x="244" y="172">setup/env</text>
-        <text class="branch-name" x="386" y="256">work-map</text>
-        <text class="branch-name" x="708" y="146">mission</text>
-        ${nodes.map((node) => {
-          const cls = nodeClass(node.id);
-          return `
-            <g>
-              <circle class="commit-node ${cls}" cx="${node.x}" cy="${node.y}" r="12" />
-              <text class="commit-label" x="${node.x - 44}" y="${node.y + 35}">${escapeSvg(node.label)}</text>
-              <text class="commit-meta" x="${node.x - 44}" y="${node.y + 53}">${escapeSvg(node.meta)}</text>
-            </g>`;
-        }).join("")}
+        <text class="branch-name branch-main" x="28" y="82">main/onboarding</text>
+        <text class="branch-name branch-setup" x="244" y="172">setup/env</text>
+        <text class="branch-name branch-work" x="386" y="256">work-map</text>
+        <text class="branch-name branch-mission" x="708" y="146">mission</text>
+        ${nodeMarkup}`;
+      svg.innerHTML = `
+        <title id="branch-graph-title">온보딩과 작업 생성 흐름을 보여주는 Git 브랜치 그래프</title>
+        <desc id="branch-graph-desc">설치, 환경 설정, 업무 입력, 작업 분해, 미션 선택 흐름이 브랜치처럼 갈라졌다가 첫 미션으로 합쳐진다.</desc>
+        ${compact ? compactMarkup : wideMarkup}
       `;
       document.getElementById("graph-state").textContent = hasOnboardingState ? `${currentStep().label} · ${tasks.length} 후보` : `Hook 미설치 · ${tasks.length} 후보`;
       renderBranchTable(tasks);
@@ -1329,15 +1911,45 @@
         ["main/onboarding", "설치, 인증, CLI handoff", branchSignal(["cli-install", "auth", "cli-handoff"], "CLI로 넘길 준비 완료", "설치와 인증 상태 파일 대기")],
         ["setup/env", "지침 파일, skill, 작업 루트, GitHub 연결", branchSignal(["kit-install", "work-root", "github-auth", "git-loop"], "Git 루프 실습 완료", "repo와 local/remote 확인 필요")],
         ["work-map", "역할, 성과, 반복 업무를 작업 단위로 분해", branchSignal(["role-map", "task-split"], "작업 분해 완료", "업무 입력을 더 채우는 중")],
-        ["mission", "자동화 후보를 M001과 backlog로 정리", first ? `${first.id} ${first.type} 후보 생성` : "반복 업무 입력 후 생성"]
+        ["mission", "자동화 후보를 첫 미션과 대기 목록으로 정리", first ? `${first.id} ${first.type} 후보 생성` : "반복 업무 입력 후 생성"]
       ];
       document.getElementById("branch-table").innerHTML = rows.map(([branch, role, signal]) => `
         <tr>
-          <td><code>${branch}</code></td>
+          <td><code class="branch-chip ${branchClass(branch)}">${branch}</code></td>
           <td>${role}</td>
           <td>${escapeHtml(signal)}</td>
         </tr>
       `).join("");
+    }
+
+    function renderWorkProfile() {
+      document.getElementById("board-source").textContent = hasBoardData ? "보드 데이터 동기화" : "산출물 대기";
+      document.getElementById("board-source").className = hasBoardData ? "badge good" : "badge warn";
+      const sources = hasBoardData && boardData.sources.length
+        ? boardData.sources.map((source) => {
+          const path = typeof source === "string" ? source : source.path || source.file || source.name || "";
+          const label = typeof source === "string" ? "source" : source.kind || source.type || "source";
+          return `<span class="source-pill">${escapeHtml(label)} · ${escapeHtml(path)}</span>`;
+        }).join("")
+        : `<span class="source-pill">${escapeHtml(boardSource)}</span><span class="source-pill">${location.protocol === "file:" ? "로컬 HTTP로 열면 자동 동기화됩니다" : "CLI 산출물 생성 대기"}</span>`;
+      document.getElementById("board-source-strip").innerHTML = sources;
+
+      const list = (items) => items.length
+        ? `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
+        : `<p>CLI 인터뷰 완료 후 자동 표시됩니다.</p>`;
+
+      document.getElementById("work-profile").innerHTML = [
+        insight("내 역할", boardData.role ? `<p>${escapeHtml(boardData.role)}</p>` : "<p>CLI 인터뷰에서 역할을 정리하면 표시됩니다.</p>"),
+        insight("책임지는 결과", list(boardData.outcomes)),
+        insight("반복 업무", list(boardData.works)),
+        insight("입력/도구", list(boardData.inputs)),
+        insight("위험/제약", list(boardData.risks)),
+        insight("원본 기준", `<p>${hasBoardData ? "Markdown 산출물이 원본이고 board-data.json은 표시용 요약입니다." : "work-map.md, mission-backlog.md, automation-brief.md 생성 대기 중입니다."}</p>`)
+      ].join("");
+    }
+
+    function insight(title, body) {
+      return `<article class="insight"><strong>${title}</strong>${body}</article>`;
     }
 
     function renderWorkMap(tasks) {
@@ -1345,7 +1957,7 @@
       const outcomes = lines(state.outcomes);
       const map = document.getElementById("work-map");
       if (!state.role && !outcomes.length && !tasks.length) {
-        map.innerHTML = `<div class="empty">왼쪽 입력란에 역할, 책임지는 결과, 반복 업무를 적으면 작업 지도가 생성됩니다.</div>`;
+        map.innerHTML = `<div class="empty">CLI가 work-map.md를 만들고 node .onboarding/update-board.mjs를 실행하면 작업 지도가 자동 표시됩니다.</div>`;
         return;
       }
       const workItems = tasks.slice(0, 4).map((task) => `<li>${escapeHtml(task.text)}</li>`).join("");
@@ -1367,7 +1979,7 @@
       document.getElementById("mission-count").textContent = `후보 ${tasks.length}개`;
       const grid = document.getElementById("task-grid");
       if (!tasks.length) {
-        grid.innerHTML = `<div class="empty">반복 업무를 한 줄씩 입력하면 자동화 유형, 위험도, 추천 점수가 계산됩니다.</div>`;
+        grid.innerHTML = `<div class="empty">CLI가 mission-backlog.md 또는 automation-brief.md를 만들고 board-data.json을 갱신하면 자동화 후보가 표시됩니다.</div>`;
         return;
       }
       grid.innerHTML = tasks.map((task, index) => `
@@ -1385,38 +1997,39 @@
 
     function renderArtifacts(tasks) {
       const state = readBoard();
-      const first = tasks[0];
+      const first = boardData.firstMission || tasks[0];
       document.getElementById("first-mission").textContent = first ? `M001: ${first.type}` : "M001 대기";
-      const artifacts = [
-        ["environment-state.md", setup.os === "windows" ? "PowerShell 기준 설치와 GitHub 연결 상태 기록" : `${setup.shell} 기준 설치와 GitHub 연결 상태 기록`],
-        ["work-map.md", state.role ? `${state.role} 역할에서 성과와 반복 업무를 연결` : "역할 입력 후 생성"],
-        ["ontology-seeds.md", "역할, 업무, 입력, 산출물, 규칙 후보 추출"],
-        ["mission-backlog.md", first ? `${tasks.length}개 후보 중 ${first.id}를 첫 미션으로 추천` : "반복 업무 입력 후 생성"],
-        ["missions/M001-<slug>.md", first ? `${first.text} 범위, 입력, 출력, 검증 방법 정의` : "첫 후보 선택 후 생성"]
+      const artifacts = boardData.artifacts.length ? boardData.artifacts : [
+        { name: "environment-state.md", desc: setup.os === "windows" ? "PowerShell 기준 설치와 GitHub 연결 상태 기록" : `${setup.shell} 기준 설치와 GitHub 연결 상태 기록` },
+        { name: "work-map.md", desc: state.role ? `${state.role} 역할에서 성과와 반복 업무를 연결` : "역할 정리 후 생성" },
+        { name: "ontology-seeds.md", desc: "역할, 업무, 입력, 산출물, 규칙 후보 추출" },
+        { name: "mission-backlog.md", desc: first ? `${tasks.length}개 후보 중 ${first.id || "M001"}를 첫 미션으로 추천` : "자동화 후보 선택 후 생성" },
+        { name: "missions/M001-<slug>.md", desc: first && first.text ? `${first.text} 범위, 입력, 출력, 검증 방법 정의` : "첫 후보 선택 후 생성" }
       ];
-      document.getElementById("artifact-grid").innerHTML = artifacts.map(([name, desc]) => `
+      document.getElementById("artifact-grid").innerHTML = artifacts.map(({ name, desc, source }) => `
         <article class="artifact">
-          <strong>${name}</strong>
+          <strong>${escapeHtml(name)}</strong>
           <p>${escapeHtml(desc)}</p>
+          ${source ? `<p class="muted">${escapeHtml(source)}</p>` : ""}
         </article>
       `).join("");
     }
 
     function renderCliBrief(tasks) {
       const state = readBoard();
-      const first = tasks[0];
+      const first = boardData.firstMission || tasks[0];
       const toolInstruction = setup.tool === "claude"
         ? "work-mission-discovery skill을 사용해주세요."
         : "$work-mission-discovery 를 사용해주세요.";
       document.getElementById("cli-brief").textContent = `${toolInstruction}
 
-현재 onboarding brief-board에 입력된 내용을 바탕으로 온보딩을 이어가주세요.
+현재 onboarding 산출물과 brief-board 현황을 바탕으로 온보딩을 이어가주세요.
 
 [환경]
 - 도구: ${setup.tool === "claude" ? "Claude Code" : "Codex"}
 - OS/shell: ${setup.os === "windows" ? "Windows PowerShell" : `${setup.os} / ${setup.shell}`}
 
-[업무 입력]
+[업무 현황]
 - 역할: ${state.role || "(미입력)"}
 - 책임지는 결과:
 ${lines(state.outcomes).map((item) => `  - ${item}`).join("\n") || "  - (미입력)"}
@@ -1431,9 +2044,9 @@ ${tasks.map((task) => `- ${task.id}: ${task.text} / 유형 ${task.type} / 위험
 [다음 요청]
 1. 현재 repo의 지침 파일과 work-mission-discovery skill 설치 상태를 확인해주세요.
 2. .onboarding/update-state.mjs가 있으면 각 단계 완료 후 상태 hook을 갱신해주세요.
-3. GitHub auth, 작업 루트, local/remote, commit/push/pull 상태를 environment-state.md에 정리해주세요.
-4. 위 업무 입력을 검토하고 부족한 부분을 1-3개 질문으로 보완해주세요.
-5. 첫 미션 후보는 ${first ? `${first.id} "${first.text}"` : "반복 업무 입력 후"}로 두고, automation-brief.md와 mission-backlog.md 초안을 만들 수 있게 정리해주세요.`;
+3. environment-state.md, work-map.md, mission-backlog.md, automation-brief.md를 원본으로 유지해주세요.
+4. 산출물을 갱신한 뒤 node .onboarding/update-board.mjs를 실행해 board-data.json을 갱신해주세요.
+5. 첫 미션 후보는 ${first ? `${first.id || "M001"} "${first.text || first.name || first.type}"` : "반복 업무 정리 후"}로 두고, 부족한 부분은 1-3개 질문으로 보완해주세요.`;
     }
 
     function renderInstallCommand() {
@@ -1444,8 +2057,8 @@ ${tasks.map((task) => `- ${task.id}: ${task.text} / 유형 ${task.type} / 위험
         : posixInstall(onboardingPath, codex);
       document.getElementById("kit-install-command").textContent = command;
       document.getElementById("shell-policy").textContent = setup.os === "windows"
-        ? "Windows에서는 설치와 프로젝트 파일 복사를 PowerShell 기준으로 처리합니다. bash/zsh 토글은 사용하지 않습니다."
-        : "macOS/Linux/WSL에서는 설치 스크립트는 동일하고, PATH 반영과 shell refresh만 bash/zsh에 맞춥니다.";
+        ? "Windows에서는 PowerShell에 붙여넣을 수 있는 형태로 보여줍니다. 보통은 CLI가 작업 폴더를 확인한 뒤 자동으로 처리합니다."
+        : "macOS/Linux/WSL에서는 현재 shell에 붙여넣을 수 있는 형태로 보여줍니다. 보통은 CLI가 작업 폴더를 확인한 뒤 자동으로 처리합니다.";
       document.getElementById("kit-install-label").textContent = codex ? "Codex 프로젝트 설치" : "Claude Code 프로젝트 설치";
     }
 
@@ -1500,6 +2113,7 @@ if (Get-Command node -ErrorAction SilentlyContinue) { node .onboarding\\update-s
     function render() {
       const tasks = buildTasks();
       renderBranchGraph(tasks);
+      renderWorkProfile();
       renderWorkMap(tasks);
       renderTasks(tasks);
       renderArtifacts(tasks);
@@ -1547,27 +2161,40 @@ if (Get-Command node -ErrorAction SilentlyContinue) { node .onboarding\\update-s
       });
     });
 
-    document.getElementById("fill-sample").addEventListener("click", () => {
-      document.getElementById("role").value = "B2B SaaS 마케팅 리드";
-      document.getElementById("outcomes").value = "신규 리드 품질 향상\n세일즈팀이 바로 쓸 수 있는 고객 맥락 제공";
-      document.getElementById("works").value = "매주 웨비나 신청자 정보를 정리하고 세그먼트 라벨 붙이기\n세일즈 콜 노트를 읽고 CRM 업데이트 항목 정리\n신규 캠페인 결과를 요약해 다음 액션 초안 작성";
-      document.getElementById("inputs").value = "Google Sheets, CRM export, 세일즈 콜 노트, 캠페인 리포트";
-      document.getElementById("risks").value = "고객 데이터는 외부로 보내면 안 됨. 최종 CRM 업데이트는 사람이 검토해야 함.";
-      saveState();
-      render();
+    const installModal = document.getElementById("install-modal");
+    document.getElementById("open-install-modal").addEventListener("click", () => {
+      if (typeof installModal.showModal === "function") {
+        installModal.showModal();
+      } else {
+        installModal.setAttribute("open", "");
+      }
     });
 
-    document.getElementById("reset-board").addEventListener("click", () => {
-      localStorage.removeItem(storeKey);
-      fields.forEach((id) => {
-        document.getElementById(id).value = "";
-      });
-      render();
+    document.getElementById("close-install-modal").addEventListener("click", () => {
+      installModal.close();
+    });
+
+    installModal.addEventListener("click", (event) => {
+      if (event.target === installModal) {
+        installModal.close();
+      }
+    });
+
+    document.getElementById("refresh-board").addEventListener("click", () => {
+      refreshOnboardingState();
+      refreshBoardData();
     });
 
     render();
     refreshOnboardingState();
+    refreshBoardData();
     window.setInterval(refreshOnboardingState, stateRefreshMs);
+    window.setInterval(refreshBoardData, boardRefreshMs);
+    let resizeRenderTimer;
+    window.addEventListener("resize", () => {
+      window.clearTimeout(resizeRenderTimer);
+      resizeRenderTimer = window.setTimeout(render, 120);
+    });
   </script>
 </body>
 </html>
