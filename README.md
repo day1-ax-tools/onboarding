@@ -57,7 +57,7 @@
 
 ## Stage -2: Web Entry
 
-웹페이지는 진입점 역할만 한다. 초보자는 repo를 미리 clone하지 않는다. 먼저 hosted web entry를 열고, 자신의 환경을 고른 뒤 Codex 또는 Claude Code 설치와 인증을 진행한다. 설치 자체도 이후 다른 상황에서 반복할 학습 경험이므로 온보딩 키트 없이 먼저 진행한다. CLI가 실행되는 상태가 된 뒤 bootstrap 명령으로 onboarding repo를 로컬에 받고, 그 다음 CLI 안에서 지침 파일, skill, 상태 hook, 온보딩 보드를 대상 repo에 설치한다.
+웹페이지는 진입점 역할만 한다. 초보자는 repo를 미리 clone하지 않는다. 먼저 hosted web entry를 열고, 자신의 환경을 고른 뒤 Codex 또는 Claude Code 설치, PATH 반영, 설치 확인을 진행한다. 설치 자체도 이후 다른 상황에서 반복할 학습 경험이므로 온보딩 키트 없이 먼저 진행한다. CLI 명령이 실행 가능한 것을 확인한 뒤 같은 터미널에서 bootstrap 명령으로 onboarding repo를 로컬에 받고, 그 다음 CLI를 실행해 인증한 뒤 지침 파일, skill, 상태 hook, 온보딩 보드를 대상 repo에 설치한다.
 
 권장 hosted entry:
 
@@ -78,7 +78,7 @@ bootstrap/start.sh
 bootstrap/start.ps1
 ```
 
-CLI 설치와 인증이 끝난 뒤 실행할 bootstrap 명령:
+CLI 설치 확인 뒤, 첫 실행과 로그인 전에 실행할 bootstrap 명령:
 
 ```bash
 # macOS / Linux / WSL
@@ -96,13 +96,14 @@ $script = irm https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bo
 - Codex 또는 Claude Code 선택
 - 운영체제별 설치 명령 안내
 - 설치 확인 명령 안내
+- 설치 확인 뒤 실행할 bootstrap 명령 제공
 - 로그인 시작 명령 안내
-- CLI 설치와 인증 뒤 실행할 bootstrap 명령 제공
 - CLI에 붙여넣을 handoff prompt 제공
 
 설치 처리 기준:
 
-- CLI 설치, PATH 반영, 설치 확인, 로그인은 bootstrap보다 먼저 진행한다.
+- CLI 설치, PATH 반영, 설치 확인은 bootstrap보다 먼저 진행한다.
+- bootstrap을 실행한 뒤 CLI 첫 실행과 로그인을 진행한다.
 - bootstrap은 `~/Documents/AI-Work/day1-ax-tools/onboarding` 또는 `Documents\AI-Work\day1-ax-tools\onboarding`을 기본 위치로 쓴다.
 - Git이 있으면 `git clone` 또는 `git pull --ff-only`를 사용한다.
 - Git이 없으면 GitHub zip을 다운로드해서 같은 위치에 둔다.

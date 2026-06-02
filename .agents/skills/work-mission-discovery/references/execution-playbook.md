@@ -16,11 +16,11 @@ bootstrap/start.sh
 bootstrap/start.ps1
 ```
 
-For first-time users, start from the hosted web entry rather than asking them to clone the repo. The user selects OS and AI CLI, then installs and authenticates the selected CLI first. CLI installation is itself part of the learning experience and must not appear to require the onboarding kit. After the selected CLI runs, the user runs the bootstrap command to obtain the onboarding repo locally.
+For first-time users, start from the hosted web entry rather than asking them to clone the repo. The user selects OS and AI CLI, then installs the selected CLI, refreshes PATH, and verifies the command first. CLI installation is itself part of the learning experience and must not appear to require the onboarding kit. After command verification, the user runs the bootstrap command in the same terminal to obtain the onboarding repo locally, then launches and authenticates the selected CLI.
 
-Use `web/index.html` for CLI installation, PATH refresh, verification, login, post-install bootstrap, and the first handoff prompt. Do not send the user to the onboarding board until the target repo has `.onboarding/state.json`, `.onboarding/update-state.mjs`, and `.onboarding/brief-board.html`. After project installation, use `.onboarding/brief-board.html` inside the target repo as the state-backed board. The board does not create repos, change files, or call GitHub directly; the AI CLI does that after the user hands off the summary.
+Use `web/index.html` for CLI installation, PATH refresh, verification, post-verify bootstrap, login, and the first handoff prompt. Do not send the user to the onboarding board until the target repo has `.onboarding/state.json`, `.onboarding/update-state.mjs`, and `.onboarding/brief-board.html`. After project installation, use `.onboarding/brief-board.html` inside the target repo as the state-backed board. The board does not create repos, change files, or call GitHub directly; the AI CLI does that after the user hands off the summary.
 
-Post-install bootstrap commands:
+Post-verification bootstrap commands:
 
 ```bash
 # macOS / Linux / WSL
