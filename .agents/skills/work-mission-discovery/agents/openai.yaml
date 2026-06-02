@@ -1,0 +1,4 @@
+interface:
+  display_name: "Work Mission Discovery"
+  short_description: "Map work into automation missions"
+  default_prompt: "Use $work-mission-discovery to map my role and work into automation-ready missions."
