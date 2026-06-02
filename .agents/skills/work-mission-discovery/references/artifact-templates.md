@@ -2,6 +2,36 @@
 
 Use these templates when creating work discovery artifacts. Keep them concise and current-state oriented.
 
+## interview-state.md
+
+```md
+# Interview State
+
+## Current Phase
+
+## Last Confirmed Summary
+
+## Decisions
+
+## Open Questions
+
+## Next Question
+
+## Completion Checklist
+
+| Condition | Status | Evidence |
+| --- | --- | --- |
+| Role and responsibility summarized | Todo | |
+| Outcomes defined | Todo | |
+| Work areas mapped | Todo | |
+| One work area decomposed | Todo | |
+| Candidate tasks classified | Todo | |
+| Candidates scored | Todo | |
+| First mission accepted | Todo | |
+| Scope recorded | Todo | |
+| Verification method defined | Todo | |
+```
+
 ## automation-brief.md
 
 ```md

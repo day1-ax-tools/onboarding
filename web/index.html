@@ -1,0 +1,1231 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI CLI Onboarding Entry</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #ffffff;
+      --ink: #212121;
+      --body: #212121;
+      --muted: #6e6e80;
+      --surface: #ffffff;
+      --surface-2: #f7f7f8;
+      --surface-3: #ececf1;
+      --border: #e5e5e5;
+      --border-soft: #e5e5e5;
+      --accent: #10a37f;
+      --accent-active: #0e9270;
+      --accent-soft: #f7f7f8;
+      --accent-ink: #ffffff;
+      --font-body: "Sohne", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      --font-display: "Sohne", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      --font-code: ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 16px;
+      --shadow-card: none;
+      --button-bg: #ffffff;
+      --button-ink: #212121;
+      --button-border: 1px solid #e5e5e5;
+      --button-active-bg: #212121;
+      --button-active-ink: #ffffff;
+      --button-active-border: #212121;
+      --header-bg: transparent;
+      --header-border: 0;
+      --code-window-bg: #343541;
+      --code-title-bg: #2a2a2a;
+      --code-ink: #ececf1;
+      --code-muted: #8e8ea0;
+      --code-border: #444654;
+      --code-prompt: #10a37f;
+    }
+
+    body[data-tool="claude"] {
+      --bg: #faf9f5;
+      --ink: #141413;
+      --body: #3d3d3a;
+      --muted: #6c6a64;
+      --surface: #faf9f5;
+      --surface-2: #f5f0e8;
+      --surface-3: #efe9de;
+      --border: #e6dfd8;
+      --border-soft: #ebe6df;
+      --accent: #cc785c;
+      --accent-active: #a9583e;
+      --accent-soft: #efe9de;
+      --accent-ink: #ffffff;
+      --font-body: StyreneB, Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      --font-display: Copernicus, "Tiempos Headline", Georgia, serif;
+      --font-code: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+      --radius-sm: 8px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --shadow-card: none;
+      --button-bg: #faf9f5;
+      --button-ink: #141413;
+      --button-border: 1px solid #e6dfd8;
+      --button-active-bg: #cc785c;
+      --button-active-ink: #ffffff;
+      --button-active-border: #cc785c;
+      --header-bg: #f5f0e8;
+      --header-border: 1px solid #e6dfd8;
+      --code-window-bg: #181715;
+      --code-title-bg: #252320;
+      --code-ink: #faf9f5;
+      --code-muted: #a09d96;
+      --code-border: #37332e;
+      --code-prompt: #cc785c;
+    }
+
+    body[data-os="windows"] {
+      --code-window-bg: #012456;
+      --code-title-bg: #0b3d91;
+      --code-ink: #f5fbff;
+      --code-muted: #bcd7ff;
+      --code-border: #2f69bf;
+      --code-prompt: #f3d34a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      line-height: 1.6;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
+
+    header {
+      display: grid;
+      gap: 18px;
+      padding: 32px;
+      background: var(--header-bg);
+      border: var(--header-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+    }
+
+    .hero-row {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .terminal-icon {
+      position: relative;
+      flex: 0 0 72px;
+      width: 72px;
+      height: 72px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--surface-2);
+    }
+
+    .terminal-icon::before {
+      content: ">";
+      position: absolute;
+      left: 16px;
+      bottom: 14px;
+      color: var(--accent);
+      font: 600 28px/1 var(--font-code);
+    }
+
+    .terminal-icon::after {
+      content: "";
+      position: absolute;
+      left: 38px;
+      bottom: 18px;
+      width: 20px;
+      height: 3px;
+      border-radius: 9999px;
+      background: var(--ink);
+    }
+
+    body[data-tool="claude"] .terminal-icon {
+      background: #181715;
+      border-color: #252320;
+    }
+
+    body[data-tool="claude"] .terminal-icon::after {
+      background: #faf9f5;
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    body[data-tool="codex"] .eyebrow {
+      color: var(--muted);
+    }
+
+    body[data-tool="claude"] .eyebrow {
+      color: var(--accent);
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 760px;
+      font-family: var(--font-display);
+      font-size: clamp(40px, 5vw, 58px);
+      font-weight: 400;
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      word-break: keep-all;
+    }
+
+    body[data-tool="codex"] h1 {
+      font-family: var(--font-body);
+      font-weight: 600;
+      line-height: 1.15;
+      letter-spacing: -0.01em;
+    }
+
+    .lead {
+      max-width: 760px;
+      margin: 0;
+      color: var(--body);
+      font-size: 18px;
+      line-height: 1.6;
+      word-break: keep-all;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+      padding-top: 20px;
+    }
+
+    aside {
+      position: sticky;
+      top: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    section {
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    section:first-child {
+      padding-top: 0;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: -0.005em;
+      word-break: keep-all;
+    }
+
+    body[data-tool="claude"] h2 {
+      font-family: var(--font-display);
+      font-size: 30px;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+    }
+
+    p {
+      margin: 0 0 12px;
+      color: var(--body);
+      word-break: keep-all;
+    }
+
+    strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .panel,
+    .choice,
+    .step {
+      background: var(--surface);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+    }
+
+    body[data-tool="claude"] .panel,
+    body[data-tool="claude"] .choice,
+    body[data-tool="claude"] .step {
+      background: var(--surface-2);
+    }
+
+    .panel,
+    .choice {
+      padding: 16px;
+    }
+
+    .choice {
+      display: grid;
+      gap: 12px;
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .segmented.os {
+      grid-template-columns: 1fr;
+    }
+
+    button,
+    a.button {
+      min-height: 40px;
+      border: var(--button-border);
+      background: var(--button-bg);
+      color: var(--button-ink);
+      border-radius: var(--radius-md);
+      padding: 10px 16px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.2;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      word-break: keep-all;
+    }
+
+    button:hover,
+    a.button:hover {
+      background: var(--surface-2);
+      border-color: var(--accent);
+    }
+
+    button:focus-visible,
+    a.button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    button.active[data-tool],
+    button.active[data-os],
+    button.active[data-shell] {
+      background: var(--button-active-bg);
+      border-color: var(--button-active-border);
+      color: var(--button-active-ink);
+    }
+
+    #primary-doc {
+      width: fit-content;
+      background: var(--ink);
+      border-color: var(--ink);
+      color: #ffffff;
+    }
+
+    body[data-tool="claude"] #primary-doc {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .step {
+      margin-top: 14px;
+      overflow: hidden;
+    }
+
+    .step-head {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+
+    body[data-tool="claude"] .step-head {
+      background: var(--surface-3);
+    }
+
+    .num {
+      display: inline-grid;
+      place-items: center;
+      flex: 0 0 28px;
+      width: 28px;
+      height: 28px;
+      border-radius: 9999px;
+      background: var(--accent-soft);
+      color: var(--accent-active);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    body[data-tool="codex"] .num {
+      border: 1px solid var(--border);
+      color: var(--ink);
+    }
+
+    body[data-tool="claude"] .num {
+      background: var(--accent);
+      color: var(--accent-ink);
+    }
+
+    .step-body {
+      padding: 16px;
+    }
+
+    .handoff {
+      border-left: 4px solid var(--accent);
+      padding-left: 14px;
+    }
+
+    .status {
+      min-height: 20px;
+      color: var(--accent-active);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .code-window {
+      margin: 12px 0 8px;
+      overflow: hidden;
+      border: 1px solid var(--code-border);
+      border-radius: 14px;
+      background: var(--code-window-bg);
+      color: var(--code-ink);
+    }
+
+    body[data-os="windows"] .code-window {
+      border-radius: 6px;
+      box-shadow: 0 10px 24px rgba(1, 36, 86, 0.18);
+    }
+
+    .code-titlebar {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 44px;
+      padding: 8px 10px;
+      background: var(--code-title-bg);
+      border-bottom: 1px solid var(--code-border);
+    }
+
+    .window-controls {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .window-controls span {
+      width: 10px;
+      height: 10px;
+      border-radius: 9999px;
+      background: #6e6e6e;
+    }
+
+    body[data-os="mac"] .window-controls span:nth-child(1) {
+      background: #ff5f57;
+    }
+
+    body[data-os="mac"] .window-controls span:nth-child(2) {
+      background: #ffbd2e;
+    }
+
+    body[data-os="mac"] .window-controls span:nth-child(3) {
+      background: #28c840;
+    }
+
+    body[data-os="windows"] .window-controls span {
+      position: relative;
+      display: inline-grid;
+      place-items: center;
+      width: 24px;
+      height: 22px;
+      border: 0;
+      border-radius: 2px;
+      background: transparent;
+    }
+
+    body[data-os="windows"] .window-controls span:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    body[data-os="windows"] .window-controls span:nth-child(3):hover {
+      background: #c42b1c;
+    }
+
+    body[data-os="windows"] .window-controls span::before,
+    body[data-os="windows"] .window-controls span::after {
+      content: "";
+      position: absolute;
+      background: rgba(255, 255, 255, 0.86);
+    }
+
+    body[data-os="windows"] .window-controls span:nth-child(1)::before {
+      width: 10px;
+      height: 1px;
+      bottom: 6px;
+    }
+
+    body[data-os="windows"] .window-controls span:nth-child(2)::before {
+      width: 9px;
+      height: 7px;
+      border: 1px solid rgba(255, 255, 255, 0.86);
+      background: transparent;
+    }
+
+    body[data-os="windows"] .window-controls span:nth-child(3)::before,
+    body[data-os="windows"] .window-controls span:nth-child(3)::after {
+      width: 11px;
+      height: 1px;
+    }
+
+    body[data-os="windows"] .window-controls span:nth-child(3)::before {
+      transform: rotate(45deg);
+    }
+
+    body[data-os="windows"] .window-controls span:nth-child(3)::after {
+      transform: rotate(-45deg);
+    }
+
+    body[data-os="windows"] .code-titlebar {
+      grid-template-columns: minmax(0, 1fr) auto auto;
+    }
+
+    body[data-os="windows"] .window-controls {
+      grid-column: 3;
+      justify-self: end;
+      order: 3;
+    }
+
+    body[data-os="windows"] .code-meta {
+      grid-column: 1;
+      order: 1;
+    }
+
+    body[data-os="windows"] .shell-tabs {
+      grid-column: 2;
+      order: 2;
+    }
+
+    .code-meta {
+      display: flex;
+      min-width: 0;
+      gap: 8px;
+      align-items: center;
+      color: var(--code-muted);
+      font: 500 12px/1.4 var(--font-body);
+    }
+
+    .code-window-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .code-shell-name {
+      color: var(--code-ink);
+      font-family: var(--font-code);
+    }
+
+    .shell-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 3px;
+      border: 1px solid var(--code-border);
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .shell-tabs button {
+      min-height: 28px;
+      border: 0;
+      border-radius: 9999px;
+      background: transparent;
+      color: var(--code-muted);
+      padding: 5px 10px;
+      font: 500 12px/1 var(--font-body);
+    }
+
+    .shell-tabs button:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--code-ink);
+    }
+
+    .shell-tabs button.active[data-shell] {
+      background: var(--code-ink);
+      color: var(--code-window-bg);
+    }
+
+    .code-body {
+      padding: 16px;
+    }
+
+    .code-prompt {
+      color: var(--code-prompt);
+      white-space: nowrap;
+    }
+
+    pre {
+      margin: 0;
+      min-width: 0;
+      overflow-x: auto;
+      color: var(--code-ink);
+      font: 400 14px/1.55 var(--font-code);
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    code {
+      font-family: inherit;
+    }
+
+    .ai-cli-window {
+      margin-top: 14px;
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      background: #212121;
+      border: 1px solid #343541;
+      color: #ececf1;
+    }
+
+    body[data-tool="claude"] .ai-cli-window {
+      background: #181715;
+      border-color: #252320;
+      color: #faf9f5;
+    }
+
+    .ai-cli-top {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      min-height: 48px;
+      padding: 10px 12px 10px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    body[data-tool="claude"] .ai-cli-top {
+      background: #252320;
+    }
+
+    .ai-cli-brand {
+      display: inline-flex;
+      min-width: 0;
+      gap: 8px;
+      align-items: center;
+      color: currentColor;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .ai-cli-mark {
+      display: inline-grid;
+      place-items: center;
+      flex: 0 0 24px;
+      width: 24px;
+      height: 24px;
+      border-radius: 9999px;
+      background: #10a37f;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    body[data-tool="claude"] .ai-cli-mark {
+      background: var(--accent);
+    }
+
+    .ai-cli-body {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .ai-cli-hint {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.66);
+      font-size: 13px;
+    }
+
+    .ai-cli-input {
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 14px;
+    }
+
+    body[data-tool="claude"] .ai-cli-input {
+      background: #1f1e1b;
+    }
+
+    .ai-cli-input pre {
+      color: currentColor;
+      font: 400 14px/1.55 var(--font-code);
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    .copy-action-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    .copy-action-row button {
+      min-height: 34px;
+      border-radius: 9999px;
+      padding: 7px 14px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 820px) {
+      main {
+        width: min(100% - 24px, 720px);
+        padding-top: 18px;
+      }
+
+      header {
+        padding: 24px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: static;
+      }
+    }
+
+    @media (max-width: 560px) {
+      h1 {
+        font-size: clamp(34px, 10vw, 44px);
+      }
+
+      .hero-row {
+        align-items: flex-start;
+      }
+
+      .terminal-icon {
+        flex-basis: 56px;
+        width: 56px;
+        height: 56px;
+      }
+
+      .terminal-icon::before {
+        left: 11px;
+        bottom: 10px;
+        font-size: 24px;
+      }
+
+      .terminal-icon::after {
+        left: 30px;
+        bottom: 13px;
+        width: 16px;
+      }
+
+      .code-titlebar {
+        grid-template-columns: auto minmax(0, 1fr);
+      }
+
+      .shell-tabs {
+        grid-column: 1 / -1;
+      }
+
+      .shell-tabs {
+        width: 100%;
+      }
+
+      .shell-tabs button {
+        flex: 1;
+      }
+
+      .copy-action-row button {
+        width: 100%;
+      }
+
+    }
+  </style>
+</head>
+<body data-tool="codex" data-os="mac">
+  <main>
+    <header>
+      <div class="hero-row">
+        <div class="terminal-icon" aria-hidden="true"></div>
+        <div>
+          <div class="eyebrow">AI CLI Onboarding</div>
+          <h1>먼저 CLI만 설치합니다.</h1>
+        </div>
+      </div>
+      <p class="lead">이 페이지의 역할은 Codex 또는 Claude Code가 터미널에서 실행되는 상태까지 안내하는 것입니다. 설치가 끝나면 이후 온보딩은 CLI 안에서 이어집니다.</p>
+    </header>
+
+    <div class="layout">
+      <aside>
+        <div class="choice" aria-label="도구 선택">
+          <strong>1. 도구 선택</strong>
+          <div class="segmented">
+            <button class="active" data-tool="codex" type="button">Codex</button>
+            <button data-tool="claude" type="button">Claude Code</button>
+          </div>
+        </div>
+
+        <div class="choice" aria-label="운영체제 선택">
+          <strong>2. 환경 선택</strong>
+          <div class="segmented os">
+            <button class="active" data-os="mac" type="button">macOS / Linux / WSL</button>
+            <button data-os="windows" type="button">Windows PowerShell</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <strong>이 페이지가 하지 않는 일</strong>
+          <p class="muted">업무 인터뷰, skill 설치, GitHub repo 생성, 미션 백로그 작성은 CLI에서 진행합니다.</p>
+        </div>
+      </aside>
+
+      <div>
+        <section>
+          <h2>설치 전 확인</h2>
+          <p>터미널을 열고, 선택한 도구의 설치 명령을 실행합니다. 회사 계정이나 조직 정책이 있다면 해당 계정으로 로그인할 준비를 해주세요.</p>
+          <div class="links">
+            <a id="primary-doc" class="button" href="https://developers.openai.com/codex/quickstart" target="_blank" rel="noreferrer">Codex 공식 설치 문서 열기</a>
+          </div>
+        </section>
+
+        <section>
+          <h2>설치</h2>
+
+          <div class="step">
+            <div class="step-head">
+              <span class="num">1</span>
+              <strong id="install-title">Codex CLI 설치</strong>
+            </div>
+            <div class="step-body">
+              <p id="install-note" class="muted">macOS, Linux, WSL에서는 standalone installer를 사용합니다.</p>
+              <div class="code-window" data-code-window="install">
+                <div class="code-titlebar">
+                  <div class="window-controls" aria-hidden="true"><span></span><span></span><span></span></div>
+                  <div class="code-meta"><span class="code-window-title" data-window-title="install">Terminal</span><span class="code-shell-name" data-shell-name="install">bash</span></div>
+                  <div class="shell-tabs" aria-label="쉘 선택">
+                    <button class="active" data-shell="bash" type="button">bash</button>
+                    <button data-shell="zsh" type="button">zsh</button>
+                  </div>
+                </div>
+                <div class="code-body">
+                  <pre><span class="code-prompt" data-prompt="install">$</span> <code id="install-command">curl -fsSL https://chatgpt.com/codex/install.sh | sh</code></pre>
+                </div>
+              </div>
+              <div class="copy-action-row">
+                <button type="button" data-copy="install-command">복사</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-head">
+              <span class="num">2</span>
+              <strong>설치 확인</strong>
+            </div>
+            <div class="step-body">
+              <div class="code-window" data-code-window="verify">
+                <div class="code-titlebar">
+                  <div class="window-controls" aria-hidden="true"><span></span><span></span><span></span></div>
+                  <div class="code-meta"><span class="code-window-title" data-window-title="verify">Terminal</span><span class="code-shell-name" data-shell-name="verify">bash</span></div>
+                  <div class="shell-tabs" aria-label="쉘 선택">
+                    <button class="active" data-shell="bash" type="button">bash</button>
+                    <button data-shell="zsh" type="button">zsh</button>
+                  </div>
+                </div>
+                <div class="code-body">
+                  <pre><span class="code-prompt" data-prompt="verify">$</span> <code id="verify-command">codex --version</code></pre>
+                </div>
+              </div>
+              <div class="copy-action-row">
+                <button type="button" data-copy="verify-command">복사</button>
+              </div>
+              <p class="muted">버전 번호가 출력되면 설치가 완료된 것입니다.</p>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-head">
+              <span class="num">3</span>
+              <strong id="login-title">Codex 실행 및 로그인</strong>
+            </div>
+            <div class="step-body">
+              <div class="code-window" data-code-window="login">
+                <div class="code-titlebar">
+                  <div class="window-controls" aria-hidden="true"><span></span><span></span><span></span></div>
+                  <div class="code-meta"><span class="code-window-title" data-window-title="login">Terminal</span><span class="code-shell-name" data-shell-name="login">bash</span></div>
+                  <div class="shell-tabs" aria-label="쉘 선택">
+                    <button class="active" data-shell="bash" type="button">bash</button>
+                    <button data-shell="zsh" type="button">zsh</button>
+                  </div>
+                </div>
+                <div class="code-body">
+                  <pre><span class="code-prompt" data-prompt="login">$</span> <code id="login-command">codex</code></pre>
+                </div>
+              </div>
+              <div class="copy-action-row">
+                <button type="button" data-copy="login-command">복사</button>
+              </div>
+              <p id="login-note" class="muted">브라우저 로그인 안내가 나오면 ChatGPT 계정 또는 API key 흐름을 따라갑니다.</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>CLI로 넘기기</h2>
+          <p class="handoff">아래 문장을 설치된 CLI에 붙여넣으면, 이후부터는 터미널 안에서 지침 파일 설치, skill 설치, GitHub 연결, 업무 인터뷰를 이어갑니다.</p>
+          <div class="ai-cli-window" aria-label="AI CLI 입력 화면 미리보기">
+            <div class="ai-cli-top">
+              <div class="ai-cli-brand">
+                <span class="ai-cli-mark" id="ai-cli-mark">C</span>
+                <span id="ai-cli-name">Codex CLI</span>
+              </div>
+            </div>
+            <div class="ai-cli-body">
+              <p class="ai-cli-hint" id="ai-cli-hint">Codex가 열린 뒤, 아래 입력창에 붙여넣습니다.</p>
+              <div class="ai-cli-input">
+                <pre><code id="handoff-prompt">$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.
+먼저 현재 저장소에 필요한 AGENTS.md와 skill 설치 상태를 확인하고,
+그 다음 GitHub 연결과 Work Grounding 인터뷰를 순서대로 진행해주세요.</code></pre>
+              </div>
+            </div>
+          </div>
+          <div class="copy-action-row">
+            <button type="button" data-copy="handoff-prompt">입력문 복사</button>
+          </div>
+          <div class="status" id="copy-status" role="status" aria-live="polite"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const commands = {
+      codex: {
+        label: "Codex",
+        doc: "https://developers.openai.com/codex/quickstart",
+        mac: {
+          title: "Codex CLI 설치",
+          note: "macOS, Linux, WSL에서는 standalone installer를 사용합니다.",
+          install: {
+            bash: "curl -fsSL https://chatgpt.com/codex/install.sh | sh",
+            zsh: "curl -fsSL https://chatgpt.com/codex/install.sh | sh"
+          },
+          verify: {
+            bash: "codex --version",
+            zsh: "codex --version"
+          },
+          loginTitle: "Codex 실행 및 로그인",
+          login: {
+            bash: "codex",
+            zsh: "codex"
+          },
+          loginNote: "브라우저 로그인 안내가 나오면 ChatGPT 계정 또는 API key 흐름을 따라갑니다.",
+          handoff: {
+            bash: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 AGENTS.md와 skill 설치 상태를 확인하고,\n그 다음 GitHub 연결과 Work Grounding 인터뷰를 순서대로 진행해주세요.",
+            zsh: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 AGENTS.md와 skill 설치 상태를 확인하고,\n그 다음 GitHub 연결과 Work Grounding 인터뷰를 순서대로 진행해주세요."
+          }
+        },
+        windows: {
+          title: "Codex CLI 설치",
+          note: "Windows PowerShell에서는 install.ps1을 실행합니다.",
+          install: {
+            bash: "powershell -ExecutionPolicy ByPass -c \"irm https://chatgpt.com/codex/install.ps1 | iex\"",
+            zsh: "powershell -ExecutionPolicy ByPass -c \"irm https://chatgpt.com/codex/install.ps1 | iex\""
+          },
+          verify: {
+            bash: "codex --version",
+            zsh: "codex --version"
+          },
+          loginTitle: "Codex 실행 및 로그인",
+          login: {
+            bash: "codex",
+            zsh: "codex"
+          },
+          loginNote: "브라우저 로그인 안내가 나오면 ChatGPT 계정 또는 API key 흐름을 따라갑니다.",
+          handoff: {
+            bash: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 AGENTS.md와 skill 설치 상태를 확인하고,\n그 다음 GitHub 연결과 Work Grounding 인터뷰를 순서대로 진행해주세요.",
+            zsh: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 AGENTS.md와 skill 설치 상태를 확인하고,\n그 다음 GitHub 연결과 Work Grounding 인터뷰를 순서대로 진행해주세요."
+          }
+        }
+      },
+      claude: {
+        label: "Claude Code",
+        doc: "https://code.claude.com/docs/en/setup",
+        mac: {
+          title: "Claude Code 설치",
+          note: "macOS, Linux, WSL에서는 native installer를 사용합니다.",
+          install: {
+            bash: "curl -fsSL https://claude.ai/install.sh | bash",
+            zsh: "curl -fsSL https://claude.ai/install.sh | bash"
+          },
+          verify: {
+            bash: "claude --version\nclaude doctor",
+            zsh: "claude --version\nclaude doctor"
+          },
+          loginTitle: "Claude Code 실행 및 로그인",
+          login: {
+            bash: "claude",
+            zsh: "claude"
+          },
+          loginNote: "Claude Code는 Pro, Max, Team, Enterprise, 또는 Console 계정이 필요합니다.",
+          handoff: {
+            bash: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 CLAUDE.md와 skill 설치 상태를 확인하고,\n그 다음 GitHub 연결과 Work Grounding 인터뷰를 순서대로 진행해주세요.",
+            zsh: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 CLAUDE.md와 skill 설치 상태를 확인하고,\n그 다음 GitHub 연결과 Work Grounding 인터뷰를 순서대로 진행해주세요."
+          }
+        },
+        windows: {
+          title: "Claude Code 설치",
+          note: "Windows PowerShell에서는 install.ps1을 실행합니다.",
+          install: {
+            bash: "irm https://claude.ai/install.ps1 | iex",
+            zsh: "irm https://claude.ai/install.ps1 | iex"
+          },
+          verify: {
+            bash: "claude --version\nclaude doctor",
+            zsh: "claude --version\nclaude doctor"
+          },
+          loginTitle: "Claude Code 실행 및 로그인",
+          login: {
+            bash: "claude",
+            zsh: "claude"
+          },
+          loginNote: "Claude Code는 Pro, Max, Team, Enterprise, 또는 Console 계정이 필요합니다.",
+          handoff: {
+            bash: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 CLAUDE.md와 skill 설치 상태를 확인하고,\n그 다음 GitHub 연결과 Work Grounding 인터뷰를 순서대로 진행해주세요.",
+            zsh: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 CLAUDE.md와 skill 설치 상태를 확인하고,\n그 다음 GitHub 연결과 Work Grounding 인터뷰를 순서대로 진행해주세요."
+          }
+        }
+      }
+    };
+
+    const tools = ["codex", "claude"];
+    const operatingSystems = ["mac", "windows"];
+    const shells = ["bash", "zsh"];
+    let selectedTool = "codex";
+    let selectedOs = "mac";
+    let selectedShell = "bash";
+
+    try {
+      const savedTool = localStorage.getItem("onboarding-entry-tool");
+      const savedOs = localStorage.getItem("onboarding-entry-os");
+      const savedShell = localStorage.getItem("onboarding-entry-shell");
+      if (tools.includes(savedTool)) {
+        selectedTool = savedTool;
+      }
+      if (operatingSystems.includes(savedOs)) {
+        selectedOs = savedOs;
+      }
+      if (shells.includes(savedShell)) {
+        selectedShell = savedShell;
+      }
+    } catch (_) {
+      selectedTool = "codex";
+      selectedOs = "mac";
+      selectedShell = "bash";
+    }
+
+    function setText(id, text) {
+      document.getElementById(id).textContent = text;
+    }
+
+    function resolveCode(value) {
+      return value[selectedShell] || value.bash;
+    }
+
+    function promptText() {
+      if (selectedOs === "windows") {
+        return "PS C:\\Users\\user>";
+      }
+      return selectedShell === "zsh" ? "user@MacBook-Pro ~ %" : "user@MacBook-Pro ~ $";
+    }
+
+    function windowTitle() {
+      return selectedOs === "windows" ? "Windows PowerShell" : "Terminal";
+    }
+
+    function persist(key, value) {
+      try {
+        localStorage.setItem(key, value);
+      } catch (_) {
+        // The page still works for the current session when storage is blocked.
+      }
+    }
+
+    function setTool(tool) {
+      if (!tools.includes(tool)) {
+        return;
+      }
+      selectedTool = tool;
+      document.body.dataset.tool = selectedTool;
+      persist("onboarding-entry-tool", selectedTool);
+      render();
+    }
+
+    function setOs(os) {
+      if (!operatingSystems.includes(os)) {
+        return;
+      }
+      selectedOs = os;
+      document.body.dataset.os = selectedOs;
+      persist("onboarding-entry-os", selectedOs);
+      render();
+    }
+
+    function setShell(shell) {
+      if (!shells.includes(shell)) {
+        return;
+      }
+      selectedShell = shell;
+      persist("onboarding-entry-shell", selectedShell);
+      render();
+    }
+
+    function updateControls() {
+      document.querySelectorAll("[data-tool]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.tool === selectedTool);
+      });
+      document.querySelectorAll("[data-os]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.os === selectedOs);
+      });
+      document.querySelectorAll("[data-shell]").forEach((button) => {
+        const active = button.dataset.shell === selectedShell;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+    }
+
+    function updateCodeChrome() {
+      document.querySelectorAll("[data-window-title]").forEach((title) => {
+        title.textContent = windowTitle();
+      });
+      document.querySelectorAll("[data-shell-name]").forEach((name) => {
+        name.textContent = selectedShell;
+      });
+      document.querySelectorAll("[data-prompt]").forEach((prompt) => {
+        prompt.textContent = promptText();
+      });
+    }
+
+    function updateAiCliPreview() {
+      const isClaude = selectedTool === "claude";
+      document.getElementById("ai-cli-mark").textContent = isClaude ? "A" : "C";
+      document.getElementById("ai-cli-name").textContent = isClaude ? "Claude Code" : "Codex CLI";
+      document.getElementById("ai-cli-hint").textContent = isClaude ? "Claude Code가 열린 뒤, 아래 입력창에 붙여넣습니다." : "Codex가 열린 뒤, 아래 입력창에 붙여넣습니다.";
+    }
+
+    function render() {
+      const tool = commands[selectedTool];
+      const selected = tool[selectedOs];
+      document.body.dataset.tool = selectedTool;
+      document.body.dataset.os = selectedOs;
+      updateControls();
+      updateCodeChrome();
+      updateAiCliPreview();
+      document.getElementById("primary-doc").href = tool.doc;
+      document.getElementById("primary-doc").textContent = `${tool.label} 공식 설치 문서 열기`;
+      setText("install-title", selected.title);
+      setText("install-note", selected.note);
+      setText("install-command", resolveCode(selected.install));
+      setText("verify-command", resolveCode(selected.verify));
+      setText("login-title", selected.loginTitle);
+      setText("login-command", resolveCode(selected.login));
+      setText("login-note", selected.loginNote);
+      setText("handoff-prompt", resolveCode(selected.handoff));
+      document.getElementById("copy-status").textContent = "";
+    }
+
+    document.querySelectorAll("[data-tool]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setTool(button.dataset.tool);
+      });
+    });
+
+    document.querySelectorAll("[data-os]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setOs(button.dataset.os);
+      });
+    });
+
+    document.querySelectorAll("[data-shell]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setShell(button.dataset.shell);
+      });
+    });
+
+    async function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch (_) {
+          // Fall through to the textarea fallback for local/static contexts.
+        }
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      const copied = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      return copied;
+    }
+
+    function selectText(element) {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+
+    document.querySelectorAll("[data-copy]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const target = document.getElementById(button.dataset.copy);
+        const copied = await copyText(target.textContent);
+        if (!copied) {
+          selectText(target);
+        }
+        document.getElementById("copy-status").textContent = copied ? "복사했습니다." : "복사 권한이 막혀 문장을 선택했습니다. 직접 복사해주세요.";
+      });
+    });
+
+    render();
+  </script>
+</body>
+</html>

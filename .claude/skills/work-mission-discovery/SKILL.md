@@ -136,6 +136,7 @@ Create or update artifacts when the user asks for files or when the session goal
 Default paths:
 
 ```text
+interview-state.md
 work-map.md
 ontology-seeds.md
 mission-backlog.md
@@ -144,7 +145,11 @@ missions/M001-<slug>.md
 logs/<YYYY-MM-DD>-mission-discovery.md
 ```
 
-Read `references/artifact-templates.md` before creating these files. Read `references/interview-protocol.md` when the interview needs more detailed prompts, phase transitions, or anti-pattern checks.
+Read `references/execution-playbook.md` when installing instructions/skills, resuming an interview, deciding completion, or linking discovery to implementation work. Read `references/artifact-templates.md` before creating files. Read `references/interview-protocol.md` when the interview needs more detailed prompts, phase transitions, or anti-pattern checks.
+
+### 7. Maintain Continuity
+
+Update `interview-state.md` at phase transitions, after 3-5 question-answer rounds, before stopping, and before starting implementation. On resume, read `interview-state.md`, `automation-brief.md`, `mission-backlog.md`, and the latest `logs/*.md`, then continue from the recorded next question.
 
 ## Completion Criteria
 

@@ -14,6 +14,12 @@
 ## 전체 흐름
 
 ```text
+-2. Web Entry
+   브라우저에서 Codex 또는 Claude Code 설치까지만 안내한다
+
+-1. CLI Handoff
+   설치된 CLI에서 지침/skill/GitHub 연결/인터뷰를 이어간다
+
 0. Tool Access Setup
    GitHub, Git, gh, AI CLI 로그인, 첫 PR 만들기
 
@@ -45,6 +51,103 @@
 | 지침 파일 | 반복해서 말할 작업 방식을 파일로 저장한다 |
 | 안전한 권한 | 읽기, 수정, 실행, 외부 접근은 위험도가 다르다 |
 | 작업 단위 | 좋은 요청은 목표, 현재 상태, 제약, 완료 기준을 포함한다 |
+
+## Stage -2: Web Entry
+
+웹페이지는 진입점 역할만 한다. 사용자가 브라우저에서 설치 명령을 확인하고, `codex` 또는 `claude`가 실행되는 상태까지 도달하면 웹페이지의 역할은 끝난다.
+
+정적 진입 페이지:
+
+```text
+web/index.html
+```
+
+로컬에서 열기:
+
+```bash
+open web/index.html
+```
+
+이 페이지가 담당하는 것:
+
+- Codex 또는 Claude Code 선택
+- 운영체제별 설치 명령 안내
+- 설치 확인 명령 안내
+- 로그인 시작 명령 안내
+- CLI에 붙여넣을 handoff prompt 제공
+
+이 페이지가 담당하지 않는 것:
+
+- GitHub repo 생성
+- `AGENTS.md` / `CLAUDE.md` 설치
+- skill 설치
+- 업무 인터뷰 진행
+- 미션 백로그 작성
+
+위 작업들은 CLI가 설치된 뒤 터미널 안에서 이어간다.
+
+## Stage -1: CLI Handoff And Onboarding Kit Installation
+
+이 단계의 목적은 설치된 CLI가 사용자의 실제 업무 저장소에서 온보딩을 이어받게 만드는 것이다.
+
+기본값은 **프로젝트 단위 설치**다. 전역 설치는 모든 저장소에 영향을 주므로 초보자 온보딩에서는 나중 선택지로 둔다.
+
+### 설치 대상
+
+| 항목 | Codex | Claude Code | 목적 |
+| --- | --- | --- | --- |
+| 지속 지침 | `AGENTS.md` | `CLAUDE.md` | 매 세션 반복할 작업 방식 저장 |
+| Skill | `.agents/skills/work-mission-discovery/` | `.claude/skills/work-mission-discovery/` | 업무 인터뷰와 미션 백로그 생성 |
+| 인터뷰 상태 | `interview-state.md` | `interview-state.md` | 끊긴 대화를 이어갈 위치 저장 |
+| 산출물 | `work-map.md`, `ontology-seeds.md`, `mission-backlog.md`, `missions/`, `logs/` | 동일 | 다음 작업의 맥락 자산 |
+
+### AGENTS.md / CLAUDE.md 설치
+
+사용자의 실제 업무 저장소 루트에서 아래 중 필요한 파일을 설치한다.
+
+```bash
+# Codex용
+cp templates/AGENTS.md AGENTS.md
+
+# Claude Code용
+cp templates/CLAUDE.md CLAUDE.md
+```
+
+둘 다 쓰는 사용자는 두 파일을 모두 둔다. `CLAUDE.md`는 `@AGENTS.md`를 import해서 공통 운영 원칙을 재사용한다.
+
+설치 후 확인:
+
+```text
+Codex: "현재 적용된 지침 파일을 요약해주세요."
+Claude Code: "현재 로드된 memory와 프로젝트 지침을 요약해주세요."
+```
+
+성공 기준은 AI가 `Work Grounding`, `Mission Discovery`, `인터뷰 상태 저장`, `미션 백로그` 같은 핵심 지침을 요약하는 것이다.
+
+### Skill 설치
+
+이 저장소를 기준으로 대상 업무 저장소에 복사한다.
+
+```bash
+# Codex project skill
+mkdir -p .agents/skills
+cp -R /path/to/onboarding/.agents/skills/work-mission-discovery .agents/skills/
+
+# Claude Code project skill
+mkdir -p .claude/skills
+cp -R /path/to/onboarding/.claude/skills/work-mission-discovery .claude/skills/
+```
+
+이 온보딩 저장소 자체에서는 이미 두 위치에 skill이 들어 있다.
+
+사용 확인:
+
+```text
+Codex: "$work-mission-discovery 를 사용해서 제 업무 온보딩 인터뷰를 시작해주세요."
+Claude Code: "work-mission-discovery skill을 사용해서 제 업무 온보딩 인터뷰를 시작해주세요."
+```
+
+Claude Code의 skill은 slash command가 아니라 설명을 보고 자동 선택되는 기능이다. 명시하고 싶을 때는 위처럼 skill 이름을 문장에 넣는다.
 
 ## Stage 0: Tool Access Setup
 
@@ -123,6 +226,8 @@ Pre-5: 후보 선택
 - 기술 용어보다 역할, 결과, 업무, 작업, 입력, 출력, 판단 기준으로 말한다.
 - 사용자가 제시한 자동화 아이디어는 결론이 아니라 후보로 다룬다.
 - 반복성 높고, 위험 낮고, 검증 쉬운 작업을 첫 후보로 추천한다.
+- 매 phase 전환 또는 3-5회 질의응답마다 `interview-state.md`와 `logs/`를 업데이트한다.
+- 세션이 끊기면 먼저 `interview-state.md`, `automation-brief.md`, `mission-backlog.md`를 읽고 이어간다.
 
 ### Work Grounding 산출물
 
@@ -137,6 +242,28 @@ automation-brief.md
 6. 작업별 입력/출력/도구/판단 기준
 7. 자동화 후보 분류
 8. 첫 미션 후보
+```
+
+### 인터뷰 연속성
+
+인터뷰는 한 번에 끝나지 않을 수 있다. 그래서 대화의 현재 위치를 파일에 남긴다.
+
+```text
+interview-state.md
+
+1. 현재 단계
+2. 마지막으로 확인한 답변
+3. 아직 묻지 않은 질문
+4. 다음 질문
+5. 완료 조건 대비 남은 항목
+```
+
+에이전트는 긴 인터뷰 중간에 항상 다음 질문을 분명히 남긴다.
+
+```text
+현재 위치: Work Grounding Pre-2 업무 영역 지도
+지금까지 확인한 것: ...
+다음 질문: 최근 1-2주 동안 반복한 업무 중 결과물이 파일이나 문서로 남는 일은 무엇인가요?
 ```
 
 ## 자동화 관점 분류
@@ -286,12 +413,61 @@ logs/
 
 이 저장소에는 같은 Mission Discovery 흐름을 Codex와 Claude Code에서 각각 쓸 수 있는 skill로 포함한다.
 
-| 대상 | 위치 | 호출 예 |
+| 대상 | 위치 | 사용 예 |
 | --- | --- | --- |
 | Codex | `.agents/skills/work-mission-discovery/SKILL.md` | `$work-mission-discovery` |
-| Claude Code | `.claude/skills/work-mission-discovery/SKILL.md` | `/work-mission-discovery` |
+| Claude Code | `.claude/skills/work-mission-discovery/SKILL.md` | `work-mission-discovery skill을 사용해주세요` |
 
 두 skill 모두 `Work Grounding → Automation Exploration → Mission Backlog` 흐름을 따른다. 공통 개념은 유지하고, 도구별 호출 방식만 다르게 둔다.
+
+## 인터뷰 완료 조건
+
+인터뷰는 아래 조건이 모두 충족되면 완료로 본다.
+
+| 조건 | 완료 증거 |
+| --- | --- |
+| 역할 이해 | 사용자의 역할, 책임, 이해관계자가 정리됨 |
+| 목적 정렬 | 역할에서 좋아져야 할 결과가 1-3개로 정리됨 |
+| 업무 지도 | 주요 업무 영역과 현재 흐름이 정리됨 |
+| 작업 분해 | 최소 1개 업무 영역이 실행 단계까지 쪼개짐 |
+| 자동화 분류 | 후보 작업이 수집/정리/작성/변환/검토/판단 보조/실행/모니터링으로 분류됨 |
+| 후보 평가 | 반복성, 명확성, 입력, 검증, 위험, 시간 절약 기준으로 우선순위가 매겨짐 |
+| 첫 미션 합의 | M001의 포함/제외/가정/검증 방법이 정리됨 |
+| 다음 행동 | 바로 실행할 첫 작업과 필요한 파일/권한/데이터가 명확함 |
+
+완료 산출물:
+
+```text
+interview-state.md
+automation-brief.md
+work-map.md
+ontology-seeds.md
+mission-backlog.md
+missions/M001-<slug>.md
+logs/<YYYY-MM-DD>-mission-discovery.md
+```
+
+## 이후 작업 연계
+
+인터뷰가 끝나면 바로 구현으로 뛰어들지 않고, M001을 다시 작은 실행 단위로 바꾼다.
+
+```text
+M001 범위 확인
+→ 입력 샘플 확보
+→ 기대 출력 예시 작성
+→ 검증 방법 확정
+→ 가장 작은 자동화 구현
+→ 실제 입력으로 실행
+→ 결과 검토
+→ mission-backlog.md 업데이트
+```
+
+첫 실행 미션은 다음 조건을 만족해야 한다.
+
+- 사용자가 결과를 직접 검토할 수 있다.
+- 실패해도 실제 고객, 결제, 운영 데이터에 영향을 주지 않는다.
+- 입력과 출력이 파일 또는 명확한 텍스트로 남는다.
+- 완료 여부를 명령, diff, 문서, PR, 샘플 출력 중 하나로 확인할 수 있다.
 
 ## 좋은 시작 프롬프트
 
