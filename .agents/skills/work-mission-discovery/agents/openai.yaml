@@ -1,4 +1,4 @@
 interface:
   display_name: "Work Mission Discovery"
   short_description: "Set up AI CLI work, map missions, and track progress"
-  default_prompt: "Use $work-mission-discovery to set up my AI CLI work environment, map my role and work into automation-ready missions, and create a Briefing Board when useful."
+  default_prompt: "Use $work-mission-discovery to set up my AI CLI work environment, map my role and work into automation-ready missions."

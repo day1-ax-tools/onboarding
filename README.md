@@ -23,9 +23,6 @@
 0. Work Environment Setup
    로컬 작업 루트, GitHub 연결, local/remote, commit/push/pull 루프를 익힌다
 
-M. Meta Monitoring Loop
-   두 번째 CLI 세션이 파일과 Git 상태를 읽고 작업 현황판과 조언을 갱신한다
-
 1. Work Grounding
    나의 역할, 목적, 성과, 업무 영역을 정의한다
 
@@ -57,18 +54,16 @@ M. Meta Monitoring Loop
 | 안전한 권한 | 읽기, 수정, 실행, 외부 접근은 위험도가 다르다 |
 | 작업 단위 | 좋은 요청은 목표, 현재 상태, 제약, 완료 기준을 포함한다 |
 | 메인 세션 | 실제 설치, 인터뷰, 구현, 검증을 진행하는 CLI 대화다 |
-| 모니터 세션 | 다른 CLI가 접근 가능한 작업 내용을 읽고 `meta-monitor/` 안에만 현황과 조언을 쓴다 |
-| Briefing Board | 현재 phase, 결정, 위험, 다음 행동, 메타 세션 TUI, 질문 입력창, 설정, 시각화를 HTML로 보여주는 작업 지도다 |
-| 모니터 전용 폴더 | 메타 모니터 세션이 쓸 수 있는 유일한 write 영역이다 |
 
 ## Stage -2: Web Entry
 
-웹페이지는 진입점 역할만 한다. 사용자가 브라우저에서 설치 명령을 확인하고, `codex` 또는 `claude`가 실행되는 상태까지 도달하면 웹페이지의 역할은 끝난다.
+웹페이지는 진입점 역할만 한다. 사용자가 브라우저에서 설치 명령을 확인하고, `codex` 또는 `claude`가 실행되는 상태까지 도달한 뒤, 온보딩 보드에서 진행 상황과 업무 입력이 어떻게 작업으로 바뀌는지 미리 볼 수 있게 한다. 실제 설치, repo 변경, GitHub 연결, 파일 생성은 CLI에서 진행한다.
 
-정적 진입 페이지:
+정적 페이지:
 
 ```text
 web/index.html
+web/brief-board.html
 ```
 
 로컬에서 열기:
@@ -77,7 +72,7 @@ web/index.html
 open web/index.html
 ```
 
-이 페이지가 담당하는 것:
+`web/index.html`이 담당하는 것:
 
 - Codex 또는 Claude Code 선택
 - 운영체제별 설치 명령 안내
@@ -85,7 +80,21 @@ open web/index.html
 - 로그인 시작 명령 안내
 - CLI에 붙여넣을 handoff prompt 제공
 
-이 페이지가 담당하지 않는 것:
+설치 처리 기준:
+
+- macOS, Linux, WSL은 `bash`와 `zsh` 중 사용자가 쓰는 shell을 선택한다.
+- 실제 CLI 설치 명령은 shell별로 거의 같고, 설치 직후 PATH 반영과 shell refresh만 다르게 제공한다.
+- Windows는 PowerShell만 권장 경로로 둔다. Windows 화면에서는 bash/zsh 선택을 숨기고 PowerShell 명령만 보여준다.
+
+`web/brief-board.html`이 담당하는 것:
+
+- 온보딩 진행 단계를 git branch graph 형태로 보여준다.
+- 설치/인증, 환경 설정, 업무 지도, 미션 후보가 어떻게 분기되고 합쳐지는지 시각화한다.
+- 사용자가 입력한 역할, 성과, 반복 업무, 입력 도구, 위험을 바탕으로 작업 지도와 자동화 후보를 즉시 보여준다.
+- 생성될 산출물인 `environment-state.md`, `work-map.md`, `ontology-seeds.md`, `mission-backlog.md`, `missions/M001-<slug>.md`의 역할을 미리 보여준다.
+- CLI에 붙여넣을 업무 요약문과 프로젝트 단위 지침/skill 수동 설치 fallback 명령을 제공한다.
+
+웹페이지가 직접 하지 않는 것:
 
 - GitHub repo 생성
 - `AGENTS.md` / `CLAUDE.md` 설치
@@ -94,6 +103,20 @@ open web/index.html
 - 미션 백로그 작성
 
 위 작업들은 CLI가 설치된 뒤 터미널 안에서 이어간다.
+
+### HTML UI 표현 원칙
+
+온보딩 UI는 박스와 텍스트만 반복하지 않는다. 사용자가 흐름, 상태, 차이, 우선순위, 의존성을 한눈에 이해해야 할 때는 아래 표현을 우선 사용한다.
+
+| 상황 | 우선 표현 |
+| --- | --- |
+| 온보딩 단계와 작업 흐름 | git branch graph, timeline, flow diagram |
+| local/remote, push/pull, 작업 루트 | 양방향 flow, folder tree, repo map |
+| 자동화 후보 비교 | score table, risk/value matrix |
+| 업무 분해 | hierarchy tree, swimlane, dependency map |
+| 산출물 상태 | checklist table, artifact matrix |
+
+기본 화면은 조작 가능한 실제 경험이어야 한다. 설명용 문장만 있는 화면은 피하고, 입력, 선택, 그래프, 표, 복사 가능한 CLI handoff가 함께 동작하게 만든다.
 
 ## Stage -1: CLI Handoff And Onboarding Kit Installation
 
@@ -273,239 +296,6 @@ HTML은 개념 설명용 도구로 계속 사용할 수 있다. CLI가 필요할
 - 적어도 한 번 의미 있는 commit과 push를 수행했다.
 - PR URL이 생성되어 브라우저 또는 `gh pr view`로 확인할 수 있다.
 - 사용자가 다음 작업을 어디에 만들고, 어떤 repo에서 이어갈지 알고 있다.
-
-## Meta Monitoring Loop
-
-Meta Monitor는 이제 별도 레포에서 관리한다.
-
-```text
-https://github.com/day1-ax-tools/meta-monitor
-```
-
-이 onboarding 레포는 메타 모니터를 직접 구현하거나 배포하지 않는다. 장기 작업에서 사용자가 명시적으로 요청할 때, 별도 `day1-ax-tools/meta-monitor` 레포의 `meta-monitor/` 런타임을 대상 repo에 설치해 연결한다. 이 repo 안의 로컬 `meta-monitor/` 폴더는 데모/개발용 설치물이며 Git에 커밋하지 않는다.
-
-온보딩이 CLI로 넘어간 뒤에는 사용자가 진행 상황을 계속 기억하기 어렵다. 이때 선택적으로 두 번째 CLI 세션을 열어 `메타 모니터 세션`으로 사용한다. 메타 모니터는 자동으로 켜지지 않는다. 사용자가 명시적으로 요청한 repo에서만 온보딩하고 작동한다.
-
-핵심 원칙은 "모든 작업 내용은 관찰하되, 모델 내부 추론 과정은 관찰하지 않는 모니터"다. 같은 로컬 작업자의 메인 세션 채팅 기록, 실행 명령, 파일 변경, 로그, 산출물에는 접근할 수 있어야 한다. 다만 내부 추론 과정까지 읽으면 메타 모니터가 메인 세션과 동기화되어 독립적인 관찰자 역할을 잃을 수 있으므로 의도적으로 관찰 대상에서 제외한다. 접근 가능한 작업 내용, 상태 파일, 로그, diff를 근거로 현황판과 조언을 만든다.
-
-### 세션 역할
-
-| 세션 | 역할 | 읽는 것 | 쓰는 것 |
-| --- | --- | --- | --- |
-| 메인 세션 | 설치, 환경 설정, 인터뷰, 미션 실행 | 사용자 답변, repo 파일, 모니터 조언 | `environment-state.md`, `interview-state.md`, `automation-brief.md`, `mission-backlog.md`, `logs/` |
-| 모니터 세션 | 진행 상황 관찰, 위험 감지, 시각화, 질문 응답 | 채팅 기록, 실행 명령, 파일 변경, 상태 파일, 로그, `git status`, `git diff --stat` | `meta-monitor/**` 안의 파일만 |
-
-### 활성화 조건
-
-메타 모니터는 아래 조건이 충족될 때만 시작한다.
-
-- 사용자가 "메타 모니터를 켜자", "Briefing Board를 만들자", "보조 세션으로 관찰하자"처럼 명시적으로 요청한다.
-- 현재 repo에 온보딩 지침과 `work-mission-discovery` skill이 설치되어 있거나, 설치 절차를 먼저 진행한다.
-- 메인 세션의 작업 내용이 관찰 가능한 형태로 남아 있다.
-- `meta-monitor/settings.json`이 생성되어 provider, model, effort, language, context, fast mode 설정이 기록된다. language fallback은 `en`이고, 현재 언어는 터미널에서 사용자가 입력하는 언어를 우선한다.
-- 모니터 세션의 write scope가 `meta-monitor/**`로 제한된다.
-
-### Skill / Plugin / MCP 선택
-
-초기 구현은 **skill 기반**을 기본값으로 둔다.
-
-| 방식 | 적합한 시점 | 장점 | 한계 |
-| --- | --- | --- | --- |
-| Skill | 지금 바로 repo별 온보딩과 운영 규칙을 적용할 때 | 설치가 가볍고 Codex/Claude Code 모두 같은 개념으로 운영 가능 | 실제 세션 연결, settings 저장 자동화, live UI 제어는 제한적 |
-| Plugin | skill, 템플릿, Briefing Board asset을 한 번에 배포하고 싶을 때 | 설치 경험과 파일 구조를 표준화하기 좋음 | runtime 제어 자체는 여전히 별도 도구가 필요 |
-| MCP | 세션 기록 수집, Briefing Board 저장, 모델 실행 설정, context telemetry를 실제 API처럼 제어해야 할 때 | live bridge와 자동화가 가능 | 초기 온보딩에는 무겁고 설치/권한 리스크가 큼 |
-
-권장 경로:
-
-```text
-v1: onboarding skill + separate day1-ax-tools/meta-monitor runtime
-→ v2: plugin으로 skill과 Briefing Board asset 배포
-→ v3: MCP로 live session bridge, settings persistence, context telemetry 자동화
-```
-
-즉, 지금은 onboarding skill과 별도 Meta Monitor runtime repo로 시작하되, `meta-monitor/settings.json`과 `meta-monitor/session-data.jsonl` 계약을 유지해 plugin/MCP로 확장하기 쉽게 만든다.
-
-### 운영 리듬
-
-```text
-메인 세션이 보이는 질문, 답변 요약, 도구/명령 요약, 파일 변경, 검증 결과를 main-session-events.jsonl에 저장한다
-→ 모니터 워커가 AGENTS.md/CLAUDE.md와 main-session-events.jsonl을 읽어 monitor-input.latest.json을 만든다
-→ monitor-prompt.md가 최신 입력 JSON을 메타 설명으로 바꾼다
-→ 모니터 세션이 meta-monitor/meta-advice.md와 Briefing Board를 갱신한다
-→ 사용자는 브라우저에서 Briefing Board를 보고, 필요할 때만 추가 질문을 보조 큐로 보낸다
-→ 필요하면 메인 세션이 meta-monitor/meta-advice.md를 읽고 다음 행동에 반영한다
-```
-
-### 모니터 세션 시작 프롬프트
-
-두 번째 터미널에서 같은 repo로 이동한 뒤 AI CLI를 하나 더 실행하고 아래 프롬프트를 붙여넣는다. Codex를 모니터로 쓰는 것을 기본값으로 두지만, 같은 파일 계약을 지키면 다른 AI CLI도 가능하다.
-
-```text
-당신은 메타 모니터 세션입니다.
-
-메인 작업 세션의 사용자에게 보이는 작업 내용을 최대한 읽어주세요. 핵심 입력은 meta-monitor/main-session-events.jsonl입니다. 이 파일에는 메인 세션의 보이는 질문, 답변 요약, 실행 명령, 도구 출력 요약, 파일 변경, 생성 산출물, 결정, 검증 결과가 들어갑니다. 단, 모델 내부 추론 과정은 읽거나 추적하지 마세요. 추론 과정까지 읽으면 메타 모니터가 메인 세션과 동기화되어 독립적인 관찰자 역할을 잃을 수 있습니다. meta-monitor/AGENTS.md, meta-monitor/CLAUDE.md, meta-monitor/monitor-input.schema.json, meta-monitor/monitor-prompt.md, 현재 repo의 environment-state.md, interview-state.md, automation-brief.md, mission-backlog.md, logs/ 및 git status/diff도 함께 근거로 사용해주세요.
-
-필요하면 meta-monitor/monitor-input.latest.json, meta-monitor/briefing-board.html, meta-monitor/monitor-state.json, meta-monitor/meta-advice.md, meta-monitor/session-data.jsonl을 업데이트하고, 복잡한 관계는 meta-monitor/visualizations/ 아래 HTML로 시각화해주세요.
-
-메인 세션을 방해하지 말고 조언은 meta-monitor/meta-advice.md에 남겨주세요. 읽기는 repo 전체에서 가능하지만, 쓰기는 meta-monitor/ 폴더 안으로만 제한해주세요. 제품 코드, 미션 산출물, environment-state.md, interview-state.md, mission-backlog.md는 수정하지 마세요. meta-monitor/settings.json의 language를 따르고, fallback은 en으로 두되 현재 언어는 메인 세션 터미널 입력 언어를 우선해주세요. 현재 입력이 한국어이면 language.current는 ko로 설정해주세요. context 사용량이 70%를 넘으면 meta-monitor/session-handoff.md를 최신 파일 하나로만 갱신하고 context clear를 준비해주세요.
-```
-
-### Briefing Board 산출물
-
-| 파일 | 목적 |
-| --- | --- |
-| `meta-monitor/briefing-board.html` | 현재 phase, 목표, 진행률, 결정, 열린 질문, 위험, 다음 행동, 실시간 모니터 콘솔, 설정 버튼 |
-| `meta-monitor/bridge-server.mjs` | 질문 제출, 출력 조회, `/api/events` 실시간 스트림을 제공하는 로컬 bridge |
-| `meta-monitor/main-session-events.jsonl` | 메인 세션의 보이는 질문, 답변 요약, 결정, 산출물 변경, 검증 결과 이벤트 |
-| `meta-monitor/monitor-input.schema.json` | 모니터 입력 JSON의 표준 구조 |
-| `meta-monitor/monitor-prompt.md` | 입력 JSON을 메타 설명으로 바꾸는 prompt 계약 |
-| `meta-monitor/monitor-input.latest.json` | 워커가 매 처리마다 생성하는 최신 입력 패킷 |
-| `meta-monitor/monitor-worker.mjs` | 메인 세션 이벤트를 우선 읽고, 없을 때 질문 큐를 읽어 read-only Codex 실행 결과를 `meta-monitor/meta-advice.md`에 쓰는 monitor worker |
-| `meta-monitor/settings.json` | provider, model, effort, language, context, fast mode, design, write scope 설정 |
-| `meta-monitor/monitor-state.json` | 처리한 관찰 signature, 질문, runtime model, 마지막 답변 상태 |
-| `meta-monitor/meta-advice.md` | 메인 세션에 전달할 조언, 확인 질문, 리스크 |
-| `meta-monitor/questions.jsonl` | Briefing Board에서 Submit한 추가 질문 보조 큐 |
-| `meta-monitor/session-data.jsonl` | 메타 모니터 세션의 관찰, 질문, 답변, 도구 사용, 산출물 변경 이벤트 |
-| `meta-monitor/session-handoff.md` | context 70% 초과 시 다음 모니터 세션이 이어받을 최신 handoff 하나 |
-| `meta-monitor/visualizations/work-map-dashboard.html` | 역할, 성과, 업무 영역, 작업 분해 시각화 |
-| `meta-monitor/visualizations/mission-dashboard.html` | 자동화 후보, 우선순위, 상태 시각화 |
-| `meta-monitor/visualizations/decision-map.html` | 복잡한 선택지와 tradeoff 시각화 |
-
-### Briefing Board UI 구성
-
-`meta-monitor/briefing-board.html`은 실제 CLI를 대체하지 않는다. 대신 메타 모니터 세션을 브라우저에서 관찰하고, 로컬 bridge가 켜져 있을 때 질문을 monitor CLI 큐로 제출하며, 설정을 준비하는 화면이다.
-
-| 영역 | 역할 |
-| --- | --- |
-| 상단 상태 태그 | 현재 레포, 로컬 폴더, 브랜치, 메인 세션, 모니터 세션, 언어, 쓰기 범위, 컨텍스트 경고선을 보여준다 |
-| 상단 탭 | `메타 모니터 콘솔`, `현황`, `업무 지도`, `미션 백로그`, `의사결정 지도`로 화면을 나눈다 |
-| 메타 모니터 콘솔 | 최근 메인 세션 이벤트, 추가 질문 입력, 제출 상태, 실시간 연결 상태, 답변 로그를 한 터미널형 콘솔에서 보여준다 |
-| 출력 확인 | 최근 관찰 이벤트는 `meta-monitor/main-session-events.jsonl`, 최신 입력은 `meta-monitor/monitor-input.latest.json`, 최근 모니터 답변은 `meta-monitor/meta-advice.md`에서 읽어와 콘솔에 누적한다 |
-| 우상단 설정 버튼 | provider, model, effort, language, context 크기, fast mode, provider 기반 디자인 설정을 dialog에서 수정한다 |
-| 현황 탭 | 현재 phase, 목표, 진행률, 리스크, 다음 행동을 보여준다 |
-| 시각화 탭 | 복잡한 업무 지도, 의사결정, backlog를 각 탭과 `meta-monitor/visualizations/`의 HTML로 출력한다 |
-| Write scope 배지 | 모니터 세션의 쓰기 권한이 `meta-monitor/**`로 제한되어 있음을 표시한다 |
-
-브리핑 보드의 사용자-facing UI는 현재 사용자의 입력 언어를 따른다. 현재 메인 세션 입력이 한국어이면 탭, 버튼, 상태 메시지, 설정 label도 한국어로 표시한다.
-
-정적 HTML은 파일을 직접 저장하지 못할 수 있다. 그래서 Briefing Board는 설정 UI에서 JSON을 만들고, 사용자가 복사한 설정 반영 프롬프트를 메타 모니터 CLI에 붙여넣어 `meta-monitor/settings.json`을 갱신하는 방식을 기본값으로 둔다. 출력 확인은 로컬 bridge가 켜져 있을 때 동작한다. 콘솔은 `/api/events` 실시간 스트림으로 최근 메인 세션 이벤트, 추가 질문, `meta-monitor/meta-advice.md`의 답변을 받는다. 별도 worker인 `meta-monitor/monitor-worker.mjs`는 `meta-monitor/main-session-events.jsonl`을 우선 읽어 `meta-monitor/monitor-input.latest.json`을 만들고, `meta-monitor/monitor-prompt.md`로 답변 파일을 갱신한다. 추가 질문 제출은 `/api/questions`를 통해 보조 큐에 쓴다. `/api/monitor-output`은 수동 새로고침 fallback으로 둔다. 추후 MCP가 붙으면 이 저장 과정을 자동화할 수 있다.
-
-### 모델 설정
-
-`meta-monitor/settings.json`은 메타 모니터 세션 시작 전에 만들어야 한다.
-
-```json
-{
-  "version": 1,
-  "enabled": true,
-  "activation": "explicit",
-  "provider": "openai",
-  "model": "gpt-5-codex",
-  "effort": "medium",
-  "language": {
-    "source": "main-session-input",
-    "current": "ko",
-    "fallback": "en"
-  },
-  "contextWindowTokens": 200000,
-  "contextSoftLimitRatio": 0.7,
-  "fastMode": false,
-  "questionTransport": {
-    "type": "local-http-bridge",
-    "endpoint": "/api/questions",
-    "queue": "meta-monitor/questions.jsonl"
-  },
-  "answerWorker": {
-    "type": "codex-exec-read-only",
-    "script": "meta-monitor/monitor-worker.mjs",
-    "output": "meta-monitor/meta-advice.md",
-    "state": "meta-monitor/monitor-state.json",
-    "runtimeModel": "codex-cli-default"
-  },
-  "monitorInput": {
-    "schema": "meta-monitor/monitor-input.schema.json",
-    "prompt": "meta-monitor/monitor-prompt.md",
-    "events": "meta-monitor/main-session-events.jsonl",
-    "latest": "meta-monitor/monitor-input.latest.json",
-    "mode": "observe-main-session-first"
-  },
-  "mainSession": {
-    "provider": "openai",
-    "model": "codex-cli-default",
-    "sessionId": "main-session",
-    "description": "Visible main AI CLI onboarding session"
-  },
-  "design": {
-    "source": "main-session-provider",
-    "provider": "openai",
-    "reference": "DESIGN.md"
-  },
-  "writeScope": ["meta-monitor/**"],
-  "readScope": ["**"],
-  "briefingBoard": "meta-monitor/briefing-board.html",
-  "sessionData": "meta-monitor/session-data.jsonl",
-  "handoff": "meta-monitor/session-handoff.md"
-}
-```
-
-설정 의미:
-
-| 항목 | 의미 |
-| --- | --- |
-| `provider` | 사용할 모델 제공자 |
-| `model` | 사용할 모델 이름 |
-| `effort` | reasoning/analysis effort 설정 |
-| `language` | 모니터 응답과 Briefing Board 언어. fallback은 `en`, 현재 언어는 터미널 입력 언어 우선 |
-| `contextWindowTokens` | 모델 context 창 크기 |
-| `contextSoftLimitRatio` | handoff를 준비할 기준, 기본 0.7 |
-| `fastMode` | 빠른 응답 우선 모드 |
-| `questionTransport` | Briefing Board Submit을 monitor CLI 큐로 넘기는 로컬 bridge 설정 |
-| `answerWorker` | 관찰 이벤트 또는 질문 큐를 실제 답변 파일로 바꾸는 monitor worker 설정 |
-| `monitorInput` | schema, prompt, 메인 세션 이벤트 로그, 최신 입력 JSON 위치 |
-| `mainSession` | 모니터가 관찰하는 메인 세션의 provider, model, session id, 설명 |
-| `design` | Briefing Board 디자인 출처. 현재 메인 세션 provider가 OpenAI면 `openai`, Claude면 `claude` |
-| `writeScope` | 모니터 세션이 쓸 수 있는 경로, 기본 `meta-monitor/**` |
-
-### Context Handoff
-
-메타 모니터도 context 제한에 걸릴 수 있다. context 사용량이 `settings.json.contextSoftLimitRatio`를 넘으면 아래를 수행한다.
-
-```text
-context usage >= 70%
-→ meta-monitor/session-handoff.md 갱신
-→ handoff에는 긴 내용을 직접 복사하지 않고 파일 참조와 짧은 현재 상태만 기록
-→ 이전 handoff 파일은 유지하지 않고 최신 파일 하나만 덮어쓴다
-→ 새 모니터 세션을 시작하거나 context clear 후 session-handoff.md를 읽고 이어간다
-```
-
-`session-handoff.md`는 누적 보관하지 않는다. 오래된 handoff가 쌓이면 그것 자체가 context 오염원이 되기 때문이다. handoff는 가능한 한 참조 중심으로 쓴다. 참조한 파일이 사라지거나 변경되어 stale해지면, 그 항목은 삭제한다.
-
-### Session Data
-
-모니터 세션은 매 관찰/질문/답변/갱신마다 `meta-monitor/session-data.jsonl`에 이벤트를 남긴다. 이 데이터는 나중의 `learn` 기능이 반복적으로 사용한 기능, 가치 있는 구현 방식, 자주 쓰는 시각화, 좋은 질문 패턴을 찾아 기능화하는 재료가 된다.
-
-메인 세션 데이터는 메인 세션이 별도로 저장한다. 메타 모니터가 바로 읽는 최소 이벤트 로그는 `meta-monitor/main-session-events.jsonl`이고, 장기 학습용 세부 로그 권장 경로는 아래와 같다.
-
-```text
-logs/main-session-data.jsonl
-meta-monitor/session-data.jsonl
-```
-
-메타 모니터는 `logs/main-session-data.jsonl`을 읽을 수는 있지만 쓰지 않는다.
-
-### 완료 조건
-
-메타 모니터링은 필수 단계가 아니라 장기 작업을 돕는 보조 루프다. 켜는 경우 아래가 충족되어야 한다.
-
-- 메인 세션의 작업 내용이 채팅 기록, 세션 로그, 명령/도구 출력, 파일, Git 상태로 관찰 가능하다.
-- `meta-monitor/settings.json`이 존재하고 활성화 상태다.
-- 모니터 세션이 읽은 작업 내용, 근거 파일, Git 상태를 `meta-monitor/monitor-input.latest.json`과 `meta-monitor/monitor-state.json`에 기록한다.
-- `meta-monitor/briefing-board.html`이 TUI, 입력창, 설정 패널, 현재 phase, 다음 행동, 열린 위험을 보여준다.
-- `meta-monitor/meta-advice.md`의 조언은 근거 파일을 가리킨다.
-- `meta-monitor/main-session-events.jsonl`에 메인 세션의 보이는 질문과 답변 요약이 저장된다.
-- `meta-monitor/session-data.jsonl`에 이번 모니터 세션 이벤트가 저장된다.
-- context 사용량 70% 초과 시 `meta-monitor/session-handoff.md` 최신 파일 하나만 유지된다.
-- 모니터 세션의 write는 `meta-monitor/**` 안으로만 제한된다.
 
 ## Stage 1: Work Grounding
 
@@ -783,23 +573,6 @@ missions/M001-<slug>.md
 logs/<YYYY-MM-DD>-mission-discovery.md
 ```
 
-Meta Monitoring Loop를 켠 경우 추가 산출물:
-
-```text
-meta-monitor/briefing-board.html
-meta-monitor/settings.json
-meta-monitor/main-session-events.jsonl
-meta-monitor/monitor-input.schema.json
-meta-monitor/monitor-prompt.md
-meta-monitor/monitor-input.latest.json
-meta-monitor/monitor-state.json
-meta-monitor/meta-advice.md
-meta-monitor/questions.jsonl
-meta-monitor/session-data.jsonl
-meta-monitor/session-handoff.md
-meta-monitor/visualizations/*.html
-```
-
 ## 이후 작업 연계
 
 인터뷰가 끝나면 바로 구현으로 뛰어들지 않고, M001을 다시 작은 실행 단위로 바꾼다.
@@ -837,5 +610,4 @@ M001 범위 확인
 - 작업은 수집/정리/작성/변환/검토/판단 보조/실행/모니터링으로 분류해주세요.
 - 반복성 높고, 위험 낮고, 검증 쉬운 첫 자동화 후보를 추천해주세요.
 - 마지막에는 automation-brief.md와 mission-backlog.md 초안을 만들 수 있게 정리해주세요.
-- 장기 작업이 되면 별도 메타 모니터 세션이 읽을 수 있도록 상태 파일을 갱신하고, 메타 모니터 세션은 쓰기를 meta-monitor/ 안으로만 제한해서 HTML 현황판과 시각화를 갱신해주세요.
 ```

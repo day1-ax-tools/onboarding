@@ -565,6 +565,7 @@
     body[data-os="windows"] .shell-tabs {
       grid-column: 2;
       order: 2;
+      display: none;
     }
 
     .code-meta {
@@ -777,6 +778,7 @@
     .copy-action-row {
       display: flex;
       justify-content: flex-end;
+      gap: 8px;
       margin-top: 8px;
     }
 
@@ -853,6 +855,10 @@
         width: 100%;
       }
 
+      .copy-action-row {
+        flex-direction: column;
+      }
+
     }
   </style>
 </head>
@@ -890,6 +896,11 @@
         <div class="panel">
           <strong>이 페이지가 하지 않는 일</strong>
           <p class="muted">업무 인터뷰, skill 설치, GitHub repo 생성, 미션 백로그 작성은 CLI에서 진행합니다.</p>
+        </div>
+
+        <div class="panel">
+          <strong>설치 처리 기준</strong>
+          <p class="muted">macOS/Linux/WSL은 bash와 zsh 중 현재 쓰는 shell 기준으로 PATH만 다르게 처리합니다. Windows는 PowerShell만 사용합니다.</p>
         </div>
       </aside>
 
@@ -1038,41 +1049,6 @@ command -v codex</code></pre>
         </section>
 
         <section>
-          <h2>작업 중 현황판</h2>
-          <p class="handoff">설치와 첫 온보딩이 끝난 뒤, 장기 작업에서만 메타 모니터를 명시적으로 켭니다. 메타 모니터는 별도 레포의 런타임이며, 사용자가 요청한 repo에 설치한 뒤 작동합니다.</p>
-
-          <div class="step">
-            <div class="step-head">
-              <span class="num">A</span>
-              <strong>요청할 때만 활성화</strong>
-            </div>
-            <div class="step-body">
-              <p class="muted"><code>메타 모니터를 켜자</code> 또는 <code>Briefing Board를 만들자</code>처럼 요청하면, 보조 CLI 세션이 <code>day1-ax-tools/meta-monitor</code> 런타임을 대상 repo에 설치하고 작업 내용과 Git 상태를 관찰합니다.</p>
-            </div>
-          </div>
-
-          <div class="step">
-            <div class="step-head">
-              <span class="num">B</span>
-              <strong>별도 런타임 설치</strong>
-            </div>
-            <div class="step-body">
-              <p class="muted"><code>day1-ax-tools/meta-monitor</code>에서 <code>meta-monitor/</code> 런타임을 가져오고, <code>settings.example.json</code>을 <code>settings.json</code>으로 복사해 provider, model, effort, language, context, write scope를 기록합니다.</p>
-            </div>
-          </div>
-
-          <div class="step">
-            <div class="step-head">
-              <span class="num">C</span>
-              <strong>Briefing Board로 이어가기</strong>
-            </div>
-            <div class="step-body">
-              <p class="muted">로컬 bridge와 worker를 실행하면 <code>Briefing Board</code>가 최신 메인 세션 이벤트와 조언을 보여줍니다. 모든 모니터 이벤트는 <code>meta-monitor/session-data.jsonl</code>에 남기고, context 70%를 넘으면 최신 <code>session-handoff.md</code> 하나만 참조 중심으로 유지합니다.</p>
-            </div>
-          </div>
-        </section>
-
-        <section>
           <h2>CLI로 넘기기</h2>
           <p class="handoff">아래 문장을 설치된 CLI에 붙여넣으면, 이후부터는 터미널 안에서 지침 파일 설치, skill 설치, 작업 루트/GitHub 설정, local/remote 실습, 업무 인터뷰를 이어갑니다.</p>
           <div class="ai-cli-window" aria-label="AI CLI 입력 화면 미리보기">
@@ -1106,13 +1082,13 @@ command -v codex</code></pre>
                 <pre><code id="handoff-prompt">$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.
 먼저 현재 저장소에 필요한 AGENTS.md와 skill 설치 상태를 확인하고,
 그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.
-환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.
-제가 명시적으로 요청할 때만 메타 모니터를 온보딩하고 활성화해주세요. 그때는 day1-ax-tools/meta-monitor 레포에서 meta-monitor/ 런타임을 설치하거나 복사하고, meta-monitor/settings.example.json을 meta-monitor/settings.json으로 복사한 뒤 language는 fallback en, 현재 터미널 입력 언어 우선으로 설정해주세요. 쓰기는 meta-monitor/ 폴더 안으로만 제한하고, bridge와 worker를 실행해 Briefing Board를 열어주세요. context 70% 초과 시 meta-monitor/session-handoff.md 최신 파일 하나만 참조 중심으로 유지하고, 모든 모니터 이벤트는 meta-monitor/session-data.jsonl에 저장해주세요.</code></pre>
+환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.</code></pre>
               </div>
             </div>
           </div>
           <div class="copy-action-row">
             <button type="button" data-copy="handoff-prompt">입력문 복사</button>
+            <a id="board-link" class="button" href="brief-board.html">온보딩 보드 열기</a>
           </div>
           <div class="status" id="copy-status" role="status" aria-live="polite"></div>
         </section>
@@ -1150,35 +1126,30 @@ command -v codex</code></pre>
           },
           loginNote: "브라우저 로그인 안내가 나오면 ChatGPT 계정 또는 API key 흐름을 따라갑니다.",
           handoff: {
-            bash: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 AGENTS.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.\n제가 명시적으로 요청할 때만 메타 모니터를 온보딩하고 활성화해주세요. 그때는 day1-ax-tools/meta-monitor 레포에서 meta-monitor/ 런타임을 설치하거나 복사하고, meta-monitor/settings.example.json을 meta-monitor/settings.json으로 복사한 뒤 language는 fallback en, 현재 터미널 입력 언어 우선으로 설정해주세요. 쓰기는 meta-monitor/ 폴더 안으로만 제한하고, bridge와 worker를 실행해 Briefing Board를 열어주세요. context 70% 초과 시 meta-monitor/session-handoff.md 최신 파일 하나만 참조 중심으로 유지하고, 모든 모니터 이벤트는 meta-monitor/session-data.jsonl에 저장해주세요.",
-            zsh: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 AGENTS.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.\n제가 명시적으로 요청할 때만 메타 모니터를 온보딩하고 활성화해주세요. 그때는 day1-ax-tools/meta-monitor 레포에서 meta-monitor/ 런타임을 설치하거나 복사하고, meta-monitor/settings.example.json을 meta-monitor/settings.json으로 복사한 뒤 language는 fallback en, 현재 터미널 입력 언어 우선으로 설정해주세요. 쓰기는 meta-monitor/ 폴더 안으로만 제한하고, bridge와 worker를 실행해 Briefing Board를 열어주세요. context 70% 초과 시 meta-monitor/session-handoff.md 최신 파일 하나만 참조 중심으로 유지하고, 모든 모니터 이벤트는 meta-monitor/session-data.jsonl에 저장해주세요."
+            bash: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 AGENTS.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.",
+            zsh: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 AGENTS.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요."
           }
         },
         windows: {
           title: "Codex CLI 설치",
           note: "Windows PowerShell에서는 install.ps1을 실행합니다.",
           install: {
-            bash: "powershell -ExecutionPolicy ByPass -c \"irm https://chatgpt.com/codex/install.ps1 | iex\"",
-            zsh: "powershell -ExecutionPolicy ByPass -c \"irm https://chatgpt.com/codex/install.ps1 | iex\""
+            powershell: "powershell -ExecutionPolicy ByPass -c \"irm https://chatgpt.com/codex/install.ps1 | iex\""
           },
           verify: {
-            bash: "codex --version",
-            zsh: "codex --version"
+            powershell: "codex --version"
           },
           pathNote: "Codex 설치 경로를 현재 PowerShell 세션의 PATH에 바로 반영합니다. 새 PowerShell을 열지 않아도 다음 단계에서 codex 명령을 실행할 수 있게 해줍니다.",
           pathCheck: {
-            bash: "$userPath = [Environment]::GetEnvironmentVariable(\"Path\", \"User\")\n$machinePath = [Environment]::GetEnvironmentVariable(\"Path\", \"Machine\")\n$codexBin = \"$env:LOCALAPPDATA\\Programs\\OpenAI\\Codex\\bin\"\n$env:Path = \"$codexBin;$userPath;$machinePath;$env:Path\"\nwhere.exe codex",
-            zsh: "$userPath = [Environment]::GetEnvironmentVariable(\"Path\", \"User\")\n$machinePath = [Environment]::GetEnvironmentVariable(\"Path\", \"Machine\")\n$codexBin = \"$env:LOCALAPPDATA\\Programs\\OpenAI\\Codex\\bin\"\n$env:Path = \"$codexBin;$userPath;$machinePath;$env:Path\"\nwhere.exe codex"
+            powershell: "$userPath = [Environment]::GetEnvironmentVariable(\"Path\", \"User\")\n$machinePath = [Environment]::GetEnvironmentVariable(\"Path\", \"Machine\")\n$codexBin = \"$env:LOCALAPPDATA\\Programs\\OpenAI\\Codex\\bin\"\n$env:Path = \"$codexBin;$userPath;$machinePath;$env:Path\"\nwhere.exe codex"
           },
           loginTitle: "Codex 실행 및 로그인",
           login: {
-            bash: "codex",
-            zsh: "codex"
+            powershell: "codex"
           },
           loginNote: "브라우저 로그인 안내가 나오면 ChatGPT 계정 또는 API key 흐름을 따라갑니다.",
           handoff: {
-            bash: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 AGENTS.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.\n제가 명시적으로 요청할 때만 메타 모니터를 온보딩하고 활성화해주세요. 그때는 day1-ax-tools/meta-monitor 레포에서 meta-monitor/ 런타임을 설치하거나 복사하고, meta-monitor/settings.example.json을 meta-monitor/settings.json으로 복사한 뒤 language는 fallback en, 현재 터미널 입력 언어 우선으로 설정해주세요. 쓰기는 meta-monitor/ 폴더 안으로만 제한하고, bridge와 worker를 실행해 Briefing Board를 열어주세요. context 70% 초과 시 meta-monitor/session-handoff.md 최신 파일 하나만 참조 중심으로 유지하고, 모든 모니터 이벤트는 meta-monitor/session-data.jsonl에 저장해주세요.",
-            zsh: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 AGENTS.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.\n제가 명시적으로 요청할 때만 메타 모니터를 온보딩하고 활성화해주세요. 그때는 day1-ax-tools/meta-monitor 레포에서 meta-monitor/ 런타임을 설치하거나 복사하고, meta-monitor/settings.example.json을 meta-monitor/settings.json으로 복사한 뒤 language는 fallback en, 현재 터미널 입력 언어 우선으로 설정해주세요. 쓰기는 meta-monitor/ 폴더 안으로만 제한하고, bridge와 worker를 실행해 Briefing Board를 열어주세요. context 70% 초과 시 meta-monitor/session-handoff.md 최신 파일 하나만 참조 중심으로 유지하고, 모든 모니터 이벤트는 meta-monitor/session-data.jsonl에 저장해주세요."
+            powershell: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 AGENTS.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요."
           }
         }
       },
@@ -1210,35 +1181,30 @@ command -v codex</code></pre>
           },
           loginNote: "Claude Code는 Pro, Max, Team, Enterprise, 또는 Console 계정이 필요합니다.",
           handoff: {
-            bash: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 CLAUDE.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.\n제가 명시적으로 요청할 때만 메타 모니터를 온보딩하고 활성화해주세요. 그때는 day1-ax-tools/meta-monitor 레포에서 meta-monitor/ 런타임을 설치하거나 복사하고, meta-monitor/settings.example.json을 meta-monitor/settings.json으로 복사한 뒤 language는 fallback en, 현재 터미널 입력 언어 우선으로 설정해주세요. 쓰기는 meta-monitor/ 폴더 안으로만 제한하고, bridge와 worker를 실행해 Briefing Board를 열어주세요. context 70% 초과 시 meta-monitor/session-handoff.md 최신 파일 하나만 참조 중심으로 유지하고, 모든 모니터 이벤트는 meta-monitor/session-data.jsonl에 저장해주세요.",
-            zsh: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 CLAUDE.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.\n제가 명시적으로 요청할 때만 메타 모니터를 온보딩하고 활성화해주세요. 그때는 day1-ax-tools/meta-monitor 레포에서 meta-monitor/ 런타임을 설치하거나 복사하고, meta-monitor/settings.example.json을 meta-monitor/settings.json으로 복사한 뒤 language는 fallback en, 현재 터미널 입력 언어 우선으로 설정해주세요. 쓰기는 meta-monitor/ 폴더 안으로만 제한하고, bridge와 worker를 실행해 Briefing Board를 열어주세요. context 70% 초과 시 meta-monitor/session-handoff.md 최신 파일 하나만 참조 중심으로 유지하고, 모든 모니터 이벤트는 meta-monitor/session-data.jsonl에 저장해주세요."
+            bash: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 CLAUDE.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.",
+            zsh: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 CLAUDE.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요."
           }
         },
         windows: {
           title: "Claude Code 설치",
           note: "Windows PowerShell에서는 install.ps1을 실행합니다.",
           install: {
-            bash: "irm https://claude.ai/install.ps1 | iex",
-            zsh: "irm https://claude.ai/install.ps1 | iex"
+            powershell: "irm https://claude.ai/install.ps1 | iex"
           },
           verify: {
-            bash: "claude --version\nclaude doctor",
-            zsh: "claude --version\nclaude doctor"
+            powershell: "claude --version\nclaude doctor"
           },
           pathNote: "Claude Code 설치가 업데이트한 User/Machine PATH를 현재 PowerShell 세션에 다시 읽어옵니다. 새 PowerShell을 열지 않아도 다음 단계에서 claude 명령을 실행할 수 있게 해줍니다.",
           pathCheck: {
-            bash: "$userPath = [Environment]::GetEnvironmentVariable(\"Path\", \"User\")\n$machinePath = [Environment]::GetEnvironmentVariable(\"Path\", \"Machine\")\n$env:Path = \"$userPath;$machinePath;$env:Path\"\nwhere.exe claude",
-            zsh: "$userPath = [Environment]::GetEnvironmentVariable(\"Path\", \"User\")\n$machinePath = [Environment]::GetEnvironmentVariable(\"Path\", \"Machine\")\n$env:Path = \"$userPath;$machinePath;$env:Path\"\nwhere.exe claude"
+            powershell: "$userPath = [Environment]::GetEnvironmentVariable(\"Path\", \"User\")\n$machinePath = [Environment]::GetEnvironmentVariable(\"Path\", \"Machine\")\n$env:Path = \"$userPath;$machinePath;$env:Path\"\nwhere.exe claude"
           },
           loginTitle: "Claude Code 실행 및 로그인",
           login: {
-            bash: "claude",
-            zsh: "claude"
+            powershell: "claude"
           },
           loginNote: "Claude Code는 Pro, Max, Team, Enterprise, 또는 Console 계정이 필요합니다.",
           handoff: {
-            bash: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 CLAUDE.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.\n제가 명시적으로 요청할 때만 메타 모니터를 온보딩하고 활성화해주세요. 그때는 day1-ax-tools/meta-monitor 레포에서 meta-monitor/ 런타임을 설치하거나 복사하고, meta-monitor/settings.example.json을 meta-monitor/settings.json으로 복사한 뒤 language는 fallback en, 현재 터미널 입력 언어 우선으로 설정해주세요. 쓰기는 meta-monitor/ 폴더 안으로만 제한하고, bridge와 worker를 실행해 Briefing Board를 열어주세요. context 70% 초과 시 meta-monitor/session-handoff.md 최신 파일 하나만 참조 중심으로 유지하고, 모든 모니터 이벤트는 meta-monitor/session-data.jsonl에 저장해주세요.",
-            zsh: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 CLAUDE.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.\n제가 명시적으로 요청할 때만 메타 모니터를 온보딩하고 활성화해주세요. 그때는 day1-ax-tools/meta-monitor 레포에서 meta-monitor/ 런타임을 설치하거나 복사하고, meta-monitor/settings.example.json을 meta-monitor/settings.json으로 복사한 뒤 language는 fallback en, 현재 터미널 입력 언어 우선으로 설정해주세요. 쓰기는 meta-monitor/ 폴더 안으로만 제한하고, bridge와 worker를 실행해 Briefing Board를 열어주세요. context 70% 초과 시 meta-monitor/session-handoff.md 최신 파일 하나만 참조 중심으로 유지하고, 모든 모니터 이벤트는 meta-monitor/session-data.jsonl에 저장해주세요."
+            powershell: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 CLAUDE.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요."
           }
         }
       }
@@ -1275,6 +1241,9 @@ command -v codex</code></pre>
     }
 
     function resolveCode(value) {
+      if (selectedOs === "windows") {
+        return value.powershell || value.bash;
+      }
       return value[selectedShell] || value.bash;
     }
 
@@ -1345,11 +1314,21 @@ command -v codex</code></pre>
         title.textContent = windowTitle();
       });
       document.querySelectorAll("[data-shell-name]").forEach((name) => {
-        name.textContent = selectedShell;
+        name.textContent = selectedOs === "windows" ? "powershell" : selectedShell;
       });
       document.querySelectorAll("[data-prompt]").forEach((prompt) => {
         prompt.textContent = promptText();
       });
+    }
+
+    function updateBoardLink() {
+      const shell = selectedOs === "windows" ? "powershell" : selectedShell;
+      const params = new URLSearchParams({
+        tool: selectedTool,
+        os: selectedOs,
+        shell
+      });
+      document.getElementById("board-link").href = `brief-board.html?${params.toString()}`;
     }
 
     function updateAiCliPreview() {
@@ -1381,6 +1360,7 @@ command -v codex</code></pre>
       setText("login-command", resolveCode(selected.login));
       setText("login-note", selected.loginNote);
       setText("handoff-prompt", resolveCode(selected.handoff));
+      updateBoardLink();
       document.getElementById("copy-status").textContent = "";
     }
 

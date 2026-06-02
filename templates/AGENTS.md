@@ -18,29 +18,10 @@ Use concise polite Korean by default. Teach common concepts first, then mention 
 8. Keep the interview going with 1-3 questions at a time.
 9. Save environment progress to `environment-state.md`, interview progress to `interview-state.md`, and detailed notes to `logs/`.
 10. When a mission is selected, create or update `automation-brief.md`, `work-map.md`, `ontology-seeds.md`, `mission-backlog.md`, and `missions/M001-<slug>.md`.
-11. If the user explicitly asks for a meta monitor, run the Meta Monitoring Loop using all visible work content, saved files, and Git state as the shared source while excluding hidden model reasoning.
 
-## Meta Monitoring
+## Visual Guidance
 
-Use this only when the user explicitly asks for ongoing status, a Briefing Board, or a second CLI session to observe the work. Do not activate it automatically.
-
-- Treat the active interview or implementation CLI as the main session.
-- Treat the second CLI as the monitor session.
-- The monitor session may read all visible work content from another local session when the user allows it and access is technically available.
-- Visible work content includes chat transcript, session log, commands, tool outputs, file changes, generated artifacts, and Git state.
-- If session history is unavailable, the monitor session should ask the main session to export, summarize, or save the missing work content before relying on artifacts and Git state alone.
-- The monitor session must intentionally exclude hidden model reasoning. Reading the main session's reasoning path can make the monitor synchronize with the main session and weaken independent oversight.
-- Meta Monitor is a separate runtime repo: `https://github.com/day1-ax-tools/meta-monitor`. Install or copy the runtime from that repo instead of inventing monitor files from scratch.
-- Create `meta-monitor/settings.json` before starting the monitor. It controls provider, model, effort, language, context size, context soft limit, fast mode, main-session-provider design, and write scope. Language fallback is `en`, while the current language follows the user's terminal input in the main session.
-- The monitor session may write only under `meta-monitor/**` by default.
-- Use `meta-monitor/main-session-events.jsonl` as the primary monitor input. Each visible main-session user request, assistant response summary, tool/action summary, file change, decision, or verification result should be saved as one JSONL event. Manual questions in `meta-monitor/questions.jsonl` are secondary.
-- Use `meta-monitor/monitor-input.schema.json` as the input contract and `meta-monitor/monitor-prompt.md` as the prompt contract. The worker should create `meta-monitor/monitor-input.latest.json` before writing advice.
-- The Briefing Board should expose top status tags for repo/session identity, a tab bar for `메타 모니터 콘솔`, `현황`, `업무 지도`, `미션 백로그`, and `의사결정 지도`, a terminal-like monitor console backed by main-session events, the local bridge queue, and `/api/events`, a manual output refresh fallback backed by `meta-monitor/main-session-events.jsonl`, `meta-monitor/questions.jsonl`, and `meta-monitor/meta-advice.md`, a top-right settings button/dialog, and visualization sections under `meta-monitor/briefing-board.html`. Use `meta-monitor/monitor-worker.mjs` or an equivalent monitor CLI loop to turn main-session events first, then queued questions, into `meta-monitor/meta-advice.md`. Keep user-facing UI copy in the current user language.
-- The monitor session may write `meta-monitor/briefing-board.html`, `meta-monitor/settings.json`, `meta-monitor/main-session-events.jsonl`, `meta-monitor/monitor-input.schema.json`, `meta-monitor/monitor-prompt.md`, `meta-monitor/monitor-input.latest.json`, `meta-monitor/monitor-state.json`, `meta-monitor/meta-advice.md`, `meta-monitor/questions.jsonl`, `meta-monitor/session-data.jsonl`, `meta-monitor/session-handoff.md`, and `meta-monitor/visualizations/*.html`.
-- The monitor session should not edit product code, mission specs, `environment-state.md`, `interview-state.md`, `automation-brief.md`, `mission-backlog.md`, or Git history unless the user explicitly changes the write boundary.
-- Monitor advice must cite visible work content, saved files, Briefing Board state, or Git signals.
-- When context usage reaches 70% or the configured soft limit, keep only one latest `meta-monitor/session-handoff.md`, written mostly as references.
-- Save monitor events to `meta-monitor/session-data.jsonl` every observation, answer, settings update, Briefing Board update, visualization, and handoff.
+When creating HTML explanations, do not rely only on boxes with text. Use visual forms that match the concept: git branch graphs for onboarding and work state, flow diagrams for local/remote movement, folder trees for workspace layout, tables for artifact state, and risk/value matrices for automation candidates.
 
 ## Continuity
 
@@ -50,12 +31,6 @@ At the start of a resumed session, read:
 - `interview-state.md`
 - `automation-brief.md`
 - `mission-backlog.md`
-- `meta-monitor/settings.json` if present
-- `meta-monitor/session-handoff.md` if present
-- `meta-monitor/main-session-events.jsonl` if present
-- `meta-monitor/monitor-input.latest.json` if present
-- `meta-monitor/monitor-state.json` if present
-- `meta-monitor/meta-advice.md` if present
 - the latest file in `logs/`
 
 Then summarize the current phase and ask the next smallest useful question.
