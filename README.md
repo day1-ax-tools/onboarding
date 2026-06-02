@@ -90,9 +90,83 @@ open web/index.html
 
 - 온보딩 진행 단계를 git branch graph 형태로 보여준다.
 - 설치/인증, 환경 설정, 업무 지도, 미션 후보가 어떻게 분기되고 합쳐지는지 시각화한다.
+- CLI가 갱신한 `.onboarding/state.json` 또는 `web/onboarding-state.json`을 읽어 그래프 node 상태를 바꾼다.
 - 사용자가 입력한 역할, 성과, 반복 업무, 입력 도구, 위험을 바탕으로 작업 지도와 자동화 후보를 즉시 보여준다.
 - 생성될 산출물인 `environment-state.md`, `work-map.md`, `ontology-seeds.md`, `mission-backlog.md`, `missions/M001-<slug>.md`의 역할을 미리 보여준다.
 - CLI에 붙여넣을 업무 요약문과 프로젝트 단위 지침/skill 수동 설치 fallback 명령을 제공한다.
+
+### Onboarding State Hooks
+
+진행률과 체크리스트는 사용자가 웹에서 직접 조작하지 않는다. 온보딩의 실제 권위는 CLI가 완료 조건을 검증한 뒤 갱신하는 상태 파일이다.
+
+```text
+CLI 단계 완료
+→ 완료 조건 검증
+→ node .onboarding/update-state.mjs <step-id> <status> 실행
+→ .onboarding/state.json 갱신
+→ 필요하면 web/onboarding-state.json mirror 갱신
+→ brief-board.html이 주기적으로 읽어 git branch graph 갱신
+→ 모든 필수 단계 완료 시 hooks.enabled=false
+```
+
+상태 hook은 OS나 AI CLI 전역 hook이 아니다. 프로젝트 안의 `.onboarding/` 폴더에만 쓰는 **온보딩 세션 내부 완료 계약**이다. Codex와 Claude Code는 같은 step id와 같은 updater를 사용한다.
+
+상태 파일 템플릿:
+
+```text
+templates/onboarding/state.json
+templates/onboarding/update-state.mjs
+web/brief-board.html
+```
+
+대상 repo에 설치되는 위치:
+
+```text
+.onboarding/state.json
+.onboarding/update-state.mjs
+.onboarding/brief-board.html
+```
+
+`web/brief-board.html`은 설치 전 preview board다. CLI handoff 뒤 실제 진행 상태를 보려면 대상 repo에 복사된 `.onboarding/brief-board.html`을 로컬 HTTP 서버로 연다. 이 보드는 같은 폴더의 `state.json`을 읽는다.
+
+공통 명령:
+
+```bash
+node .onboarding/update-state.mjs kit-install done --tool codex --os mac --shell zsh --evidence "AGENTS.md and skill copied"
+```
+
+Windows PowerShell에서도 같은 updater를 호출한다.
+
+```powershell
+node .onboarding\update-state.mjs kit-install done --tool claude --os windows --shell powershell --evidence "CLAUDE.md and skill copied"
+```
+
+상태 값:
+
+| 값 | 의미 |
+| --- | --- |
+| `pending` | 아직 시작 전 |
+| `active` | 현재 진행 중 |
+| `done` | 완료 조건과 증거가 확인됨 |
+| `blocked` | 사용자의 선택, 권한, 설치 실패 등으로 멈춤 |
+| `skipped` | 명시적으로 건너뜀 |
+
+필수 단계:
+
+| Step id | 완료 조건 |
+| --- | --- |
+| `cli-install` | 선택한 Codex 또는 Claude Code 명령이 실행 가능함 |
+| `auth` | 선택한 AI CLI 인증이 완료됨 |
+| `cli-handoff` | 사용자가 웹 handoff prompt를 CLI에 전달함 |
+| `kit-install` | `AGENTS.md`/`CLAUDE.md`와 `work-mission-discovery` skill이 대상 repo에 설치됨 |
+| `work-root` | 작업 루트와 현재 repo 위치가 정리됨 |
+| `github-auth` | `gh auth status`, remote, branch 상태가 확인됨 |
+| `git-loop` | status/add/commit/push/pull 흐름을 완료하거나 관찰함 |
+| `role-map` | 역할과 책임지는 결과가 기록됨 |
+| `task-split` | 반복 업무가 실행 단위로 분해됨 |
+| `mission-select` | 첫 자동화 미션 후보가 선택됨 |
+
+`update-state.mjs`는 모든 필수 단계가 `done`이 되면 `hooks.enabled=false`와 `hooks.disposedAt`을 기록한다. 이후 보드는 완료 상태를 보여주지만, CLI는 더 이상 온보딩 hook을 강제로 이어가지 않는다.
 
 웹페이지가 직접 하지 않는 것:
 
@@ -130,6 +204,7 @@ open web/index.html
 | --- | --- | --- | --- |
 | 지속 지침 | `AGENTS.md` | `CLAUDE.md` | 매 세션 반복할 작업 방식 저장 |
 | Skill | `.agents/skills/work-mission-discovery/` | `.claude/skills/work-mission-discovery/` | 업무 인터뷰와 미션 백로그 생성 |
+| 온보딩 상태 hook | `.onboarding/state.json`, `.onboarding/update-state.mjs` | 동일 | CLI 완료 상태를 brief board 그래프로 전달 |
 | 환경 상태 | `environment-state.md` | `environment-state.md` | 작업 루트, repo, remote, branch, GitHub auth 상태 저장 |
 | 인터뷰 상태 | `interview-state.md` | `interview-state.md` | 끊긴 대화를 이어갈 위치 저장 |
 | 산출물 | `work-map.md`, `ontology-seeds.md`, `mission-backlog.md`, `missions/`, `logs/` | 동일 | 다음 작업의 맥락 자산 |
@@ -165,10 +240,16 @@ Claude Code: "현재 로드된 memory와 프로젝트 지침을 요약해주세�
 # Codex project skill
 mkdir -p .agents/skills
 cp -R /path/to/onboarding/.agents/skills/work-mission-discovery .agents/skills/
+mkdir -p .onboarding
+cp -R /path/to/onboarding/templates/onboarding/. .onboarding/
+cp /path/to/onboarding/web/brief-board.html .onboarding/brief-board.html
 
 # Claude Code project skill
 mkdir -p .claude/skills
 cp -R /path/to/onboarding/.claude/skills/work-mission-discovery .claude/skills/
+mkdir -p .onboarding
+cp -R /path/to/onboarding/templates/onboarding/. .onboarding/
+cp /path/to/onboarding/web/brief-board.html .onboarding/brief-board.html
 ```
 
 이 온보딩 저장소 자체에서는 이미 두 위치에 skill이 들어 있다.

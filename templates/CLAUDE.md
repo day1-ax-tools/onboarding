@@ -9,3 +9,5 @@ Use the `work-mission-discovery` skill when the user needs AI CLI work environme
 Skills are model-invoked. If the user mentions `work-mission-discovery`, read the matching skill instructions from `.claude/skills/work-mission-discovery/SKILL.md` when available.
 
 Use `/memory` only when the user wants to inspect or edit loaded memory. Keep the active interview state in project files, not only in chat memory.
+
+Use the shared onboarding state hook contract from `AGENTS.md`. On Windows, call `.onboarding\update-state.mjs` through PowerShell; on macOS/Linux/WSL, call `.onboarding/update-state.mjs` from the selected shell.

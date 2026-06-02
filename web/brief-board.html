@@ -287,40 +287,34 @@
       font-size: 13px;
     }
 
-    .progress {
-      height: 10px;
-      overflow: hidden;
-      border-radius: 999px;
-      background: var(--surface-3);
-    }
-
-    .progress span {
-      display: block;
-      width: 0;
-      height: 100%;
-      background: var(--accent);
-      transition: width 180ms ease;
-    }
-
-    .checklist {
+    .status-stack {
       display: grid;
-      gap: 8px;
-      margin-top: 12px;
+      gap: 10px;
     }
 
-    .check {
+    .status-row {
       display: grid;
-      grid-template-columns: 22px minmax(0, 1fr);
-      gap: 8px;
-      align-items: start;
-      font-size: 14px;
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+      gap: 10px;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+      font-size: 13px;
     }
 
-    .check input {
-      width: 18px;
-      height: 18px;
-      margin: 2px 0 0;
-      accent-color: var(--accent);
+    .status-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .status-row span {
+      color: var(--muted);
+    }
+
+    .status-row strong {
+      color: var(--ink);
+      font-weight: 650;
+      word-break: break-word;
     }
 
     .lane-grid {
@@ -378,6 +372,18 @@
       stroke-width: 4;
     }
 
+    .commit-node.blocked {
+      fill: var(--warn-bg);
+      stroke: var(--warn);
+      stroke-width: 4;
+    }
+
+    .commit-node.skipped {
+      fill: var(--surface-3);
+      stroke: var(--muted);
+      stroke-dasharray: 4 4;
+    }
+
     .commit-label {
       fill: var(--ink);
       font-size: 13px;
@@ -426,6 +432,11 @@
 
     .legend-dot.active {
       border-color: var(--accent);
+    }
+
+    .legend-dot.blocked {
+      border-color: var(--warn);
+      background: var(--warn-bg);
     }
 
     .state-table {
@@ -813,12 +824,17 @@
       <aside>
         <div class="panel">
           <div class="panel-head">
-            <h2>진행률</h2>
-            <span class="badge good" id="progress-label">0%</span>
+            <h2>온보딩 상태</h2>
+            <span class="badge" id="hook-state">Hook 대기</span>
           </div>
           <div class="panel-body">
-            <div class="progress" aria-label="온보딩 진행률"><span id="progress-bar"></span></div>
-            <div class="checklist" id="checklist"></div>
+            <div class="status-stack" aria-label="CLI가 갱신한 온보딩 상태">
+              <div class="status-row"><span>상태 출처</span><strong id="state-source">검색 중</strong></div>
+              <div class="status-row"><span>현재 단계</span><strong id="state-current-step">대기</strong></div>
+              <div class="status-row"><span>최근 완료</span><strong id="state-last-done">없음</strong></div>
+              <div class="status-row"><span>다음 작업</span><strong id="state-next-step">CLI handoff</strong></div>
+              <div class="status-row"><span>갱신 시각</span><strong id="state-updated-at">-</strong></div>
+            </div>
           </div>
         </div>
 
@@ -851,7 +867,7 @@
             <div class="graph-legend" aria-label="그래프 범례">
               <div class="legend-item"><span class="legend-dot done"></span><span>완료된 온보딩 커밋</span></div>
               <div class="legend-item"><span class="legend-dot active"></span><span>현재 진행 중인 지점</span></div>
-              <div class="legend-item"><span class="legend-dot"></span><span>아직 생성 전인 작업</span></div>
+              <div class="legend-item"><span class="legend-dot blocked"></span><span>확인이 필요한 지점</span></div>
             </div>
             <table class="state-table" aria-label="브랜치별 현재 상태">
               <thead>
@@ -970,6 +986,7 @@
   <script>
     const params = new URLSearchParams(window.location.search);
     const storeKey = "onboarding-brief-board-state";
+    const stateRefreshMs = 5000;
     const setup = {
       tool: params.get("tool") || localStorage.getItem("onboarding-entry-tool") || "codex",
       os: params.get("os") || localStorage.getItem("onboarding-entry-os") || "mac",
@@ -980,21 +997,31 @@
       setup.shell = "powershell";
     }
 
-    const checklistItems = [
-      ["cliInstalled", "CLI 설치와 첫 실행 완료"],
-      ["authDone", "로그인 또는 인증 완료"],
-      ["promptCopied", "온보딩 프롬프트를 CLI에 전달"],
-      ["kitInstalled", "지침 파일과 skill 설치 확인"],
-      ["workRoot", "작업 루트와 repo 위치 결정"],
-      ["githubReady", "GitHub 인증과 remote 연결 확인"],
-      ["gitLoop", "status/add/commit/push/pull 흐름 실습"],
-      ["roleMapped", "역할과 책임지는 결과 정리"],
-      ["taskSplit", "반복 업무를 실행 단위로 분해"],
-      ["missionChosen", "첫 자동화 미션 선택"]
+    const stateSources = [
+      params.get("state"),
+      "state.json",
+      "onboarding-state.json",
+      "../.onboarding/state.json",
+      "/.onboarding/state.json"
+    ].filter(Boolean);
+
+    const stepDefinitions = [
+      { id: "cli-install", branch: "main", label: "CLI 설치", meta: setup.tool === "claude" ? "Claude Code" : "Codex" },
+      { id: "auth", branch: "main", label: "인증", meta: "로그인" },
+      { id: "cli-handoff", branch: "main", label: "CLI 전달", meta: "prompt" },
+      { id: "kit-install", branch: "setup", label: "지침 설치", meta: setup.tool === "claude" ? "CLAUDE.md" : "AGENTS.md" },
+      { id: "work-root", branch: "setup", label: "작업 repo", meta: "local/remote" },
+      { id: "github-auth", branch: "setup", label: "GitHub 연결", meta: "gh" },
+      { id: "git-loop", branch: "setup", label: "Git 루프", meta: "commit/push" },
+      { id: "role-map", branch: "work", label: "역할", meta: "outcome" },
+      { id: "task-split", branch: "work", label: "작업 분해", meta: "tasks" },
+      { id: "mission-select", branch: "mission", label: "M001 후보", meta: "backlog" }
     ];
 
     const fields = ["role", "outcomes", "works", "inputs", "risks"];
     const saved = readState();
+    let onboardingState = defaultOnboardingState();
+    let stateSource = "상태 파일 대기";
 
     document.body.dataset.tool = setup.tool === "claude" ? "claude" : "codex";
     document.body.dataset.os = setup.os === "windows" ? "windows" : "mac";
@@ -1044,13 +1071,134 @@
       document.getElementById("kit-prompt").textContent = promptText();
     }
 
+    function defaultOnboardingState() {
+      const steps = {};
+      stepDefinitions.forEach((step, index) => {
+        steps[step.id] = {
+          status: index === 0 ? "active" : "pending",
+          label: step.label,
+          branch: step.branch,
+          required: true,
+          updatedAt: null,
+          evidence: []
+        };
+      });
+      return {
+        version: 1,
+        tool: setup.tool,
+        os: setup.os,
+        shell: setup.shell,
+        hooks: { enabled: true, disposeWhen: "all-required-steps-done" },
+        currentStep: "cli-install",
+        steps,
+        updatedAt: null
+      };
+    }
+
+    function normalizeOnboardingState(raw) {
+      const base = defaultOnboardingState();
+      if (!raw || typeof raw !== "object") {
+        return base;
+      }
+      base.version = raw.version || 1;
+      base.tool = raw.tool || base.tool;
+      base.os = raw.os || base.os;
+      base.shell = raw.shell || base.shell;
+      base.hooks = Object.assign({}, base.hooks, raw.hooks || {});
+      base.currentStep = raw.currentStep || base.currentStep;
+      base.updatedAt = raw.updatedAt || null;
+      stepDefinitions.forEach((step) => {
+        const value = raw.steps && raw.steps[step.id];
+        if (typeof value === "string") {
+          base.steps[step.id].status = value;
+        } else if (value && typeof value === "object") {
+          base.steps[step.id] = Object.assign({}, base.steps[step.id], value);
+        }
+      });
+      return base;
+    }
+
+    async function refreshOnboardingState() {
+      for (const source of stateSources) {
+        try {
+          const response = await fetch(`${source}${source.includes("?") ? "&" : "?"}_=${Date.now()}`, { cache: "no-store" });
+          if (!response.ok) {
+            continue;
+          }
+          onboardingState = normalizeOnboardingState(await response.json());
+          stateSource = source;
+          render();
+          return;
+        } catch (_) {}
+      }
+      onboardingState = defaultOnboardingState();
+      stateSource = "상태 파일 대기";
+      render();
+    }
+
+    function stepDefinition(id) {
+      return stepDefinitions.find((step) => step.id === id) || stepDefinitions[0];
+    }
+
+    function stepState(id) {
+      return onboardingState.steps[id] || { status: "pending", evidence: [] };
+    }
+
+    function stepStatus(id) {
+      return stepState(id).status || "pending";
+    }
+
+    function isDoneStatus(status) {
+      return status === "done" || status === "skipped";
+    }
+
+    function isLitStatus(status) {
+      return status === "done" || status === "active" || status === "blocked" || status === "skipped";
+    }
+
+    function currentStep() {
+      const explicit = onboardingState.currentStep && stepDefinition(onboardingState.currentStep);
+      if (explicit && !isDoneStatus(stepStatus(explicit.id))) {
+        return explicit;
+      }
+      return stepDefinitions.find((step) => !isDoneStatus(stepStatus(step.id))) || stepDefinitions[stepDefinitions.length - 1];
+    }
+
+    function lastDoneStep() {
+      return [...stepDefinitions].reverse().find((step) => isDoneStatus(stepStatus(step.id)));
+    }
+
+    function nextStep() {
+      return stepDefinitions.find((step) => stepStatus(step.id) === "pending") || null;
+    }
+
+    function statusLabel(status) {
+      return {
+        pending: "대기",
+        active: "진행 중",
+        done: "완료",
+        blocked: "확인 필요",
+        skipped: "건너뜀"
+      }[status] || status;
+    }
+
+    function renderStatePanel() {
+      const current = currentStep();
+      const lastDone = lastDoneStep();
+      const next = nextStep();
+      const hookEnabled = onboardingState.hooks && onboardingState.hooks.enabled !== false;
+      document.getElementById("state-source").textContent = stateSource;
+      document.getElementById("state-current-step").textContent = `${current.label} · ${statusLabel(stepStatus(current.id))}`;
+      document.getElementById("state-last-done").textContent = lastDone ? lastDone.label : "없음";
+      document.getElementById("state-next-step").textContent = next ? next.label : "모든 필수 단계 완료";
+      document.getElementById("state-updated-at").textContent = onboardingState.updatedAt || "-";
+      document.getElementById("hook-state").textContent = hookEnabled ? "Hook 활성" : "Hook 폐기";
+      document.getElementById("hook-state").className = hookEnabled ? "badge good" : "badge";
+      document.getElementById("tag-phase").textContent = `현재 단계: ${current.label}`;
+    }
+
     function saveState() {
       const next = readBoard();
-      next.checks = {};
-      checklistItems.forEach(([id]) => {
-        const node = document.getElementById(`check-${id}`);
-        next.checks[id] = Boolean(node && node.checked);
-      });
       localStorage.setItem(storeKey, JSON.stringify(next));
     }
 
@@ -1107,73 +1255,51 @@
       }).sort((a, b) => b.score - a.score);
     }
 
-    function renderChecklist() {
-      const checks = readState().checks || {};
-      const list = document.getElementById("checklist");
-      list.innerHTML = "";
-      checklistItems.forEach(([id, label]) => {
-        const row = document.createElement("label");
-        row.className = "check";
-        row.innerHTML = `<input id="check-${id}" type="checkbox"><span>${label}</span>`;
-        list.appendChild(row);
-        const input = row.querySelector("input");
-        input.checked = Boolean(checks[id]);
-        input.addEventListener("change", () => {
-          saveState();
-          render();
-        });
-      });
-    }
-
-    function renderProgress() {
-      const checked = checklistItems.filter(([id]) => document.getElementById(`check-${id}`).checked).length;
-      const percent = Math.round((checked / checklistItems.length) * 100);
-      document.getElementById("progress-bar").style.width = `${percent}%`;
-      document.getElementById("progress-label").textContent = `${percent}%`;
-      const phase = checked < 3 ? "설치/인증" : checked < 7 ? "환경 설정" : checked < 9 ? "업무 분해" : "미션 선택";
-      document.getElementById("tag-phase").textContent = `현재 단계: ${phase}`;
-      return { checked, percent, phase };
-    }
-
     function graphNodes(tasks) {
       const missionLabel = tasks[0] ? `M001 ${tasks[0].type}` : "M001 후보";
       return [
-        { id: "install", branch: "main", x: 90, y: 78, label: "CLI 설치", meta: setup.tool === "claude" ? "Claude Code" : "Codex", need: 1 },
-        { id: "auth", branch: "main", x: 220, y: 78, label: "인증", meta: "로그인", need: 2 },
-        { id: "handoff", branch: "main", x: 350, y: 78, label: "CLI 전달", meta: "prompt", need: 3 },
-        { id: "kit", branch: "setup", x: 350, y: 168, label: "지침 설치", meta: setup.tool === "claude" ? "CLAUDE.md" : "AGENTS.md", need: 4 },
-        { id: "repo", branch: "setup", x: 490, y: 168, label: "작업 repo", meta: "local/remote", need: 6 },
-        { id: "gitloop", branch: "setup", x: 630, y: 168, label: "Git 루프", meta: "commit/push", need: 7 },
-        { id: "role", branch: "work", x: 490, y: 252, label: "역할", meta: "outcome", need: 8 },
-        { id: "tasks", branch: "work", x: 630, y: 252, label: "작업 분해", meta: `${tasks.length} tasks`, need: 9 },
-        { id: "mission", branch: "mission", x: 800, y: 168, label: missionLabel, meta: "backlog", need: 10 }
+        { id: "cli-install", x: 90, y: 78, label: "CLI 설치", meta: setup.tool === "claude" ? "Claude Code" : "Codex" },
+        { id: "auth", x: 220, y: 78, label: "인증", meta: "로그인" },
+        { id: "cli-handoff", x: 350, y: 78, label: "CLI 전달", meta: "prompt" },
+        { id: "kit-install", x: 350, y: 168, label: "지침 설치", meta: setup.tool === "claude" ? "CLAUDE.md" : "AGENTS.md" },
+        { id: "work-root", x: 490, y: 168, label: "작업 repo", meta: "local/remote" },
+        { id: "github-auth", x: 585, y: 168, label: "GitHub", meta: "gh auth" },
+        { id: "git-loop", x: 690, y: 168, label: "Git 루프", meta: "commit/push" },
+        { id: "role-map", x: 490, y: 252, label: "역할", meta: "outcome" },
+        { id: "task-split", x: 630, y: 252, label: "작업 분해", meta: `${tasks.length} tasks` },
+        { id: "mission-select", x: 800, y: 168, label: missionLabel, meta: "backlog" }
       ];
     }
 
     function renderBranchGraph(tasks) {
-      const progress = renderProgress();
+      renderStatePanel();
       const nodes = graphNodes(tasks);
-      const done = (need) => progress.checked >= need;
-      const activeNeed = Math.min(progress.checked + 1, checklistItems.length);
-      const active = (need) => need === activeNeed;
-      const lineActive = (need) => progress.checked >= need ? " active" : "";
+      const lineActive = (...ids) => ids.some((id) => isLitStatus(stepStatus(id))) ? " active" : "";
+      const nodeClass = (id) => {
+        const status = stepStatus(id);
+        if (status === "done") return "done";
+        if (status === "active") return "active";
+        if (status === "blocked") return "blocked";
+        if (status === "skipped") return "skipped";
+        return "";
+      };
       const svg = document.getElementById("branch-graph");
       svg.innerHTML = `
         <title id="branch-graph-title">온보딩과 작업 생성 흐름을 보여주는 Git 브랜치 그래프</title>
         <desc id="branch-graph-desc">설치, 환경 설정, 업무 입력, 작업 분해, 미션 선택 흐름이 브랜치처럼 갈라졌다가 첫 미션으로 합쳐진다.</desc>
-        <path class="branch-line${lineActive(2)}" d="M90 78 H350" />
-        <path class="branch-line merge${lineActive(4)}" d="M350 78 C350 118 350 132 350 168" />
-        <path class="branch-line${lineActive(7)}" d="M350 168 H630" />
-        <path class="branch-line merge${lineActive(8)}" d="M490 168 C490 204 490 216 490 252" />
-        <path class="branch-line${lineActive(9)}" d="M490 252 H630" />
-        <path class="branch-line merge${lineActive(10)}" d="M630 168 C700 168 730 168 800 168" />
-        <path class="branch-line merge${lineActive(10)}" d="M630 252 C700 252 730 188 800 168" />
+        <path class="branch-line${lineActive("auth", "cli-handoff")}" d="M90 78 H350" />
+        <path class="branch-line merge${lineActive("kit-install")}" d="M350 78 C350 118 350 132 350 168" />
+        <path class="branch-line${lineActive("work-root", "github-auth", "git-loop")}" d="M350 168 H690" />
+        <path class="branch-line merge${lineActive("role-map")}" d="M490 168 C490 204 490 216 490 252" />
+        <path class="branch-line${lineActive("task-split")}" d="M490 252 H630" />
+        <path class="branch-line merge${lineActive("mission-select")}" d="M690 168 C724 168 750 168 800 168" />
+        <path class="branch-line merge${lineActive("mission-select")}" d="M630 252 C700 252 730 188 800 168" />
         <text class="branch-name" x="28" y="82">main/onboarding</text>
         <text class="branch-name" x="244" y="172">setup/env</text>
         <text class="branch-name" x="386" y="256">work-map</text>
         <text class="branch-name" x="708" y="146">mission</text>
         ${nodes.map((node) => {
-          const cls = done(node.need) ? "done" : active(node.need) ? "active" : "";
+          const cls = nodeClass(node.id);
           return `
             <g>
               <circle class="commit-node ${cls}" cx="${node.x}" cy="${node.y}" r="12" />
@@ -1182,16 +1308,24 @@
             </g>`;
         }).join("")}
       `;
-      document.getElementById("graph-state").textContent = `${progress.phase} · ${tasks.length} 후보`;
-      renderBranchTable(tasks, progress);
+      document.getElementById("graph-state").textContent = `${currentStep().label} · ${tasks.length} 후보`;
+      renderBranchTable(tasks);
     }
 
-    function renderBranchTable(tasks, progress) {
+    function branchSignal(ids, doneText, nextText) {
+      const blocked = ids.map((id) => [id, stepStatus(id)]).find(([, status]) => status === "blocked");
+      if (blocked) {
+        return `${stepDefinition(blocked[0]).label} 확인 필요`;
+      }
+      return ids.every((id) => isDoneStatus(stepStatus(id))) ? doneText : nextText;
+    }
+
+    function renderBranchTable(tasks) {
       const first = tasks[0];
       const rows = [
-        ["main/onboarding", "설치, 인증, CLI handoff", progress.checked >= 3 ? "CLI로 넘길 준비 완료" : "설치와 인증 체크 중"],
-        ["setup/env", "지침 파일, skill, 작업 루트, GitHub 연결", progress.checked >= 7 ? "Git 루프 실습 완료" : "repo와 local/remote 확인 필요"],
-        ["work-map", "역할, 성과, 반복 업무를 작업 단위로 분해", progress.checked >= 9 ? "작업 분해 완료" : "업무 입력을 더 채우는 중"],
+        ["main/onboarding", "설치, 인증, CLI handoff", branchSignal(["cli-install", "auth", "cli-handoff"], "CLI로 넘길 준비 완료", "설치와 인증 상태 파일 대기")],
+        ["setup/env", "지침 파일, skill, 작업 루트, GitHub 연결", branchSignal(["kit-install", "work-root", "github-auth", "git-loop"], "Git 루프 실습 완료", "repo와 local/remote 확인 필요")],
+        ["work-map", "역할, 성과, 반복 업무를 작업 단위로 분해", branchSignal(["role-map", "task-split"], "작업 분해 완료", "업무 입력을 더 채우는 중")],
         ["mission", "자동화 후보를 M001과 backlog로 정리", first ? `${first.id} ${first.type} 후보 생성` : "반복 업무 입력 후 생성"]
       ];
       document.getElementById("branch-table").innerHTML = rows.map(([branch, role, signal]) => `
@@ -1293,9 +1427,10 @@ ${tasks.map((task) => `- ${task.id}: ${task.text} / 유형 ${task.type} / 위험
 
 [다음 요청]
 1. 현재 repo의 지침 파일과 work-mission-discovery skill 설치 상태를 확인해주세요.
-2. GitHub auth, 작업 루트, local/remote, commit/push/pull 상태를 environment-state.md에 정리해주세요.
-3. 위 업무 입력을 검토하고 부족한 부분을 1-3개 질문으로 보완해주세요.
-4. 첫 미션 후보는 ${first ? `${first.id} "${first.text}"` : "반복 업무 입력 후"}로 두고, automation-brief.md와 mission-backlog.md 초안을 만들 수 있게 정리해주세요.`;
+2. .onboarding/update-state.mjs가 있으면 각 단계 완료 후 상태 hook을 갱신해주세요.
+3. GitHub auth, 작업 루트, local/remote, commit/push/pull 상태를 environment-state.md에 정리해주세요.
+4. 위 업무 입력을 검토하고 부족한 부분을 1-3개 질문으로 보완해주세요.
+5. 첫 미션 후보는 ${first ? `${first.id} "${first.text}"` : "반복 업무 입력 후"}로 두고, automation-brief.md와 mission-backlog.md 초안을 만들 수 있게 정리해주세요.`;
     }
 
     function renderInstallCommand() {
@@ -1317,14 +1452,22 @@ ${tasks.map((task) => `- ${task.id}: ${task.text} / 유형 ${task.type} / 위험
 mkdir -p .agents/skills
 cp "$ONBOARDING_REPO/templates/AGENTS.md" ./AGENTS.md
 rm -rf .agents/skills/work-mission-discovery
-cp -R "$ONBOARDING_REPO/.agents/skills/work-mission-discovery" .agents/skills/`;
+cp -R "$ONBOARDING_REPO/.agents/skills/work-mission-discovery" .agents/skills/
+mkdir -p .onboarding
+cp -R "$ONBOARDING_REPO/templates/onboarding/." .onboarding/
+cp "$ONBOARDING_REPO/web/brief-board.html" .onboarding/brief-board.html
+if command -v node >/dev/null 2>&1; then node .onboarding/update-state.mjs kit-install done --tool codex --os ${setup.os} --shell ${setup.shell} --evidence "AGENTS.md and work-mission-discovery copied"; fi`;
       }
       return `ONBOARDING_REPO="${path}"
 mkdir -p .claude/skills
 cp "$ONBOARDING_REPO/templates/CLAUDE.md" ./CLAUDE.md
 cp "$ONBOARDING_REPO/templates/AGENTS.md" ./AGENTS.md
 rm -rf .claude/skills/work-mission-discovery
-cp -R "$ONBOARDING_REPO/.claude/skills/work-mission-discovery" .claude/skills/`;
+cp -R "$ONBOARDING_REPO/.claude/skills/work-mission-discovery" .claude/skills/
+mkdir -p .onboarding
+cp -R "$ONBOARDING_REPO/templates/onboarding/." .onboarding/
+cp "$ONBOARDING_REPO/web/brief-board.html" .onboarding/brief-board.html
+if command -v node >/dev/null 2>&1; then node .onboarding/update-state.mjs kit-install done --tool claude --os ${setup.os} --shell ${setup.shell} --evidence "CLAUDE.md and work-mission-discovery copied"; fi`;
     }
 
     function windowsInstall(path, codex) {
@@ -1333,14 +1476,22 @@ cp -R "$ONBOARDING_REPO/.claude/skills/work-mission-discovery" .claude/skills/`;
 New-Item -ItemType Directory -Force ".agents\\skills" | Out-Null
 Copy-Item "$onboardingRepo\\templates\\AGENTS.md" ".\\AGENTS.md" -Force
 Remove-Item ".agents\\skills\\work-mission-discovery" -Recurse -Force -ErrorAction SilentlyContinue
-Copy-Item "$onboardingRepo\\.agents\\skills\\work-mission-discovery" ".agents\\skills\\work-mission-discovery" -Recurse -Force`;
+Copy-Item "$onboardingRepo\\.agents\\skills\\work-mission-discovery" ".agents\\skills\\work-mission-discovery" -Recurse -Force
+New-Item -ItemType Directory -Force ".onboarding" | Out-Null
+Copy-Item "$onboardingRepo\\templates\\onboarding\\*" ".onboarding" -Recurse -Force
+Copy-Item "$onboardingRepo\\web\\brief-board.html" ".onboarding\\brief-board.html" -Force
+if (Get-Command node -ErrorAction SilentlyContinue) { node .onboarding\\update-state.mjs kit-install done --tool codex --os windows --shell powershell --evidence "AGENTS.md and work-mission-discovery copied" }`;
       }
       return `$onboardingRepo = "${path}"
 New-Item -ItemType Directory -Force ".claude\\skills" | Out-Null
 Copy-Item "$onboardingRepo\\templates\\CLAUDE.md" ".\\CLAUDE.md" -Force
 Copy-Item "$onboardingRepo\\templates\\AGENTS.md" ".\\AGENTS.md" -Force
 Remove-Item ".claude\\skills\\work-mission-discovery" -Recurse -Force -ErrorAction SilentlyContinue
-Copy-Item "$onboardingRepo\\.claude\\skills\\work-mission-discovery" ".claude\\skills\\work-mission-discovery" -Recurse -Force`;
+Copy-Item "$onboardingRepo\\.claude\\skills\\work-mission-discovery" ".claude\\skills\\work-mission-discovery" -Recurse -Force
+New-Item -ItemType Directory -Force ".onboarding" | Out-Null
+Copy-Item "$onboardingRepo\\templates\\onboarding\\*" ".onboarding" -Recurse -Force
+Copy-Item "$onboardingRepo\\web\\brief-board.html" ".onboarding\\brief-board.html" -Force
+if (Get-Command node -ErrorAction SilentlyContinue) { node .onboarding\\update-state.mjs kit-install done --tool claude --os windows --shell powershell --evidence "CLAUDE.md and work-mission-discovery copied" }`;
     }
 
     function render() {
@@ -1408,12 +1559,12 @@ Copy-Item "$onboardingRepo\\.claude\\skills\\work-mission-discovery" ".claude\\s
       fields.forEach((id) => {
         document.getElementById(id).value = "";
       });
-      renderChecklist();
       render();
     });
 
-    renderChecklist();
     render();
+    refreshOnboardingState();
+    window.setInterval(refreshOnboardingState, stateRefreshMs);
   </script>
 </body>
 </html>

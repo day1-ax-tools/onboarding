@@ -15,6 +15,8 @@ web/brief-board.html
 
 Use `index.html` for CLI installation, PATH refresh, verification, login, and the first handoff prompt. Use `brief-board.html` as a user-facing onboarding board: it visualizes onboarding progress with a git branch graph, captures role/work inputs, shows how those inputs become candidate missions, and generates a copyable CLI summary. The board does not create repos, change files, or call GitHub directly; the AI CLI does that after the user hands off the summary.
 
+The board must not depend on user-managed checkboxes. During CLI onboarding, write progress to `.onboarding/state.json` through `.onboarding/update-state.mjs`. The board reads that state and updates the graph. When all required steps are done, the updater disposes the hooks by setting `hooks.enabled=false`.
+
 Shell policy:
 
 - macOS, Linux, and WSL show bash/zsh choices because PATH refresh differs by shell.
@@ -36,7 +38,18 @@ Shell policy:
    cp -R /path/to/onboarding/.agents/skills/work-mission-discovery .agents/skills/
    ```
 
-3. Verify:
+3. Install onboarding state hook:
+
+   ```bash
+   mkdir -p .onboarding
+   cp -R /path/to/onboarding/templates/onboarding/. .onboarding/
+   cp /path/to/onboarding/web/brief-board.html .onboarding/brief-board.html
+   node .onboarding/update-state.mjs kit-install done --tool codex --evidence "AGENTS.md and work-mission-discovery copied"
+   ```
+
+   If Node is unavailable, copy the files and update `.onboarding/state.json` directly with valid JSON.
+
+4. Verify:
 
    ```text
    $work-mission-discovery 를 사용해서 현재 적용된 지침과 다음 질문을 요약해주세요.
@@ -61,13 +74,76 @@ Expected: Codex uses AGENTS.md guidance and the skill's Work Grounding flow.
    cp -R /path/to/onboarding/.claude/skills/work-mission-discovery .claude/skills/
    ```
 
-4. Verify:
+4. Install onboarding state hook:
+
+   ```bash
+   mkdir -p .onboarding
+   cp -R /path/to/onboarding/templates/onboarding/. .onboarding/
+   cp /path/to/onboarding/web/brief-board.html .onboarding/brief-board.html
+   node .onboarding/update-state.mjs kit-install done --tool claude --evidence "CLAUDE.md and work-mission-discovery copied"
+   ```
+
+   Windows PowerShell uses the same updater:
+
+   ```powershell
+   New-Item -ItemType Directory -Force ".onboarding" | Out-Null
+   Copy-Item "C:\path\to\onboarding\templates\onboarding\*" ".onboarding" -Recurse -Force
+   Copy-Item "C:\path\to\onboarding\web\brief-board.html" ".onboarding\brief-board.html" -Force
+   node .onboarding\update-state.mjs kit-install done --tool claude --os windows --shell powershell --evidence "CLAUDE.md and work-mission-discovery copied"
+   ```
+
+   If Node is unavailable, copy the files and update `.onboarding/state.json` directly with valid JSON.
+
+5. Verify:
 
    ```text
    work-mission-discovery skill을 사용해서 현재 인터뷰 상태를 확인해주세요.
    ```
 
 Expected: Claude Code selects the skill from `.claude/skills`. Skills are model-invoked, not slash commands.
+
+## Onboarding State Hook Contract
+
+Use the state hook after a step's completion condition is verified. This is a project-local onboarding contract, not an OS-level hook and not a long-lived background monitor.
+
+```bash
+node .onboarding/update-state.mjs <step-id> <status> --evidence "<short evidence>"
+```
+
+On Windows:
+
+```powershell
+node .onboarding\update-state.mjs <step-id> <status> --evidence "<short evidence>"
+```
+
+Statuses:
+
+| Status | Meaning |
+| --- | --- |
+| `pending` | Not started |
+| `active` | Current step |
+| `done` | Completion condition was verified |
+| `blocked` | Cannot continue without install, auth, path, permission, or user decision |
+| `skipped` | User explicitly skipped the step |
+
+Step ids:
+
+| Step id | Verify before marking done |
+| --- | --- |
+| `cli-install` | Selected AI CLI command runs |
+| `auth` | AI CLI authentication is complete |
+| `cli-handoff` | User pasted the web handoff prompt into the CLI |
+| `kit-install` | Project instructions and skill are installed |
+| `work-root` | Work root and repo placement are recorded |
+| `github-auth` | `gh auth status`, remote URL, and branch are checked |
+| `git-loop` | status/add/commit/push/pull completed or observed |
+| `role-map` | Role and responsible outcomes are recorded |
+| `task-split` | One recurring work area is decomposed into executable tasks |
+| `mission-select` | First automation mission candidate is selected |
+
+When all required steps are `done`, the updater sets `hooks.enabled=false`. After that, do not keep writing onboarding hook updates unless the user explicitly restarts onboarding.
+
+For a live project-local board, serve the target repo root over local HTTP and open `.onboarding/brief-board.html`. The board reads `.onboarding/state.json` from the same folder.
 
 ## Work Environment Setup Flow
 

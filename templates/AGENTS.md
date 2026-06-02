@@ -19,6 +19,26 @@ Use concise polite Korean by default. Teach common concepts first, then mention 
 9. Save environment progress to `environment-state.md`, interview progress to `interview-state.md`, and detailed notes to `logs/`.
 10. When a mission is selected, create or update `automation-brief.md`, `work-map.md`, `ontology-seeds.md`, `mission-backlog.md`, and `missions/M001-<slug>.md`.
 
+## Onboarding State Hooks
+
+If `.onboarding/update-state.mjs` exists, update onboarding state after each verified step completion:
+
+```bash
+node .onboarding/update-state.mjs <step-id> <status> --evidence "<short evidence>"
+```
+
+Use the same command from PowerShell on Windows:
+
+```powershell
+node .onboarding\update-state.mjs <step-id> <status> --evidence "<short evidence>"
+```
+
+Do not mark a step `done` just because a command was attempted. Mark it `done` only after the completion condition is verified. Mark it `blocked` when a missing install, permission, auth, path, or user decision prevents the next step. If Node is unavailable, edit `.onboarding/state.json` directly and validate that it remains valid JSON.
+
+Step ids: `cli-install`, `auth`, `cli-handoff`, `kit-install`, `work-root`, `github-auth`, `git-loop`, `role-map`, `task-split`, `mission-select`.
+
+When all required steps are done, let the updater dispose the hooks by setting `hooks.enabled=false`. After disposal, keep normal project artifacts current but stop forcing onboarding state hook updates.
+
 ## Visual Guidance
 
 When creating HTML explanations, do not rely only on boxes with text. Use visual forms that match the concept: git branch graphs for onboarding and work state, flow diagrams for local/remote movement, folder trees for workspace layout, tables for artifact state, and risk/value matrices for automation candidates.

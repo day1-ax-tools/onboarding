@@ -18,6 +18,7 @@ Run a model-neutral onboarding flow that first stabilizes the user's CLI work en
 - Keep product-specific concepts out of the main explanation unless the user asks.
 - When writing artifacts, keep them current-state focused and avoid historical narration.
 - When creating HTML views, use the clearest visual structure for the concept instead of repeating text cards. Prefer git branch graphs for onboarding state, flow diagrams for local/remote movement, folder trees for workspace layout, tables for artifact state, and risk/value matrices for automation candidates.
+- When `.onboarding/update-state.mjs` exists, treat onboarding progress as CLI-owned state. After each verified step completion, call the updater with the matching step id and evidence. Do not ask the user to update progress in the browser.
 - After file edits, verify with the closest available check, at minimum `git diff --check`.
 
 ## Workflow
@@ -98,6 +99,20 @@ repo-dashboard.html
 
 Work Environment Setup is complete when the user has a chosen work root, GitHub authentication is verified, the current repo is under the work root or explicitly accepted as an exception, local/remote are connected, and the user has completed or watched one small commit/push loop.
 
+When an environment step is complete, update onboarding state if the hook exists:
+
+| Step id | Completion condition |
+| --- | --- |
+| `cli-install` | The selected AI CLI command runs from the user's terminal |
+| `auth` | The selected AI CLI authentication is complete |
+| `cli-handoff` | The user has handed the web prompt to the AI CLI |
+| `kit-install` | Project instructions and `work-mission-discovery` skill are installed |
+| `work-root` | Work root and current repo placement are recorded |
+| `github-auth` | `gh auth status`, remote URL, and current branch are checked |
+| `git-loop` | status/add/commit/push/pull is completed or observed |
+
+Use `done` only after verification, `blocked` when the next step cannot proceed, and `skipped` only when the user explicitly chooses to skip.
+
 ### 3. Work Grounding
 
 Goal: produce enough work context to select a first automation candidate.
@@ -133,6 +148,14 @@ Start with:
 ```
 
 After each answer, summarize as role, outcome, work areas, tasks, missing context, then ask the next smallest useful question.
+
+When grounding milestones are verified, update onboarding state if the hook exists:
+
+| Step id | Completion condition |
+| --- | --- |
+| `role-map` | Role and responsible outcomes are recorded |
+| `task-split` | At least one recurring work area is decomposed into executable tasks |
+| `mission-select` | A first automation mission candidate is selected with rationale |
 
 ### 4. Automation Exploration
 

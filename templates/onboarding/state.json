@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "tool": "codex",
+  "os": "mac",
+  "shell": "bash",
+  "hooks": {
+    "enabled": true,
+    "disposeWhen": "all-required-steps-done",
+    "disposedAt": null
+  },
+  "currentStep": "cli-install",
+  "updatedAt": null,
+  "steps": {
+    "cli-install": {
+      "status": "active",
+      "label": "CLI install",
+      "branch": "main/onboarding",
+      "required": true,
+      "updatedAt": null,
+      "evidence": []
+    },
+    "auth": {
+      "status": "pending",
+      "label": "CLI auth",
+      "branch": "main/onboarding",
+      "required": true,
+      "updatedAt": null,
+      "evidence": []
+    },
+    "cli-handoff": {
+      "status": "pending",
+      "label": "CLI handoff",
+      "branch": "main/onboarding",
+      "required": true,
+      "updatedAt": null,
+      "evidence": []
+    },
+    "kit-install": {
+      "status": "pending",
+      "label": "Project instruction and skill install",
+      "branch": "setup/env",
+      "required": true,
+      "updatedAt": null,
+      "evidence": []
+    },
+    "work-root": {
+      "status": "pending",
+      "label": "Work root and repo placement",
+      "branch": "setup/env",
+      "required": true,
+      "updatedAt": null,
+      "evidence": []
+    },
+    "github-auth": {
+      "status": "pending",
+      "label": "GitHub auth and remote",
+      "branch": "setup/env",
+      "required": true,
+      "updatedAt": null,
+      "evidence": []
+    },
+    "git-loop": {
+      "status": "pending",
+      "label": "Git loop practice",
+      "branch": "setup/env",
+      "required": true,
+      "updatedAt": null,
+      "evidence": []
+    },
+    "role-map": {
+      "status": "pending",
+      "label": "Role and outcome map",
+      "branch": "work-map",
+      "required": true,
+      "updatedAt": null,
+      "evidence": []
+    },
+    "task-split": {
+      "status": "pending",
+      "label": "Task decomposition",
+      "branch": "work-map",
+      "required": true,
+      "updatedAt": null,
+      "evidence": []
+    },
+    "mission-select": {
+      "status": "pending",
+      "label": "First mission selection",
+      "branch": "mission",
+      "required": true,
+      "updatedAt": null,
+      "evidence": []
+    }
+  }
+}
