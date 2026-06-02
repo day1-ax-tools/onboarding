@@ -872,7 +872,7 @@
           <h1>먼저 시작 환경을 준비합니다.</h1>
         </div>
       </div>
-      <p class="lead">이 페이지의 역할은 온보딩 repo를 로컬에 준비하고, Codex 또는 Claude Code가 터미널에서 실행되는 상태까지 안내하는 것입니다. 설치가 끝나면 이후 온보딩은 CLI 안에서 이어집니다.</p>
+      <p class="lead">이 페이지의 역할은 Codex 또는 Claude Code 설치와 인증을 먼저 익히고, 그 다음 온보딩 키트를 받아 CLI 안에서 업무 온보딩으로 넘어가게 돕는 것입니다.</p>
     </header>
 
     <div class="layout">
@@ -907,7 +907,7 @@
       <div>
         <section>
           <h2>처음 시작</h2>
-          <p>처음 방문했다면 repo를 미리 받을 필요가 없습니다. 아래 bootstrap 명령 하나가 로컬 작업 폴더를 만들고 onboarding repo를 가져온 뒤, 이 시작 페이지를 로컬에서 다시 엽니다.</p>
+          <p>먼저 명령어를 입력할 화면을 엽니다. 설치 자체도 앞으로 반복해서 쓰게 될 기본 경험이므로, 온보딩 키트 없이 CLI 설치와 인증을 먼저 진행합니다.</p>
           <div class="links">
             <a id="primary-doc" class="button" href="https://developers.openai.com/codex/quickstart" target="_blank" rel="noreferrer">Codex 공식 설치 문서 열기</a>
           </div>
@@ -936,33 +936,6 @@
               </div>
             </div>
           </div>
-
-          <div class="step">
-            <div class="step-head">
-              <span class="num">1</span>
-              <strong>온보딩 키트 받기</strong>
-            </div>
-            <div class="step-body">
-              <p id="bootstrap-note" class="muted">이 명령은 Git이 있으면 clone/pull을 사용하고, Git이 없으면 GitHub zip을 내려받습니다. 완료되면 로컬 시작 페이지가 자동으로 열립니다.</p>
-              <div class="code-window" data-code-window="bootstrap">
-                <div class="code-titlebar">
-                  <div class="window-controls" aria-hidden="true"><span></span><span></span><span></span></div>
-                  <div class="code-meta"><span class="code-window-title" data-window-title="bootstrap">Terminal</span><span class="code-shell-name" data-shell-name="bootstrap">bash</span></div>
-                  <div class="shell-tabs" aria-label="쉘 선택">
-                    <button class="active" data-shell="bash" type="button">bash</button>
-                    <button data-shell="zsh" type="button">zsh</button>
-                  </div>
-                </div>
-                <div class="code-body">
-                  <pre><span class="code-prompt" data-prompt="bootstrap">$</span> <code id="bootstrap-command">/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bootstrap/start.sh)"</code></pre>
-                </div>
-              </div>
-              <div class="copy-action-row">
-                <button type="button" data-copy="bootstrap-command">복사</button>
-              </div>
-              <p class="muted">이미 로컬 페이지가 열려 있다면 이 단계는 다시 실행하지 않아도 됩니다.</p>
-            </div>
-          </div>
         </section>
 
         <section>
@@ -970,7 +943,7 @@
 
           <div class="step">
             <div class="step-head">
-              <span class="num">2</span>
+              <span class="num">1</span>
               <strong id="install-title">Codex CLI 설치</strong>
             </div>
             <div class="step-body">
@@ -996,7 +969,7 @@
 
           <div class="step">
             <div class="step-head">
-              <span class="num">3</span>
+              <span class="num">2</span>
               <strong>PATH 반영</strong>
             </div>
             <div class="step-body">
@@ -1024,7 +997,7 @@ command -v codex</code></pre>
 
           <div class="step">
             <div class="step-head">
-              <span class="num">4</span>
+              <span class="num">3</span>
               <strong>설치 확인</strong>
             </div>
             <div class="step-body">
@@ -1050,7 +1023,7 @@ command -v codex</code></pre>
 
           <div class="step">
             <div class="step-head">
-              <span class="num">5</span>
+              <span class="num">4</span>
               <strong id="login-title">Codex 실행 및 로그인</strong>
             </div>
             <div class="step-body">
@@ -1076,8 +1049,40 @@ command -v codex</code></pre>
         </section>
 
         <section>
+          <h2>온보딩 키트 준비</h2>
+          <p class="handoff">CLI 설치와 인증이 끝난 뒤에 온보딩 키트를 받습니다. 이 키트는 설치 자체에 필요한 것이 아니라, 이후 지침 파일, skill, 상태 hook, 온보딩 보드를 프로젝트에 설치하기 위한 자료입니다.</p>
+
+          <div class="step">
+            <div class="step-head">
+              <span class="num">5</span>
+              <strong>온보딩 키트 받기</strong>
+            </div>
+            <div class="step-body">
+              <p id="bootstrap-note" class="muted">이 명령은 Git이 있으면 clone/pull을 사용하고, Git이 없으면 GitHub zip을 내려받습니다. 완료되면 로컬 시작 페이지가 자동으로 열립니다.</p>
+              <div class="code-window" data-code-window="bootstrap">
+                <div class="code-titlebar">
+                  <div class="window-controls" aria-hidden="true"><span></span><span></span><span></span></div>
+                  <div class="code-meta"><span class="code-window-title" data-window-title="bootstrap">Terminal</span><span class="code-shell-name" data-shell-name="bootstrap">bash</span></div>
+                  <div class="shell-tabs" aria-label="쉘 선택">
+                    <button class="active" data-shell="bash" type="button">bash</button>
+                    <button data-shell="zsh" type="button">zsh</button>
+                  </div>
+                </div>
+                <div class="code-body">
+                  <pre><span class="code-prompt" data-prompt="bootstrap">$</span> <code id="bootstrap-command">/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bootstrap/start.sh)"</code></pre>
+                </div>
+              </div>
+              <div class="copy-action-row">
+                <button type="button" data-copy="bootstrap-command">복사</button>
+              </div>
+              <p class="muted">이미 로컬 온보딩 키트가 준비되어 있다면 이 단계는 다시 실행하지 않아도 됩니다.</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
           <h2>CLI로 넘기기</h2>
-          <p class="handoff">아래 문장을 설치된 CLI에 붙여넣으면, 이후부터는 터미널 안에서 지침 파일 설치, skill 설치, 작업 루트/GitHub 설정, local/remote 실습, 업무 인터뷰를 이어갑니다.</p>
+          <p class="handoff">아래 문장을 설치된 CLI에 붙여넣으면, 이후부터는 터미널 안에서 지침 파일, skill, 상태 hook을 설치하고 그 다음 온보딩 보드로 넘어갑니다.</p>
           <div class="ai-cli-window" aria-label="AI CLI 입력 화면 미리보기">
             <div class="ai-cli-top">
               <div class="ai-cli-brand">
@@ -1115,7 +1120,6 @@ command -v codex</code></pre>
           </div>
           <div class="copy-action-row">
             <button type="button" data-copy="handoff-prompt">입력문 복사</button>
-            <a id="board-link" class="button" href="brief-board.html">온보딩 보드 열기</a>
           </div>
           <div class="status" id="copy-status" role="status" aria-live="polite"></div>
         </section>
@@ -1153,8 +1157,8 @@ command -v codex</code></pre>
           },
           loginNote: "브라우저 로그인 안내가 나오면 ChatGPT 계정 또는 API key 흐름을 따라갑니다.",
           handoff: {
-            bash: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 AGENTS.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.",
-            zsh: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 AGENTS.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요."
+            bash: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 onboarding 키트 위치를 확인하고, 현재 저장소에 필요한 AGENTS.md, skill, .onboarding 상태 hook, .onboarding/brief-board.html을 설치해주세요.\n상태 hook 설치가 끝난 뒤 온보딩 보드를 열 수 있게 안내하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.",
+            zsh: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 onboarding 키트 위치를 확인하고, 현재 저장소에 필요한 AGENTS.md, skill, .onboarding 상태 hook, .onboarding/brief-board.html을 설치해주세요.\n상태 hook 설치가 끝난 뒤 온보딩 보드를 열 수 있게 안내하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요."
           }
         },
         windows: {
@@ -1176,7 +1180,7 @@ command -v codex</code></pre>
           },
           loginNote: "브라우저 로그인 안내가 나오면 ChatGPT 계정 또는 API key 흐름을 따라갑니다.",
           handoff: {
-            powershell: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 AGENTS.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요."
+            powershell: "$work-mission-discovery 를 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 onboarding 키트 위치를 확인하고, 현재 저장소에 필요한 AGENTS.md, skill, .onboarding 상태 hook, .onboarding/brief-board.html을 설치해주세요.\n상태 hook 설치가 끝난 뒤 온보딩 보드를 열 수 있게 안내하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요."
           }
         }
       },
@@ -1208,8 +1212,8 @@ command -v codex</code></pre>
           },
           loginNote: "Claude Code는 Pro, Max, Team, Enterprise, 또는 Console 계정이 필요합니다.",
           handoff: {
-            bash: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 CLAUDE.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.",
-            zsh: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 CLAUDE.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요."
+            bash: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 onboarding 키트 위치를 확인하고, 현재 저장소에 필요한 CLAUDE.md, AGENTS.md, skill, .onboarding 상태 hook, .onboarding/brief-board.html을 설치해주세요.\n상태 hook 설치가 끝난 뒤 온보딩 보드를 열 수 있게 안내하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요.",
+            zsh: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 onboarding 키트 위치를 확인하고, 현재 저장소에 필요한 CLAUDE.md, AGENTS.md, skill, .onboarding 상태 hook, .onboarding/brief-board.html을 설치해주세요.\n상태 hook 설치가 끝난 뒤 온보딩 보드를 열 수 있게 안내하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요."
           }
         },
         windows: {
@@ -1231,7 +1235,7 @@ command -v codex</code></pre>
           },
           loginNote: "Claude Code는 Pro, Max, Team, Enterprise, 또는 Console 계정이 필요합니다.",
           handoff: {
-            powershell: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 현재 저장소에 필요한 CLAUDE.md와 skill 설치 상태를 확인하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요."
+            powershell: "work-mission-discovery skill을 사용해서 AI CLI 온보딩을 이어가주세요.\n먼저 onboarding 키트 위치를 확인하고, 현재 저장소에 필요한 CLAUDE.md, AGENTS.md, skill, .onboarding 상태 hook, .onboarding/brief-board.html을 설치해주세요.\n상태 hook 설치가 끝난 뒤 온보딩 보드를 열 수 있게 안내하고,\n그 다음 작업 루트, GitHub 연결, local/remote, commit/push/pull 환경을 설정해주세요.\n환경 상태는 environment-state.md에 저장한 뒤 Work Grounding 인터뷰를 시작해주세요."
           }
         }
       }
@@ -1366,16 +1370,6 @@ command -v codex</code></pre>
       });
     }
 
-    function updateBoardLink() {
-      const shell = selectedOs === "windows" ? "powershell" : selectedShell;
-      const params = new URLSearchParams({
-        tool: selectedTool,
-        os: selectedOs,
-        shell
-      });
-      document.getElementById("board-link").href = `brief-board.html?${params.toString()}`;
-    }
-
     function updateAiCliPreview() {
       const isClaude = selectedTool === "claude";
       document.getElementById("ai-cli-mark").textContent = isClaude ? "A" : "C";
@@ -1397,7 +1391,7 @@ command -v codex</code></pre>
       setText("cli-first-screen", tool.firstScreen);
       setText("bootstrap-command", bootstrapCommand());
       setText("bootstrap-note", entryParams.get("bootstrapped") === "1"
-        ? "로컬 온보딩 키트가 준비되었습니다. 아래 CLI 설치 단계로 이어가세요."
+        ? "로컬 온보딩 키트가 준비되었습니다. 아래 CLI로 넘기기 단계로 이어가세요."
         : "이 명령은 Git이 있으면 clone/pull을 사용하고, Git이 없으면 GitHub zip을 내려받습니다. 완료되면 로컬 시작 페이지가 자동으로 열립니다.");
       setText("install-title", selected.title);
       setText("install-note", selected.note);
@@ -1409,7 +1403,6 @@ command -v codex</code></pre>
       setText("login-command", resolveCode(selected.login));
       setText("login-note", selected.loginNote);
       setText("handoff-prompt", resolveCode(selected.handoff));
-      updateBoardLink();
       document.getElementById("copy-status").textContent = "";
     }
 

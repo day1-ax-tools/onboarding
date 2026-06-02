@@ -57,7 +57,7 @@
 
 ## Stage -2: Web Entry
 
-웹페이지는 진입점 역할만 한다. 초보자는 repo를 미리 clone하지 않는다. 먼저 hosted web entry를 열고, 자신의 환경을 고른 뒤 bootstrap 명령 하나를 터미널에 붙여넣는다. bootstrap이 로컬 작업 폴더를 만들고 onboarding repo를 확보한 뒤, 로컬 시작 페이지를 다시 연다. 그 다음 사용자는 브라우저에서 설치 명령을 확인하고, `codex` 또는 `claude`가 실행되는 상태까지 도달한다.
+웹페이지는 진입점 역할만 한다. 초보자는 repo를 미리 clone하지 않는다. 먼저 hosted web entry를 열고, 자신의 환경을 고른 뒤 Codex 또는 Claude Code 설치와 인증을 진행한다. 설치 자체도 이후 다른 상황에서 반복할 학습 경험이므로 온보딩 키트 없이 먼저 진행한다. CLI가 실행되는 상태가 된 뒤 bootstrap 명령으로 onboarding repo를 로컬에 받고, 그 다음 CLI 안에서 지침 파일, skill, 상태 hook, 온보딩 보드를 대상 repo에 설치한다.
 
 권장 hosted entry:
 
@@ -65,7 +65,7 @@
 https://day1-ax-tools.github.io/onboarding/
 ```
 
-GitHub Pages가 아직 설정되지 않았을 때는 URL 대신 아래 bootstrap 명령을 직접 전달한다. Pages는 repository settings에서 `main` branch root를 source로 지정하면 `index.html`이 `web/index.html`로 넘겨준다.
+Pages는 repository settings에서 `main` branch root를 source로 지정하면 `index.html`이 `web/index.html`로 넘겨준다.
 
 
 정적 페이지:
@@ -78,7 +78,7 @@ bootstrap/start.sh
 bootstrap/start.ps1
 ```
 
-처음 실행할 bootstrap 명령:
+CLI 설치와 인증이 끝난 뒤 실행할 bootstrap 명령:
 
 ```bash
 # macOS / Linux / WSL
@@ -93,15 +93,16 @@ $script = irm https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bo
 
 `web/index.html`이 담당하는 것:
 
-- repo를 모르는 초보자에게 bootstrap 명령 제공
 - Codex 또는 Claude Code 선택
 - 운영체제별 설치 명령 안내
 - 설치 확인 명령 안내
 - 로그인 시작 명령 안내
+- CLI 설치와 인증 뒤 실행할 bootstrap 명령 제공
 - CLI에 붙여넣을 handoff prompt 제공
 
 설치 처리 기준:
 
+- CLI 설치, PATH 반영, 설치 확인, 로그인은 bootstrap보다 먼저 진행한다.
 - bootstrap은 `~/Documents/AI-Work/day1-ax-tools/onboarding` 또는 `Documents\AI-Work\day1-ax-tools\onboarding`을 기본 위치로 쓴다.
 - Git이 있으면 `git clone` 또는 `git pull --ff-only`를 사용한다.
 - Git이 없으면 GitHub zip을 다운로드해서 같은 위치에 둔다.
@@ -114,6 +115,7 @@ $script = irm https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bo
 - 온보딩 진행 단계를 git branch graph 형태로 보여준다.
 - 설치/인증, 환경 설정, 업무 지도, 미션 후보가 어떻게 분기되고 합쳐지는지 시각화한다.
 - CLI가 갱신한 `.onboarding/state.json` 또는 `web/onboarding-state.json`을 읽어 그래프 node 상태를 바꾼다.
+- 상태 파일을 읽지 못하면 `Hook 미설치`로 표시한다. hook 설치 전에는 보드를 활성 상태로 간주하지 않는다.
 - 사용자가 입력한 역할, 성과, 반복 업무, 입력 도구, 위험을 바탕으로 작업 지도와 자동화 후보를 즉시 보여준다.
 - 생성될 산출물인 `environment-state.md`, `work-map.md`, `ontology-seeds.md`, `mission-backlog.md`, `missions/M001-<slug>.md`의 역할을 미리 보여준다.
 - CLI에 붙여넣을 업무 요약문과 프로젝트 단위 지침/skill 수동 설치 fallback 명령을 제공한다.
@@ -150,7 +152,7 @@ web/brief-board.html
 .onboarding/brief-board.html
 ```
 
-`web/brief-board.html`은 설치 전 preview board다. CLI handoff 뒤 실제 진행 상태를 보려면 대상 repo에 복사된 `.onboarding/brief-board.html`을 로컬 HTTP 서버로 연다. 이 보드는 같은 폴더의 `state.json`을 읽는다.
+`web/brief-board.html`은 대상 repo에 복사될 보드 템플릿이다. 실제 진행 상태를 보려면 CLI가 상태 hook을 설치한 뒤 대상 repo에 복사된 `.onboarding/brief-board.html`을 로컬 HTTP 서버로 연다. 이 보드는 같은 폴더의 `state.json`을 읽는다. 상태 파일 없이 열리면 `Hook 미설치`로 표시한다.
 
 공통 명령:
 

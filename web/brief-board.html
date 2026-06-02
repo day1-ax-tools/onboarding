@@ -1020,8 +1020,9 @@
 
     const fields = ["role", "outcomes", "works", "inputs", "risks"];
     const saved = readState();
-    let onboardingState = defaultOnboardingState();
+    let onboardingState = defaultOnboardingState(false);
     let stateSource = "상태 파일 대기";
+    let hasOnboardingState = false;
 
     document.body.dataset.tool = setup.tool === "claude" ? "claude" : "codex";
     document.body.dataset.os = setup.os === "windows" ? "windows" : "mac";
@@ -1071,11 +1072,11 @@
       document.getElementById("kit-prompt").textContent = promptText();
     }
 
-    function defaultOnboardingState() {
+    function defaultOnboardingState(hasHook) {
       const steps = {};
       stepDefinitions.forEach((step, index) => {
         steps[step.id] = {
-          status: index === 0 ? "active" : "pending",
+          status: hasHook && index === 0 ? "active" : "pending",
           label: step.label,
           branch: step.branch,
           required: true,
@@ -1088,7 +1089,7 @@
         tool: setup.tool,
         os: setup.os,
         shell: setup.shell,
-        hooks: { enabled: true, disposeWhen: "all-required-steps-done" },
+        hooks: { enabled: Boolean(hasHook), disposeWhen: "all-required-steps-done" },
         currentStep: "cli-install",
         steps,
         updatedAt: null
@@ -1096,7 +1097,7 @@
     }
 
     function normalizeOnboardingState(raw) {
-      const base = defaultOnboardingState();
+      const base = defaultOnboardingState(true);
       if (!raw || typeof raw !== "object") {
         return base;
       }
@@ -1127,12 +1128,14 @@
           }
           onboardingState = normalizeOnboardingState(await response.json());
           stateSource = source;
+          hasOnboardingState = true;
           render();
           return;
         } catch (_) {}
       }
-      onboardingState = defaultOnboardingState();
+      onboardingState = defaultOnboardingState(false);
       stateSource = "상태 파일 대기";
+      hasOnboardingState = false;
       render();
     }
 
@@ -1186,15 +1189,15 @@
       const current = currentStep();
       const lastDone = lastDoneStep();
       const next = nextStep();
-      const hookEnabled = onboardingState.hooks && onboardingState.hooks.enabled !== false;
-      document.getElementById("state-source").textContent = stateSource;
-      document.getElementById("state-current-step").textContent = `${current.label} · ${statusLabel(stepStatus(current.id))}`;
+      const hookEnabled = hasOnboardingState && onboardingState.hooks && onboardingState.hooks.enabled !== false;
+      document.getElementById("state-source").textContent = hasOnboardingState ? stateSource : "상태 파일 없음";
+      document.getElementById("state-current-step").textContent = hasOnboardingState ? `${current.label} · ${statusLabel(stepStatus(current.id))}` : "CLI에서 hook 설치 필요";
       document.getElementById("state-last-done").textContent = lastDone ? lastDone.label : "없음";
-      document.getElementById("state-next-step").textContent = next ? next.label : "모든 필수 단계 완료";
+      document.getElementById("state-next-step").textContent = hasOnboardingState ? (next ? next.label : "모든 필수 단계 완료") : "온보딩 키트와 hook 설치";
       document.getElementById("state-updated-at").textContent = onboardingState.updatedAt || "-";
-      document.getElementById("hook-state").textContent = hookEnabled ? "Hook 활성" : "Hook 폐기";
-      document.getElementById("hook-state").className = hookEnabled ? "badge good" : "badge";
-      document.getElementById("tag-phase").textContent = `현재 단계: ${current.label}`;
+      document.getElementById("hook-state").textContent = hasOnboardingState ? (hookEnabled ? "Hook 활성" : "Hook 폐기") : "Hook 미설치";
+      document.getElementById("hook-state").className = hookEnabled ? "badge good" : hasOnboardingState ? "badge" : "badge warn";
+      document.getElementById("tag-phase").textContent = hasOnboardingState ? `현재 단계: ${current.label}` : "현재 단계: hook 설치 전";
     }
 
     function saveState() {
@@ -1308,7 +1311,7 @@
             </g>`;
         }).join("")}
       `;
-      document.getElementById("graph-state").textContent = `${currentStep().label} · ${tasks.length} 후보`;
+      document.getElementById("graph-state").textContent = hasOnboardingState ? `${currentStep().label} · ${tasks.length} 후보` : `Hook 미설치 · ${tasks.length} 후보`;
       renderBranchTable(tasks);
     }
 

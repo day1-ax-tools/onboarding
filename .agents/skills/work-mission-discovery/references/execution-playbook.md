@@ -16,11 +16,11 @@ bootstrap/start.sh
 bootstrap/start.ps1
 ```
 
-For first-time users, start from the hosted web entry rather than asking them to clone the repo. The user selects OS and AI CLI, then runs one bootstrap command. The bootstrap creates the local work folder, obtains this onboarding repo with `git clone` when Git exists or GitHub zip fallback when Git is missing, and opens the local `web/index.html`.
+For first-time users, start from the hosted web entry rather than asking them to clone the repo. The user selects OS and AI CLI, then installs and authenticates the selected CLI first. CLI installation is itself part of the learning experience and must not appear to require the onboarding kit. After the selected CLI runs, the user runs the bootstrap command to obtain the onboarding repo locally.
 
-Use `web/index.html` for bootstrap, CLI installation, PATH refresh, verification, login, and the first handoff prompt. Use `web/brief-board.html` as a preview board before handoff. After project installation, use `.onboarding/brief-board.html` inside the target repo as the state-backed board. The board does not create repos, change files, or call GitHub directly; the AI CLI does that after the user hands off the summary.
+Use `web/index.html` for CLI installation, PATH refresh, verification, login, post-install bootstrap, and the first handoff prompt. Do not send the user to the onboarding board until the target repo has `.onboarding/state.json`, `.onboarding/update-state.mjs`, and `.onboarding/brief-board.html`. After project installation, use `.onboarding/brief-board.html` inside the target repo as the state-backed board. The board does not create repos, change files, or call GitHub directly; the AI CLI does that after the user hands off the summary.
 
-Bootstrap commands:
+Post-install bootstrap commands:
 
 ```bash
 # macOS / Linux / WSL
@@ -33,7 +33,7 @@ $script = irm https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bo
 & ([scriptblock]::Create($script)) -Tool codex
 ```
 
-The board must not depend on user-managed checkboxes. During CLI onboarding, write progress to `.onboarding/state.json` through `.onboarding/update-state.mjs`. The board reads that state and updates the graph. When all required steps are done, the updater disposes the hooks by setting `hooks.enabled=false`.
+The board must not depend on user-managed checkboxes. During CLI onboarding, write progress to `.onboarding/state.json` through `.onboarding/update-state.mjs`. The board reads that state and updates the graph. If the state file is missing, the board must show hook-not-installed rather than hook-active. When all required steps are done, the updater disposes the hooks by setting `hooks.enabled=false`.
 
 Shell policy:
 
