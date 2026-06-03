@@ -1,0 +1,4 @@
+interface:
+  display_name: "Concept Board"
+  short_description: "Visualize repo concepts and session context"
+  default_prompt: "Use $concept-board to visualize this repo's current workflow, decisions, and Git concepts."

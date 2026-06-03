@@ -1052,15 +1052,6 @@
           </div>
         </div>
 
-        <div class="panel">
-          <strong>이 페이지가 하지 않는 일</strong>
-          <p class="muted">업무 인터뷰, skill 설치, GitHub repo 생성, 미션 백로그 작성은 CLI에서 진행합니다.</p>
-        </div>
-
-        <div class="panel">
-          <strong>설치 처리 기준</strong>
-          <p class="muted">macOS/Linux/WSL은 bash와 zsh 중 현재 쓰는 shell 기준으로 PATH만 다르게 처리합니다. Windows는 PowerShell만 사용합니다.</p>
-        </div>
       </aside>
 
       <div>
@@ -1301,9 +1292,7 @@ Start Codex now? [y/N]</pre>
               <div class="ai-cli-input">
                 <div class="ai-cli-input-row">
                   <span class="ai-cli-input-prompt" id="ai-cli-input-prompt" aria-hidden="true">›</span>
-                  <pre><code id="handoff-prompt">$work-mission-discovery 로 AI CLI 온보딩을 시작해줘.
-먼저 현재 폴더, 작업 repo, Git/GitHub CLI 상태를 직접 확인해줘.
-한 번에 설명하지 말고, 다음 한 단계만 안내해줘.</code></pre>
+                  <pre><code id="handoff-prompt">$work-mission-discovery 로 AI CLI 온보딩을 시작해줘.</code></pre>
                 </div>
               </div>
             </div>
@@ -1318,17 +1307,9 @@ Start Codex now? [y/N]</pre>
   </main>
 
   <script>
-    const codexHandoffPrompt = [
-      "$work-mission-discovery 로 AI CLI 온보딩을 시작해줘.",
-      "먼저 현재 폴더, 작업 repo, Git/GitHub CLI 상태를 직접 확인해줘.",
-      "한 번에 설명하지 말고, 다음 한 단계만 안내해줘."
-    ].join("\n");
+    const codexHandoffPrompt = "$work-mission-discovery 로 AI CLI 온보딩을 시작해줘.";
 
-    const claudeHandoffPrompt = [
-      "work-mission-discovery skill로 AI CLI 온보딩을 시작해주세요.",
-      "먼저 현재 폴더, 작업 repo, Git/GitHub CLI 상태를 직접 확인해주세요.",
-      "한 번에 설명하지 말고, 다음 한 단계만 안내해주세요."
-    ].join("\n");
+    const claudeHandoffPrompt = "work-mission-discovery skill로 AI CLI 온보딩을 시작해주세요.";
 
     const commands = {
       codex: {

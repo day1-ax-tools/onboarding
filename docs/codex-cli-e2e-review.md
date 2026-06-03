@@ -77,8 +77,7 @@ User:
 
 ```text
 $work-mission-discovery 로 AI CLI 온보딩을 시작해줘.
-먼저 현재 폴더, 작업 repo, Git/GitHub CLI 상태를 직접 확인해줘.
-한 번에 설명하지 말고, 다음 한 단계만 안내해줘.
+[당시에는 환경 확인과 단계 진행 지시를 시작 문장에 포함했다. 현재 기준에서는 이 내용을 skill 내부 규칙으로 이동했다.]
 
 E2E 테스트 상황이야.
 - 사용자는 AI CLI 초보자야.
@@ -385,7 +384,7 @@ Review:
 
 | Area | Finding | Tuning |
 | --- | --- | --- |
-| First handoff | The revised handoff prompt works for Codex. It caused direct environment checks. | Keep "current folder, work repo, Git/GitHub CLI state" in the handoff prompt. |
+| First handoff | The revised handoff prompt worked for Codex because it caused direct environment checks. | Current decision: keep the visible handoff trigger-only and move those checks into the skill rules. |
 | Beginner burden | Codex did not ask the user to run basic inspection commands. | Keep this as the desired default. |
 | Git teaching | `??`, `A`, commit, and push were explained in plain language. | Good pattern to preserve. |
 | Side effects | Codex avoided GitHub repo creation and push. | Keep explicit side-effect approval rule. |
@@ -397,12 +396,10 @@ Review:
 
 ## Recommended Tuning
 
-1. Keep the current Codex handoff prompt:
+1. Use a trigger-only Codex handoff prompt:
 
    ```text
    $work-mission-discovery 로 AI CLI 온보딩을 시작해줘.
-   먼저 현재 폴더, 작업 repo, Git/GitHub CLI 상태를 직접 확인해줘.
-   한 번에 설명하지 말고, 다음 한 단계만 안내해줘.
    ```
 
 2. Add a stronger rule to onboarding artifacts: record durable state, not every transient Git state.

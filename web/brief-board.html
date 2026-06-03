@@ -210,6 +210,35 @@
       overflow-wrap: anywhere;
     }
 
+    .board-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      padding-top: 2px;
+    }
+
+    .board-tabs button {
+      min-height: 36px;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-weight: 700;
+    }
+
+    .board-tabs button.active {
+      border-color: var(--accent);
+      background: var(--ink);
+      color: #ffffff;
+    }
+
+    body[data-tool="claude"] .board-tabs button.active {
+      background: var(--accent);
+    }
+
+    .board-pane[hidden] {
+      display: none;
+    }
+
     .layout {
       display: grid;
       grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
@@ -247,6 +276,14 @@
       padding: 14px 16px;
       border-bottom: 1px solid var(--border);
       background: var(--surface-2);
+    }
+
+    .head-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
     }
 
     .section-head h2,
@@ -614,9 +651,165 @@
       font-family: var(--font-display);
     }
 
+    .concept-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .concept-tabs button {
+      min-height: 34px;
+      padding: 7px 10px;
+      font-size: 13px;
+    }
+
+    .concept-tabs button.active {
+      border-color: var(--accent);
+      background: var(--ink);
+      color: #ffffff;
+    }
+
+    body[data-tool="claude"] .concept-tabs button.active {
+      background: var(--accent);
+    }
+
+    .concept-board {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .concept-canvas {
+      min-width: 0;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background:
+        radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.07) 1px, transparent 0) 0 0 / 20px 20px,
+        var(--surface);
+    }
+
+    .concept-svg {
+      display: block;
+      width: 100%;
+      min-width: 560px;
+      height: auto;
+      aspect-ratio: 720 / 390;
+      font-family: var(--font-body);
+    }
+
+    .concept-node {
+      fill: var(--surface);
+      stroke: var(--border);
+      stroke-width: 2;
+    }
+
+    .concept-node.primary {
+      fill: var(--surface-2);
+      stroke: var(--accent);
+      stroke-width: 3;
+    }
+
+    .concept-node.remote {
+      fill: var(--branch-setup-bg);
+      stroke: var(--branch-setup);
+    }
+
+    .concept-node.local {
+      fill: var(--branch-work-bg);
+      stroke: var(--branch-work);
+    }
+
+    .concept-node.warn {
+      fill: var(--warn-bg);
+      stroke: var(--warn);
+    }
+
+    .concept-arrow {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      marker-end: url(#concept-arrow-head);
+    }
+
+    .concept-arrow.secondary {
+      stroke: var(--muted);
+      stroke-dasharray: 7 7;
+    }
+
+    .concept-label {
+      fill: var(--ink);
+      font-size: 15px;
+      font-weight: 750;
+      dominant-baseline: middle;
+    }
+
+    .concept-small {
+      fill: var(--muted);
+      font-size: 12px;
+      dominant-baseline: middle;
+    }
+
+    .concept-code {
+      fill: var(--ink);
+      font-family: var(--font-code);
+      font-size: 12px;
+      dominant-baseline: middle;
+    }
+
+    .concept-side {
+      display: grid;
+      align-content: start;
+      gap: 12px;
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      padding: 14px;
+    }
+
+    .concept-side p {
+      font-size: 14px;
+    }
+
+    .concept-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 13px;
+    }
+
+    .concept-table th,
+    .concept-table td {
+      border-bottom: 1px solid var(--border);
+      padding: 8px 0;
+      text-align: left;
+      vertical-align: top;
+      overflow-wrap: anywhere;
+    }
+
+    .concept-table th {
+      width: 34%;
+      color: var(--muted);
+      font-weight: 750;
+    }
+
+    .concept-note {
+      border-left: 3px solid var(--accent);
+      padding-left: 10px;
+      color: var(--body);
+      font-size: 13px;
+    }
+
     .lane,
     .artifact,
-    .task-card {
+    .task-card,
+    .mission-lane,
+    .mission-card {
       border: 1px solid var(--border);
       border-radius: var(--radius);
       background: var(--surface);
@@ -625,7 +818,8 @@
 
     .lane strong,
     .artifact strong,
-    .task-card strong {
+    .task-card strong,
+    .mission-card strong {
       display: block;
       margin-bottom: 6px;
       color: var(--ink);
@@ -648,6 +842,95 @@
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
+    }
+
+    .mission-summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .mission-stat {
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      padding: 10px;
+    }
+
+    .mission-stat strong {
+      display: block;
+      color: var(--ink);
+      font-size: 18px;
+      line-height: 1.1;
+    }
+
+    .mission-stat span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .mission-board {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      align-items: start;
+    }
+
+    .mission-lane {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+      background: var(--surface-2);
+    }
+
+    .mission-lane-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .mission-lane h3 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .mission-card {
+      display: grid;
+      gap: 8px;
+      background: var(--surface);
+    }
+
+    .mission-card p {
+      margin: 0;
+      color: var(--body);
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .mission-card .meta {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .mission-table-wrap {
+      overflow-x: auto;
+      margin-top: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .mission-table {
+      min-width: 760px;
+      margin: 0;
     }
 
     .badge {
@@ -847,94 +1130,6 @@
       font-family: inherit;
     }
 
-    .ai-cli-window {
-      overflow: hidden;
-      border: 1px solid #343541;
-      border-radius: 14px;
-      background: #212121;
-      color: #ececf1;
-    }
-
-    body[data-tool="claude"] .ai-cli-window {
-      border-color: #252320;
-      background: #181715;
-      color: #faf9f5;
-    }
-
-    .ai-cli-top {
-      display: flex;
-      align-items: center;
-      min-height: 48px;
-      padding: 10px 12px 10px 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(255, 255, 255, 0.04);
-    }
-
-    body[data-tool="claude"] .ai-cli-top {
-      background: #252320;
-    }
-
-    .ai-cli-brand {
-      display: inline-flex;
-      min-width: 0;
-      gap: 8px;
-      align-items: center;
-      color: currentColor;
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .ai-cli-mark {
-      display: inline-grid;
-      place-items: center;
-      flex: 0 0 24px;
-      width: 24px;
-      height: 24px;
-      border-radius: 9999px;
-      background: #10a37f;
-      color: #ffffff;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    body[data-tool="claude"] .ai-cli-mark {
-      background: var(--accent);
-    }
-
-    .ai-cli-body {
-      display: grid;
-      gap: 12px;
-      padding: 16px;
-    }
-
-    .ai-cli-hint {
-      margin: 0;
-      color: rgba(255, 255, 255, 0.66);
-      font-size: 13px;
-    }
-
-    .ai-cli-input-label {
-      margin: 2px 0 -4px;
-      color: rgba(255, 255, 255, 0.72);
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .ai-cli-input {
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.06);
-      padding: 14px;
-    }
-
-    body[data-tool="claude"] .ai-cli-input {
-      background: #1f1e1b;
-    }
-
-    .ai-cli-input pre {
-      color: currentColor;
-    }
-
     .copy-row {
       display: flex;
       justify-content: flex-end;
@@ -1083,7 +1278,10 @@
       .lane-grid,
       .graph-legend,
       .task-grid,
-      .artifact-grid {
+      .artifact-grid,
+      .mission-summary,
+      .mission-board,
+      .concept-board {
         grid-template-columns: 1fr;
       }
 
@@ -1196,10 +1394,12 @@
       }
 
       .code-body,
-      .ai-cli-body,
-      .ai-cli-input,
       .modal-body {
         padding: 12px;
+      }
+
+      .concept-svg {
+        min-width: 520px;
       }
 
       .install-modal {
@@ -1230,9 +1430,50 @@
         <span class="tag" id="tag-shell">Shell: bash</span>
         <span class="tag" id="tag-phase">현재 단계: 입력 준비</span>
       </div>
+      <div class="board-tabs" aria-label="보드 선택">
+        <button class="active" type="button" data-board-tab="concept">개념 보드</button>
+        <button type="button" data-board-tab="onboarding">온보딩 보드</button>
+      </div>
     </header>
 
-    <div class="layout">
+    <section id="concept-board-pane" class="board-pane">
+      <div class="section-head">
+        <h2>0. 개념 보드</h2>
+        <div class="head-badges">
+          <span class="badge" id="concept-state">CLI 설명 시각화</span>
+          <span class="badge" id="concept-updated-at">마지막 업데이트: -</span>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="concept-tabs" aria-label="개념 보드 보기 선택">
+          <button class="active" type="button" data-concept="location">작업 위치</button>
+          <button type="button" data-concept="local-remote">Local / Remote</button>
+          <button type="button" data-concept="commit">Commit</button>
+          <button type="button" data-concept="sync">Push / Pull</button>
+          <button type="button" data-concept="mission">작업에서 미션까지</button>
+        </div>
+        <div class="concept-board">
+          <div class="concept-canvas">
+            <svg class="concept-svg" id="concept-svg" viewBox="0 0 720 390" role="img" aria-labelledby="concept-svg-title concept-svg-desc">
+              <title id="concept-svg-title">온보딩 개념 시각화</title>
+              <desc id="concept-svg-desc">CLI에서 설명하는 Git과 작업 흐름 개념을 그림으로 보여준다.</desc>
+            </svg>
+          </div>
+          <aside class="concept-side" aria-label="선택한 개념 설명">
+            <div>
+              <h3 id="concept-title">작업 위치</h3>
+              <p id="concept-description">명령은 항상 현재 폴더를 기준으로 실행됩니다.</p>
+            </div>
+            <table class="concept-table" aria-label="핵심 용어 설명">
+              <tbody id="concept-table"></tbody>
+            </table>
+            <p class="concept-note" id="concept-note">CLI가 설명하는 내용을 이 보드에서 같은 개념 그림으로 확인합니다.</p>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <div id="onboarding-board-pane" class="layout board-pane" hidden>
       <aside>
         <div class="panel">
           <div class="panel-head">
@@ -1290,7 +1531,7 @@
       <div>
         <section>
           <div class="section-head">
-            <h2>0. 온보딩 브랜치 그래프</h2>
+            <h2>1. 온보딩 브랜치 그래프</h2>
             <span class="badge" id="graph-state">main/onboarding</span>
           </div>
           <div class="section-body">
@@ -1316,7 +1557,7 @@
 
         <section>
           <div class="section-head">
-            <h2>1. 내 업무 현황</h2>
+            <h2>2. 내 업무 현황</h2>
             <span class="badge" id="board-source">산출물 대기</span>
           </div>
           <div class="section-body">
@@ -1327,7 +1568,7 @@
 
         <section>
           <div class="section-head">
-            <h2>2. 생성되는 작업 지도</h2>
+            <h2>3. 생성되는 작업 지도</h2>
             <span class="badge" id="work-count">작업 0개</span>
           </div>
           <div class="section-body">
@@ -1337,17 +1578,26 @@
 
         <section>
           <div class="section-head">
-            <h2>3. 자동화 후보</h2>
+            <h2>4. 작업 현황 보드</h2>
             <span class="badge" id="mission-count">후보 0개</span>
           </div>
           <div class="section-body">
-            <div class="task-grid" id="task-grid"></div>
+            <div class="mission-summary" id="mission-summary"></div>
+            <div class="mission-board" id="mission-board"></div>
+            <div class="mission-table-wrap">
+              <table class="state-table mission-table" aria-label="자동화 작업 현황 목록">
+                <thead>
+                  <tr><th>ID</th><th>작업</th><th>상태</th><th>다음 행동</th><th>원본</th></tr>
+                </thead>
+                <tbody id="mission-table"></tbody>
+              </table>
+            </div>
           </div>
         </section>
 
         <section>
           <div class="section-head">
-            <h2>4. 만들어질 산출물</h2>
+            <h2>5. 만들어질 산출물</h2>
             <span class="badge good" id="first-mission">M001 대기</span>
           </div>
           <div class="section-body">
@@ -1355,29 +1605,6 @@
           </div>
         </section>
 
-        <section>
-          <div class="section-head">
-            <h2>5. CLI에 넘길 요약</h2>
-            <button type="button" data-copy="cli-brief">요약 복사</button>
-          </div>
-          <div class="section-body">
-            <div class="ai-cli-window" aria-label="AI CLI 입력 화면 미리보기">
-              <div class="ai-cli-top">
-                <div class="ai-cli-brand">
-                  <span class="ai-cli-mark" id="ai-cli-mark">C</span>
-                  <span id="ai-cli-name">Codex CLI</span>
-                </div>
-              </div>
-              <div class="ai-cli-body">
-                <p class="ai-cli-hint" id="ai-cli-hint">Codex CLI 입력 화면에 붙여넣을 요약입니다.</p>
-                <div class="ai-cli-input-label">아래 요약을 현재 CLI 입력창에 붙여넣기</div>
-                <div class="ai-cli-input">
-                  <pre><code id="cli-brief"></code></pre>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
       </div>
     </div>
   </main>
@@ -1461,6 +1688,11 @@
     let boardData = defaultBoardData();
     let boardSource = "보드 데이터 대기";
     let hasBoardData = false;
+    let selectedConcept = "location";
+    let conceptManuallySelected = false;
+    let selectedBoardTab = params.get("view") === "onboarding" ? "onboarding" : "concept";
+    let conceptLastSignature = "";
+    let conceptLastUpdatedAt = new Date().toISOString();
 
     document.body.dataset.tool = setup.tool === "claude" ? "claude" : "codex";
     document.body.dataset.os = setup.os === "windows" ? "windows" : "mac";
@@ -1468,6 +1700,7 @@
     document.getElementById("tag-tool").textContent = `도구: ${setup.tool === "claude" ? "Claude Code" : "Codex"}`;
     document.getElementById("tag-os").textContent = `환경: ${setup.os === "windows" ? "Windows PowerShell" : "macOS/Linux/WSL"}`;
     document.getElementById("tag-shell").textContent = `Shell: ${setup.shell}`;
+    setBoardTab(selectedBoardTab, false);
     renderSelectedChrome();
 
     function windowTitle() {
@@ -1482,15 +1715,42 @@
     }
 
     function renderSelectedChrome() {
-      const isClaude = setup.tool === "claude";
-      document.getElementById("ai-cli-mark").textContent = isClaude ? "A" : "C";
-      document.getElementById("ai-cli-name").textContent = isClaude ? "Claude Code" : "Codex CLI";
-      document.getElementById("ai-cli-hint").textContent = isClaude
-        ? "Claude Code 입력 화면에 붙여넣을 요약입니다."
-        : "Codex CLI 입력 화면에 붙여넣을 요약입니다.";
       document.getElementById("kit-window-title").textContent = windowTitle();
       document.getElementById("kit-shell-name").textContent = setup.os === "windows" ? "powershell" : setup.shell;
       document.getElementById("kit-prompt").textContent = promptText();
+    }
+
+    function setBoardTab(tab, updateUrl = true) {
+      selectedBoardTab = tab === "onboarding" ? "onboarding" : "concept";
+      document.querySelectorAll("[data-board-tab]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.boardTab === selectedBoardTab);
+        button.setAttribute("aria-pressed", button.dataset.boardTab === selectedBoardTab ? "true" : "false");
+      });
+      document.getElementById("concept-board-pane").hidden = selectedBoardTab !== "concept";
+      document.getElementById("onboarding-board-pane").hidden = selectedBoardTab !== "onboarding";
+      if (updateUrl) {
+        const next = new URL(window.location.href);
+        next.searchParams.set("view", selectedBoardTab);
+        window.history.replaceState(null, "", next);
+      }
+    }
+
+    function formatTimestamp(value) {
+      if (!value) {
+        return "-";
+      }
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        return String(value);
+      }
+      return date.toLocaleString("ko-KR", {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+      });
     }
 
     function defaultOnboardingState(hasHook) {
@@ -1660,12 +1920,17 @@
       const type = typeof item === "object" && item && item.type ? String(item.type) : inferredType;
       const risk = typeof item === "object" && item && item.risk ? String(item.risk) : riskLabel(type, text);
       const score = Number.isFinite(Number(item && item.score)) ? Number(item.score) : scoreTask(type, text);
+      const id = String(item && item.id || `T${String(index + 1).padStart(2, "0")}`);
       return {
-        id: String(item && item.id || `T${String(index + 1).padStart(2, "0")}`),
+        id,
         text,
         type,
         risk,
         score,
+        value: String(item && item.value || ""),
+        verification: String(item && item.verification || ""),
+        status: normalizeMissionStatus(item && item.status, id === "M001" ? "선택" : "후보"),
+        nextAction: String(item && (item.nextAction || item.next || item.action) || ""),
         source: item && item.source ? String(item.source) : ""
       };
     }
@@ -1704,7 +1969,7 @@
       base.works = asList(raw.works || raw.recurringWorks);
       base.inputs = asList(raw.inputs || raw.tools || raw.inputTools);
       base.risks = asList(raw.risks || raw.constraints);
-      base.tasks = tasks.map(normalizeTask).filter((task) => task.text).sort((a, b) => b.score - a.score);
+      base.tasks = sortMissionTasks(tasks.map(normalizeTask).filter((task) => task.text));
       base.artifacts = (Array.isArray(raw.artifacts) ? raw.artifacts : []).map(normalizeArtifact);
       base.firstMission = raw.firstMission || raw.mission
         ? normalizeTask(raw.firstMission || raw.mission, 0)
@@ -1775,9 +2040,51 @@
       return "낮음";
     }
 
+    function normalizeMissionStatus(value, fallback = "후보") {
+      const clean = String(value || "").trim().toLowerCase();
+      if (!clean) return fallback;
+      if (/완료|done|complete|closed/.test(clean)) return "완료";
+      if (/진행|doing|in[\s_-]*progress|active/.test(clean)) return "진행";
+      if (/선택|추천|accepted|selected|ready|m001/.test(clean)) return "선택";
+      if (/보류|defer|later|backlog|나중/.test(clean)) return "보류";
+      if (/제외|not[\s_-]*in[\s_-]*scope|out[\s_-]*of[\s_-]*scope/.test(clean)) return "제외";
+      if (/대기|todo|pending|candidate|후보/.test(clean)) return "후보";
+      return String(value);
+    }
+
+    function missionStatusRank(status) {
+      return {
+        "진행": 0,
+        "선택": 1,
+        "후보": 2,
+        "보류": 3,
+        "완료": 4,
+        "제외": 5
+      }[normalizeMissionStatus(status)] ?? 6;
+    }
+
+    function sortMissionTasks(tasks) {
+      return [...tasks].sort((a, b) => missionStatusRank(a.status) - missionStatusRank(b.status) || b.score - a.score);
+    }
+
+    function missionGroupId(status) {
+      const normalized = normalizeMissionStatus(status);
+      if (["진행", "선택"].includes(normalized)) return "active";
+      if (normalized === "보류") return "deferred";
+      if (["완료", "제외"].includes(normalized)) return "done";
+      return "candidate";
+    }
+
+    function missionBadgeClass(status) {
+      const normalized = normalizeMissionStatus(status);
+      if (["진행", "선택", "완료"].includes(normalized)) return "good";
+      if (["보류", "제외"].includes(normalized)) return "warn";
+      return "";
+    }
+
     function buildTasks() {
       if (boardData.tasks.length) {
-        return boardData.tasks;
+        return sortMissionTasks(boardData.tasks);
       }
       return boardData.works.map((text, index) => {
         const type = classify(text);
@@ -1786,7 +2093,12 @@
           text,
           type,
           score: scoreTask(type, text),
-          risk: riskLabel(type, text)
+          risk: riskLabel(type, text),
+          value: "",
+          verification: "",
+          status: "후보",
+          nextAction: "입력과 검증 방법을 더 확인합니다.",
+          source: "work-map.md"
         };
       }).sort((a, b) => b.score - a.score);
     }
@@ -1922,6 +2234,199 @@
       `).join("");
     }
 
+    const conceptDefinitions = {
+      location: {
+        label: "작업 위치",
+        title: "명령은 현재 폴더를 기준으로 실행됩니다",
+        description: "CLI가 파일을 읽고 쓰거나 Git 상태를 확인할 때, 기준점은 지금 터미널이 서 있는 폴더입니다.",
+        rows: [
+          ["현재 폴더", "명령이 실행되는 출발점"],
+          ["작업 루트", "AI와 반복해서 일할 repos를 모아두는 폴더"],
+          ["repo root", "Git이 추적하는 프로젝트의 최상위 폴더"]
+        ],
+        note: "CLI가 `pwd`, `ls`, `git status`를 확인하면 이 그림에서 현재 위치와 repo 기준점을 찾는 중입니다.",
+        diagram: () => `
+          ${conceptDefs()}
+          ${conceptBox(38, 54, 178, 82, "primary", ["Terminal", promptText()])}
+          ${conceptArrow(220, 95, 318, 95)}
+          ${conceptBox(320, 44, 190, 102, "local", ["현재 폴더", "~/Documents/AI-Work/..."])}
+          ${conceptArrow(416, 150, 416, 228, "secondary")}
+          ${conceptBox(270, 230, 290, 88, "", ["repo root", "AGENTS.md / CLAUDE.md / .git"])}
+          ${conceptText(["명령어는 이 위치를 기준으로", "파일과 Git 상태를 해석합니다."], 416, 352, "concept-small", "middle")}
+        `
+      },
+      "local-remote": {
+        label: "Local / Remote",
+        title: "Local repo와 GitHub remote는 연결된 두 장소입니다",
+        description: "내 컴퓨터의 repo와 GitHub의 repo는 같은 프로젝트를 다루지만 자동으로 항상 같아지지는 않습니다.",
+        rows: [
+          ["Local repo", "내 컴퓨터에 있는 작업 폴더"],
+          ["Remote repo", "GitHub에 있는 협업 저장소"],
+          ["연결", "`origin` 같은 이름으로 둘 사이의 주소를 기억"]
+        ],
+        note: "CLI가 `git remote -v`를 확인하면 local repo가 어느 GitHub remote와 연결되어 있는지 보는 중입니다.",
+        diagram: () => `
+          ${conceptDefs()}
+          ${conceptBox(54, 92, 230, 142, "local", ["Local repo", "내 컴퓨터", "files + .git"])}
+          ${conceptBox(438, 92, 230, 142, "remote", ["GitHub remote", "웹 저장소", "origin/main"])}
+          ${conceptArrow(292, 128, 430, 128)}
+          ${conceptText(["push"], 361, 104, "concept-code", "middle")}
+          ${conceptArrow(430, 194, 292, 194, "secondary")}
+          ${conceptText(["pull"], 361, 216, "concept-code", "middle")}
+          ${conceptBox(230, 290, 262, 58, "", ["remote URL", "GitHub 위치를 local에 기록"])}
+        `
+      },
+      commit: {
+        label: "Commit",
+        title: "Commit은 local repo 안에 남기는 저장 지점입니다",
+        description: "파일을 바꾸는 것, stage하는 것, commit하는 것은 서로 다른 단계입니다. commit 전까지는 GitHub에 올라가지 않습니다.",
+        rows: [
+          ["working tree", "아직 저장 지점이 아닌 파일 변경"],
+          ["stage", "이번 commit에 담을 변경 선택"],
+          ["commit", "local repo에 남는 스냅샷"]
+        ],
+        note: "CLI가 `status → add → commit`을 설명하면, 변경을 local 기록으로 만드는 과정을 다루는 중입니다.",
+        diagram: () => `
+          ${conceptDefs()}
+          ${conceptBox(36, 90, 170, 110, "warn", ["Working tree", "수정된 파일"])}
+          ${conceptArrow(212, 145, 298, 145)}
+          ${conceptText(["git add"], 255, 118, "concept-code", "middle")}
+          ${conceptBox(304, 90, 170, 110, "primary", ["Stage", "담을 변경 선택"])}
+          ${conceptArrow(480, 145, 566, 145)}
+          ${conceptText(["git commit"], 523, 118, "concept-code", "middle")}
+          ${conceptBox(572, 90, 142, 110, "local", ["Commit", "로컬 기록"])}
+          <circle class="commit-node done" cx="592" cy="292" r="10" />
+          <circle class="commit-node done" cx="636" cy="292" r="10" />
+          <circle class="commit-node active" cx="680" cy="292" r="10" />
+          <path class="branch-line active" d="M592 292 H680" />
+          ${conceptText(["commit history는 local repo 안에 먼저 쌓입니다."], 360, 330, "concept-small", "middle")}
+        `
+      },
+      sync: {
+        label: "Push / Pull",
+        title: "Push와 Pull은 local과 GitHub를 맞추는 이동입니다",
+        description: "push는 내 local commit을 GitHub로 올리고, pull은 GitHub의 commit을 내 local로 가져옵니다.",
+        rows: [
+          ["push", "local commit → GitHub remote"],
+          ["pull", "GitHub remote → local repo"],
+          ["주의", "commit 없이 push할 수 없고, remote 변경은 pull 전까지 local에 없음"]
+        ],
+        note: "CLI가 push/pull을 안내할 때는 어느 방향으로 기록이 이동하는지 먼저 확인하면 헷갈림이 줄어듭니다.",
+        diagram: () => `
+          ${conceptDefs()}
+          ${conceptBox(54, 78, 222, 108, "local", ["Local", "내 commit A, B"])}
+          ${conceptBox(444, 78, 222, 108, "remote", ["GitHub", "remote main"])}
+          ${conceptArrow(284, 116, 436, 116)}
+          ${conceptText(["git push"], 360, 90, "concept-code", "middle")}
+          ${conceptArrow(436, 262, 284, 262, "secondary")}
+          ${conceptText(["git pull"], 360, 286, "concept-code", "middle")}
+          ${conceptBox(54, 226, 222, 108, "local", ["Local", "GitHub 변경 반영"])}
+          ${conceptBox(444, 226, 222, 108, "remote", ["GitHub", "팀/웹 변경 C"])}
+        `
+      },
+      mission: {
+        label: "작업에서 미션까지",
+        title: "업무 설명은 자동화 미션으로 점점 좁혀집니다",
+        description: "역할과 성과에서 시작해 반복 업무, 실행 단계, 자동화 후보, 첫 미션으로 내려갑니다.",
+        rows: [
+          ["역할", "내가 책임지는 관점"],
+          ["반복 업무", "자주 발생하고 입력/출력이 있는 일"],
+          ["첫 미션", "낮은 위험, 쉬운 검증, 반복성이 있는 자동화 후보"]
+        ],
+        note: "CLI가 업무 질문을 할 때는 답변을 work-map, mission-backlog, automation-brief로 바꾸기 위한 정보 수집입니다.",
+        diagram: () => `
+          ${conceptDefs()}
+          ${conceptBox(40, 74, 130, 72, "primary", ["역할", "목적"])}
+          ${conceptArrow(176, 110, 256, 110)}
+          ${conceptBox(262, 74, 130, 72, "", ["성과", "결과"])}
+          ${conceptArrow(398, 110, 478, 110)}
+          ${conceptBox(484, 74, 150, 72, "local", ["업무 영역", "반복 패턴"])}
+          ${conceptArrow(558, 150, 558, 214)}
+          ${conceptBox(448, 218, 218, 72, "primary", ["실행 단계", "입력 → 처리 → 산출물"])}
+          ${conceptArrow(442, 254, 342, 254)}
+          ${conceptBox(174, 218, 170, 72, "warn", ["자동화 후보", "유형/위험/검증"])}
+          ${conceptArrow(170, 254, 92, 254)}
+          ${conceptBox(36, 218, 132, 72, "local", ["M001", "첫 미션"])}
+        `
+      }
+    };
+
+    function conceptIdForStep(stepId) {
+      if (["kit-install", "work-root"].includes(stepId)) return "location";
+      if (stepId === "github-auth") return "local-remote";
+      if (stepId === "git-loop") return "commit";
+      if (["role-map", "task-split", "mission-select"].includes(stepId)) return "mission";
+      return "location";
+    }
+
+    function renderConceptBoard() {
+      const current = currentStep();
+      if (!conceptManuallySelected) {
+        selectedConcept = conceptIdForStep(current.id);
+      }
+      const concept = conceptDefinitions[selectedConcept] || conceptDefinitions.location;
+      const signature = [
+        selectedConcept,
+        current.id,
+        stepStatus(current.id),
+        onboardingState.updatedAt || "",
+        boardData.updatedAt || ""
+      ].join("|");
+      if (signature !== conceptLastSignature) {
+        conceptLastSignature = signature;
+        conceptLastUpdatedAt = onboardingState.updatedAt || boardData.updatedAt || new Date().toISOString();
+      }
+      document.querySelectorAll("[data-concept]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.concept === selectedConcept);
+      });
+      document.getElementById("concept-state").textContent = conceptManuallySelected
+        ? `${concept.label} · 직접 선택`
+        : `${current.label} 단계 설명`;
+      document.getElementById("concept-updated-at").textContent = `마지막 업데이트: ${formatTimestamp(conceptLastUpdatedAt)}`;
+      document.getElementById("concept-title").textContent = concept.title;
+      document.getElementById("concept-description").textContent = concept.description;
+      document.getElementById("concept-note").textContent = concept.note;
+      document.getElementById("concept-table").innerHTML = concept.rows.map(([term, meaning]) => `
+        <tr><th>${escapeHtml(term)}</th><td>${escapeHtml(meaning)}</td></tr>
+      `).join("");
+      document.getElementById("concept-svg").innerHTML = `
+        <title id="concept-svg-title">${escapeSvg(concept.title)}</title>
+        <desc id="concept-svg-desc">${escapeSvg(concept.description)}</desc>
+        ${concept.diagram()}
+      `;
+    }
+
+    function conceptDefs() {
+      return `<defs>
+        <marker id="concept-arrow-head" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L9,3 z" fill="currentColor"></path>
+        </marker>
+      </defs>`;
+    }
+
+    function conceptBox(x, y, width, height, variant, lines) {
+      const className = `concept-node${variant ? ` ${variant}` : ""}`;
+      const lineMarkup = lines.map((line, index) => {
+        const cls = index === 0 ? "concept-label" : "concept-small";
+        const yy = y + 28 + index * 23;
+        return `<text class="${cls}" x="${x + width / 2}" y="${yy}" text-anchor="middle">${escapeSvg(line)}</text>`;
+      }).join("");
+      return `<g>
+        <rect class="${className}" x="${x}" y="${y}" width="${width}" height="${height}" rx="12"></rect>
+        ${lineMarkup}
+      </g>`;
+    }
+
+    function conceptArrow(x1, y1, x2, y2, variant = "") {
+      return `<path class="concept-arrow${variant ? ` ${variant}` : ""}" d="M${x1} ${y1} L${x2} ${y2}"></path>`;
+    }
+
+    function conceptText(lines, x, y, cls = "concept-small", anchor = "start") {
+      return lines.map((line, index) => `
+        <text class="${cls}" x="${x}" y="${y + index * 18}" text-anchor="${anchor}">${escapeSvg(line)}</text>
+      `).join("");
+    }
+
     function renderWorkProfile() {
       document.getElementById("board-source").textContent = hasBoardData ? "보드 데이터 동기화" : "산출물 대기";
       document.getElementById("board-source").className = hasBoardData ? "badge good" : "badge warn";
@@ -1976,23 +2481,76 @@
 
     function renderTasks(tasks) {
       document.getElementById("work-count").textContent = `작업 ${tasks.length}개`;
-      document.getElementById("mission-count").textContent = `후보 ${tasks.length}개`;
-      const grid = document.getElementById("task-grid");
+      document.getElementById("mission-count").textContent = `작업 ${tasks.length}개`;
+      const summary = document.getElementById("mission-summary");
+      const board = document.getElementById("mission-board");
+      const table = document.getElementById("mission-table");
       if (!tasks.length) {
-        grid.innerHTML = `<div class="empty">CLI가 mission-backlog.md 또는 automation-brief.md를 만들고 board-data.json을 갱신하면 자동화 후보가 표시됩니다.</div>`;
+        summary.innerHTML = "";
+        board.innerHTML = `<div class="empty">CLI가 mission-backlog.md 또는 automation-brief.md를 만들고 board-data.json을 갱신하면 자동화 작업 현황이 표시됩니다.</div>`;
+        table.innerHTML = "";
         return;
       }
-      grid.innerHTML = tasks.map((task, index) => `
-        <article class="task-card">
-          <strong>${task.id}. ${escapeHtml(task.text)}</strong>
-          <div class="tags">
-            <span class="badge good">${task.type}</span>
-            <span class="badge ${task.risk === "낮음" ? "good" : "warn"}">위험 ${task.risk}</span>
-            <span class="badge">추천 ${task.score}</span>
-            ${index === 0 ? `<span class="badge good">M001 후보</span>` : ""}
-          </div>
-        </article>
+      const laneDefs = [
+        ["active", "이어갈 작업"],
+        ["candidate", "후보 목록"],
+        ["deferred", "나중에 검토"],
+        ["done", "완료/제외"]
+      ];
+      const counts = laneDefs.map(([id, label]) => {
+        const count = tasks.filter((task) => missionGroupId(task.status) === id).length;
+        return { id, label, count };
+      });
+      summary.innerHTML = counts.map(({ label, count }) => `
+        <div class="mission-stat"><strong>${count}</strong><span>${label}</span></div>
       `).join("");
+      board.innerHTML = laneDefs.map(([id, label]) => {
+        const laneTasks = tasks.filter((task) => missionGroupId(task.status) === id);
+        const cards = laneTasks.length
+          ? laneTasks.map((task, index) => missionCard(task, index)).join("")
+          : `<div class="empty">아직 없음</div>`;
+        return `
+          <section class="mission-lane" aria-label="${escapeHtml(label)}">
+            <div class="mission-lane-head">
+              <h3>${escapeHtml(label)}</h3>
+              <span class="badge">${laneTasks.length}</span>
+            </div>
+            ${cards}
+          </section>
+        `;
+      }).join("");
+      table.innerHTML = tasks.map((task) => `
+        <tr>
+          <td><code>${escapeHtml(task.id)}</code></td>
+          <td>${escapeHtml(task.text)}</td>
+          <td><span class="badge ${missionBadgeClass(task.status)}">${escapeHtml(normalizeMissionStatus(task.status))}</span></td>
+          <td>${escapeHtml(task.nextAction || task.verification || "다음 인터뷰에서 입력/검증 방법 확인")}</td>
+          <td>${escapeHtml(task.source || "mission-backlog.md")}</td>
+        </tr>
+      `).join("");
+    }
+
+    function missionCard(task, index) {
+      const status = normalizeMissionStatus(task.status);
+      const primaryNote = task.nextAction
+        ? `다음: ${task.nextAction}`
+        : task.verification
+          ? `검증: ${task.verification}`
+          : "다음 인터뷰에서 입력과 검증 방법을 확인합니다.";
+      return `
+        <article class="mission-card">
+          <strong>${escapeHtml(task.id)}. ${escapeHtml(task.text)}</strong>
+          <div class="tags">
+            <span class="badge ${missionBadgeClass(status)}">${escapeHtml(status)}</span>
+            <span class="badge good">${escapeHtml(task.type)}</span>
+            <span class="badge ${task.risk === "낮음" ? "good" : "warn"}">위험 ${escapeHtml(task.risk)}</span>
+            <span class="badge">추천 ${escapeHtml(task.score)}</span>
+            ${index === 0 && missionGroupId(task.status) === "active" ? `<span class="badge good">다음 작업</span>` : ""}
+          </div>
+          <p>${escapeHtml(primaryNote)}</p>
+          <p class="meta">${escapeHtml(task.source || "mission-backlog.md")}</p>
+        </article>
+      `;
     }
 
     function renderArtifacts(tasks) {
@@ -2013,40 +2571,6 @@
           ${source ? `<p class="muted">${escapeHtml(source)}</p>` : ""}
         </article>
       `).join("");
-    }
-
-    function renderCliBrief(tasks) {
-      const state = readBoard();
-      const first = boardData.firstMission || tasks[0];
-      const toolInstruction = setup.tool === "claude"
-        ? "work-mission-discovery skill을 사용해주세요."
-        : "$work-mission-discovery 를 사용해주세요.";
-      document.getElementById("cli-brief").textContent = `${toolInstruction}
-
-현재 onboarding 산출물과 brief-board 현황을 바탕으로 온보딩을 이어가주세요.
-
-[환경]
-- 도구: ${setup.tool === "claude" ? "Claude Code" : "Codex"}
-- OS/shell: ${setup.os === "windows" ? "Windows PowerShell" : `${setup.os} / ${setup.shell}`}
-
-[업무 현황]
-- 역할: ${state.role || "(미입력)"}
-- 책임지는 결과:
-${lines(state.outcomes).map((item) => `  - ${item}`).join("\n") || "  - (미입력)"}
-- 반복 업무:
-${lines(state.works).map((item) => `  - ${item}`).join("\n") || "  - (미입력)"}
-- 입력/도구: ${state.inputs || "(미입력)"}
-- 위험/제약: ${state.risks || "(미입력)"}
-
-[자동 생성된 후보]
-${tasks.map((task) => `- ${task.id}: ${task.text} / 유형 ${task.type} / 위험 ${task.risk} / 추천 ${task.score}`).join("\n") || "- 후보 없음"}
-
-[다음 요청]
-1. 현재 repo의 지침 파일과 work-mission-discovery skill 설치 상태를 확인해주세요.
-2. .onboarding/update-state.mjs가 있으면 각 단계 완료 후 상태 hook을 갱신해주세요.
-3. environment-state.md, work-map.md, mission-backlog.md, automation-brief.md를 원본으로 유지해주세요.
-4. 산출물을 갱신한 뒤 node .onboarding/update-board.mjs를 실행해 board-data.json을 갱신해주세요.
-5. 첫 미션 후보는 ${first ? `${first.id || "M001"} "${first.text || first.name || first.type}"` : "반복 업무 정리 후"}로 두고, 부족한 부분은 1-3개 질문으로 보완해주세요.`;
     }
 
     function renderInstallCommand() {
@@ -2113,11 +2637,11 @@ if (Get-Command node -ErrorAction SilentlyContinue) { node .onboarding\\update-s
     function render() {
       const tasks = buildTasks();
       renderBranchGraph(tasks);
+      renderConceptBoard();
       renderWorkProfile();
       renderWorkMap(tasks);
       renderTasks(tasks);
       renderArtifacts(tasks);
-      renderCliBrief(tasks);
       renderInstallCommand();
     }
 
@@ -2158,6 +2682,20 @@ if (Get-Command node -ErrorAction SilentlyContinue) { node .onboarding\\update-s
       button.addEventListener("click", async () => {
         const target = document.getElementById(button.dataset.copy);
         await copyText(target.textContent);
+      });
+    });
+
+    document.querySelectorAll("[data-concept]").forEach((button) => {
+      button.addEventListener("click", () => {
+        selectedConcept = button.dataset.concept;
+        conceptManuallySelected = true;
+        renderConceptBoard();
+      });
+    });
+
+    document.querySelectorAll("[data-board-tab]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setBoardTab(button.dataset.boardTab);
       });
     });
 

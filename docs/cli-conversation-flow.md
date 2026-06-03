@@ -4,9 +4,27 @@
 
 목표는 사용자가 모든 과정을 미리 읽는 것이 아니라, CLI와 한 단계씩 대화하면서 환경 설정, Git/GitHub 이해, 업무 정의, 자동화 미션 생성을 경험하는 것이다.
 
+## 현재 결정
+
+초기 Claude Code CLI 확인에서는 짧은 시작 문장만으로는 충분하지 않아 보였다. 이후 튜닝 결과, 문제는 문장 길이가 아니라 CLI가 지침과 skill을 읽을 수 있는 위치, skill 설치 상태, 그리고 skill 내부 규칙이었다.
+
+현재 기준은 trigger-only handoff다. 사용자는 skill 호출 의도만 입력하고, 현재 폴더 확인, 작업 repo 후보 확인, Git/GitHub CLI 상태 확인, 한 단계씩 진행은 `work-mission-discovery` skill이 맡는다.
+
+Codex:
+
+```text
+$work-mission-discovery 로 AI CLI 온보딩을 시작해줘.
+```
+
+Claude Code:
+
+```text
+work-mission-discovery skill로 AI CLI 온보딩을 시작해주세요.
+```
+
 ## 실제 확인에서 얻은 결론
 
-Claude Code CLI로 확인한 결과, 짧은 시작 문장만으로는 충분하지 않았다.
+Claude Code CLI로 확인한 결과, skill 지침을 읽을 수 없는 위치에서는 짧은 시작 문장만으로 충분하지 않았다.
 
 | 시작 위치 | 관찰된 동작 | 튜닝 결론 |
 | --- | --- | --- |
@@ -27,12 +45,10 @@ Set-Location '<local-onboarding-kit-path>'
 claude
 ```
 
-그 다음 CLI 입력창에는 짧은 시작 문장만 붙여넣는다.
+그 다음 CLI 입력창에는 trigger-only 시작 문장만 붙여넣는다.
 
 ```text
 work-mission-discovery skill로 AI CLI 온보딩을 시작해주세요.
-먼저 현재 폴더, 작업 repo, Git/GitHub CLI 상태를 직접 확인해주세요.
-한 번에 설명하지 말고, 다음 한 단계만 안내해주세요.
 ```
 
 ## Claude CLI E2E Run
@@ -50,12 +66,11 @@ work-mission-discovery skill로 AI CLI 온보딩을 시작해주세요.
   ...
 ```
 
-사용한 시작 프롬프트:
+당시 사용한 시작 프롬프트:
 
 ```text
 work-mission-discovery skill로 AI CLI 온보딩을 시작해주세요.
-먼저 현재 폴더, 작업 repo, Git/GitHub CLI 상태를 직접 확인해주세요.
-한 번에 설명하지 말고, 다음 한 단계만 안내해주세요.
+[당시에는 환경 확인과 단계 진행 지시를 시작 문장에 포함했다. 현재 기준에서는 이 내용을 skill 내부 규칙으로 이동했다.]
 
 E2E 테스트 상황입니다.
 - 사용자는 AI CLI 초보자입니다.
@@ -131,8 +146,8 @@ skill에 "안전한 확인 명령은 직접 실행" 규칙을 넣은 뒤 다시 
 
 튜닝:
 
-- 시작 문장에 "먼저 현재 폴더, 작업 repo, Git/GitHub CLI 상태를 직접 확인"을 추가한다.
-- skill의 entry point 규칙도 "AI CLI 온보딩 시작 요청은 Env-0부터"로 강화한다.
+- 시작 문장을 길게 만들지 않고, skill의 entry point 규칙을 "AI CLI 온보딩 시작 요청은 Env-0부터"로 강화한다.
+- 현재 폴더, 작업 repo, Git/GitHub CLI 상태 확인과 한 단계씩 진행은 시작 문장이 아니라 skill의 기본 책임으로 둔다.
 
 ### E2E 관찰 1-2: 작업 repo 접근 권한이 없으면 다시 사용자 실행으로 돌아감
 
@@ -168,7 +183,7 @@ gh auth status
 
 튜닝:
 
-- 시작 문장에 "Git/GitHub CLI 상태"를 추가한다.
+- 시작 문장을 길게 만들지 않고, Git/GitHub CLI 상태 확인을 skill/playbook의 기본 실행 규칙으로 둔다.
 - playbook에 `command -v gh` 또는 `gh --version` 후 `gh auth status`를 직접 실행하라고 명시한다.
 - 사용자에게 묻는 것은 로그인 필요 여부, 계정/조직 선택, repo 생성 동의처럼 사람이 결정해야 하는 지점으로 제한한다.
 
@@ -358,8 +373,6 @@ flowchart TD
 ```text
 사용자:
 work-mission-discovery skill로 AI CLI 온보딩을 시작해주세요.
-먼저 현재 폴더, 작업 repo, Git/GitHub CLI 상태를 직접 확인해주세요.
-한 번에 설명하지 말고, 다음 한 단계만 안내해주세요.
 ```
 
 ```text
@@ -813,8 +826,6 @@ Codex에서는 `$work-mission-discovery`처럼 skill 호출 의도를 더 직접
 
 ```text
 $work-mission-discovery 로 AI CLI 온보딩을 시작해줘.
-먼저 현재 폴더, 작업 repo, Git/GitHub CLI 상태를 직접 확인해줘.
-한 번에 설명하지 말고, 다음 한 단계만 안내해줘.
 ```
 
 다만 대화 구조는 Claude Code와 동일해야 한다.

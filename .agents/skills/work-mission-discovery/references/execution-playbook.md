@@ -20,6 +20,8 @@ For first-time users, start from the hosted web entry rather than asking them to
 
 Use `web/index.html` for CLI installation, PATH refresh, verification, post-verify bootstrap, login, and the first handoff prompt. Do not send the user to the onboarding board until the user's working folder has `.onboarding/state.json`, `.onboarding/update-state.mjs`, `.onboarding/update-board.mjs`, and `.onboarding/brief-board.html`. After project installation, use `.onboarding/brief-board.html` inside the user's working folder as the state-backed board. The board does not create repositories, change files, or call GitHub directly; the AI CLI does that after the user hands off the summary.
 
+The first handoff prompt should be trigger-only. Do not ask the user to paste extra instructions such as "check the current folder" or "guide me one step at a time"; the skill owns those behaviors.
+
 Post-verification bootstrap commands:
 
 ```bash
@@ -33,7 +35,9 @@ $script = irm https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bo
 & ([scriptblock]::Create($script)) -Tool codex
 ```
 
-The board must not depend on user-managed checkboxes or user-entered board forms. During CLI onboarding, write progress to `.onboarding/state.json` through `.onboarding/update-state.mjs`. Keep work understanding and mission content in markdown source artifacts, then run `.onboarding/update-board.mjs` to regenerate `.onboarding/board-data.json` as display summary data. The board reads state plus board-data and updates the graph, work map, mission candidates, and artifact matrix. If the state file is missing, the board must show hook-not-installed rather than hook-active. If board-data is missing, the board must show artifact-waiting rather than invented work content. When all required steps are done, the updater disposes the hooks by setting `hooks.enabled=false`.
+The board must not depend on user-managed checkboxes or user-entered board forms. During CLI onboarding, write progress to `.onboarding/state.json` through `.onboarding/update-state.mjs`. Keep work understanding and mission content in markdown source artifacts, then run `.onboarding/update-board.mjs` to regenerate `.onboarding/board-data.json` as display summary data. The board reads state plus board-data and updates the graph, work map, resumable mission status board, and artifact matrix. If the state file is missing, the board must show hook-not-installed rather than hook-active. If board-data is missing, the board must show artifact-waiting rather than invented work content. When all required steps are done, the updater disposes the hooks by setting `hooks.enabled=false`.
+
+Use the brief board's concept board as the companion visual surface for Git and workspace explanations. Map current folder/work root explanations to "작업 위치", local/remote explanations to "Local / Remote", commit practice to "Commit", and upload/download sync explanations to "Push / Pull".
 
 Shell policy:
 
@@ -104,7 +108,7 @@ The brief board is a dashboard, not the place where the user enters work data.
 4. Verify:
 
    ```text
-   $work-mission-discovery 를 사용해서 현재 적용된 지침과 다음 질문을 요약해주세요.
+   $work-mission-discovery 로 AI CLI 온보딩을 시작해줘.
    ```
 
 Expected: Codex uses AGENTS.md guidance and the skill's Work Grounding flow.
@@ -149,7 +153,7 @@ Expected: Codex uses AGENTS.md guidance and the skill's Work Grounding flow.
 5. Verify:
 
    ```text
-   work-mission-discovery skill을 사용해서 현재 인터뷰 상태를 확인해주세요.
+   work-mission-discovery skill로 AI CLI 온보딩을 시작해주세요.
    ```
 
 Expected: Claude Code selects the skill from `.claude/skills`. Skills are model-invoked, not slash commands.

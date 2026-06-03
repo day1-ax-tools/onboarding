@@ -311,8 +311,8 @@ Use these templates when creating work discovery artifacts. Keep them concise an
 ```md
 # Mission Backlog
 
-| ID | Mission | Type | Value | Risk | Verification | Status |
-| --- | --- | --- | --- | --- | --- | --- |
+| ID | Mission | Type | Value | Risk | Verification | Status | Next Action |
+| --- | --- | --- | --- | --- | --- | --- | --- |
 
 ## Recommended Order
 

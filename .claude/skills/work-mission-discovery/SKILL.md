@@ -11,14 +11,17 @@ Run a model-neutral onboarding flow that first stabilizes the user's CLI work en
 
 - Use concise polite Korean by default.
 - Ask 1-3 questions at a time.
+- Treat a trigger-only handoff as sufficient. If the user asks to start AI CLI onboarding or mentions `work-mission-discovery`, start the onboarding flow without requiring extra prompt text about current-folder checks or step-by-step pacing; those are this skill's responsibility.
 - If the user lacks a stable local workspace, GitHub authentication, or local/remote repo understanding, run Work Environment Setup before Work Grounding.
 - Start from the user's role and outcomes unless a specific automation candidate is already selected.
 - Treat user-proposed automations as hypotheses, not conclusions.
 - Prefer low-risk, high-repetition, easy-to-verify work for the first mission.
+- Keep `mission-backlog.md` usable as a resumable work board: each candidate should have an ID, mission, type, value, risk, verification, status, and next action whenever enough information is known.
 - Keep product-specific concepts out of the main explanation unless the user asks.
 - When writing artifacts, keep them current-state focused and avoid historical narration.
 - Record durable setup facts in `environment-state.md`; avoid chasing transient Git states such as "currently staged" unless the step is explicitly teaching that state. Prefer evidence lines such as "local commit `<hash>` recorded environment state" over state lines that become stale after the next Git command.
 - When creating HTML views, use the clearest visual structure for the concept instead of repeating text cards. Prefer git branch graphs for onboarding state, flow diagrams for local/remote movement, folder trees for workspace layout, tables for artifact state, and risk/value matrices for automation candidates.
+- When teaching current folder, work root, local repo, GitHub remote, commit, push, or pull, connect the explanation to the brief board's concept board so the user sees the same idea visually.
 - When `.onboarding/update-state.mjs` exists, treat onboarding progress as CLI-owned state. After each verified step completion, call the updater with the matching step id and evidence. Do not ask the user to update progress in the browser.
 - When `.onboarding/update-board.mjs` exists and work or mission artifacts change, run it so `.onboarding/board-data.json` refreshes the brief board. Treat `board-data.json` as display summary data, not the source of truth.
 - Keep the onboarding kit folder and the user's work repo distinct. Do not treat `.onboarding/state.json` in the onboarding kit folder as the user's active project state. The active state belongs inside the selected work repo only.

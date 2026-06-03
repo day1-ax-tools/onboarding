@@ -199,10 +199,13 @@ node scripts/cli-sandbox.mjs --mode fake --tool both --support-tools real --name
 `web/brief-board.html`이 담당하는 것:
 
 - 온보딩 진행 단계를 git branch graph 형태로 보여준다.
+- 개념 보드에서 현재 폴더, 작업 루트, local repo, GitHub remote, commit, push, pull을 시각화한다.
 - 설치/인증, 환경 설정, 업무 지도, 미션 후보가 어떻게 분기되고 합쳐지는지 시각화한다.
 - CLI가 갱신한 `.onboarding/state.json` 또는 `web/onboarding-state.json`을 읽어 그래프 node 상태를 바꾼다.
 - 상태 파일을 읽지 못하면 `Hook 미설치`로 표시한다. hook 설치 전에는 보드를 활성 상태로 간주하지 않는다.
 - `.onboarding/board-data.json`을 읽어 역할, 성과, 반복 업무, 작업 지도, 자동화 후보, 산출물을 현황판처럼 보여준다.
+- `mission-backlog.md`와 `missions/*.md`를 읽어 자동화 과제를 `이어갈 작업`, `후보 목록`, `나중에 검토`, `완료/제외` 상태로 보여주는 작업 현황 보드를 제공한다.
+- CLI가 Git이나 작업 폴더 개념을 설명할 때는 개념 보드를 함께 보며 같은 개념을 그림으로 확인하게 한다.
 - `board-data.json`은 원본이 아니다. `environment-state.md`, `work-map.md`, `ontology-seeds.md`, `mission-backlog.md`, `automation-brief.md`, `missions/*.md`에서 다시 만들 수 있는 화면 표시용 요약 데이터다.
 - CLI에 붙여넣을 업무 요약문과, 자동 설치가 안 될 때 대신 실행할 작업 폴더용 지침/skill 설치 명령을 제공한다.
 
@@ -314,6 +317,82 @@ CLI 인터뷰 진행
 
 `update-state.mjs`는 모든 필수 단계가 `done`이 되면 `hooks.enabled=false`와 `hooks.disposedAt`을 기록한다. 이후 보드는 완료 상태를 보여주지만, CLI는 더 이상 온보딩 hook을 강제로 이어가지 않는다.
 
+### E2E Verification
+
+전체 E2E는 실제 사용자 홈이나 설치된 AI CLI를 바꾸지 않도록 `.tmp/` 아래 sandbox와 임시 업무 repo만 사용한다. 검증 목표는 웹 진입점, bootstrap, CLI handoff, 상태 hook, brief board 표시가 끊기지 않고 이어지는지 확인하는 것이다.
+
+정적 검증:
+
+```bash
+VALIDATE_SKILL="$HOME/.codex/skills/.system/skill-creator/scripts/quick_validate.py"
+
+python3 "$VALIDATE_SKILL" .agents/skills/work-mission-discovery
+python3 "$VALIDATE_SKILL" .claude/skills/work-mission-discovery
+python3 "$VALIDATE_SKILL" .agents/skills/concept-board
+python3 "$VALIDATE_SKILL" .claude/skills/concept-board
+
+node --check templates/onboarding/update-board.mjs
+node --check templates/onboarding/update-state.mjs
+node --check scripts/cli-sandbox.mjs
+git diff --check
+```
+
+웹 진입점과 보드 확인:
+
+```bash
+python3 -m http.server 8790 --bind 127.0.0.1 --directory web
+```
+
+확인 URL:
+
+| 화면 | URL |
+| --- | --- |
+| Codex 설치 진입 | `http://127.0.0.1:8790/index.html?tool=codex&os=mac&shell=zsh` |
+| Claude Code 설치 진입 | `http://127.0.0.1:8790/index.html?tool=claude&os=windows&shell=powershell` |
+| Codex 온보딩 보드 | `http://127.0.0.1:8790/brief-board.html?tool=codex&os=mac&shell=zsh&view=onboarding` |
+| Claude Code 개념 보드 | `http://127.0.0.1:8790/brief-board.html?tool=claude&os=windows&shell=powershell&view=concept` |
+
+설치 전 bootstrap smoke test:
+
+```bash
+REPO_ROOT="$(pwd)"
+node scripts/cli-sandbox.mjs --mode missing --tool codex --support-tools hidden --system-tools all --name e2e-codex --reset
+source .tmp/cli-sandbox/e2e-codex/enter.sh
+export ONBOARDING_REPO_URL="file://$REPO_ROOT"
+export ONBOARDING_NO_OPEN=1
+/bin/bash "$REPO_ROOT/bootstrap/start.sh" --tool codex --os mac --shell zsh --work-root "$AI_WORK_ROOT"
+```
+
+Claude Code도 같은 방식으로 `--tool claude`와 다른 sandbox 이름을 사용해 반복한다.
+
+설치 후 CLI handoff smoke test:
+
+```bash
+node scripts/cli-sandbox.mjs --mode fake --tool both --support-tools real --system-tools all --name e2e-fake-cli --reset
+source .tmp/cli-sandbox/e2e-fake-cli/enter.sh
+
+codex --version
+claude --version
+claude-1 --version
+claude-2 --version
+
+printf '%s\n' '$work-mission-discovery 로 AI CLI 온보딩을 시작해줘.' | codex
+printf '%s\n' 'work-mission-discovery skill로 AI CLI 온보딩을 시작해주세요.' | claude
+```
+
+온보딩 hook과 board-data smoke test는 임시 업무 repo에 `.onboarding/` 템플릿, 지침 파일, skill, markdown 산출물을 넣은 뒤 진행한다. 모든 필수 step을 `done`으로 갱신했을 때 `hooks.enabled=false`가 되고, `mission-backlog.md`와 `missions/*.md`에서 만든 작업이 `board-data.json`과 brief board의 작업 현황 보드에 표시되면 통과다.
+
+통과 기준:
+
+| 범위 | 통과 기준 |
+| --- | --- |
+| Web entry | 선택한 tool/os/shell에 맞는 설치, PATH, bootstrap, 첫 실행 화면이 보인다 |
+| CLI handoff | 긴 내부 지시문이 아니라 짧은 skill 시작 문장만 CLI에 전달된다 |
+| Sandbox | 실제 로컬 설치와 별개로 missing/fake CLI 상태를 재현한다 |
+| State hook | 완료 조건이 확인된 step만 `done`이 되고, 모든 필수 step 완료 후 hook이 폐기된다 |
+| Brief board | 개념 보드와 온보딩 보드가 분리되고, repo/session/tool 상태와 마지막 업데이트가 보인다 |
+| 작업 현황 보드 | `mission-backlog.md`와 `missions/*.md`의 자동화 과제가 상태별로 이어갈 수 있게 표시된다 |
+
 웹페이지가 직접 하지 않는 것:
 
 - GitHub repo 생성
@@ -400,11 +479,13 @@ cp /path/to/onboarding/web/brief-board.html .onboarding/brief-board.html
 
 이 온보딩 저장소 자체에서는 이미 두 위치에 skill이 들어 있다.
 
+`concept-board` skill도 이 저장소에 별도 재사용 자산으로 들어 있지만, 기본 온보딩 설치 명령에는 포함하지 않는다. 온보딩 중에는 `web/brief-board.html`의 내장 개념 보드를 사용하고, 다른 작업 repo에서 별도 시각화 보드가 필요할 때만 `concept-board`를 복사해 쓴다.
+
 사용 확인:
 
 ```text
-Codex: "$work-mission-discovery 로 AI CLI 온보딩을 시작해줘. 먼저 현재 폴더, 작업 repo, Git/GitHub CLI 상태를 직접 확인해줘. 한 번에 설명하지 말고, 다음 한 단계만 안내해줘."
-Claude Code: "work-mission-discovery skill로 AI CLI 온보딩을 시작해주세요. 먼저 현재 폴더, 작업 repo, Git/GitHub CLI 상태를 직접 확인해주세요. 한 번에 설명하지 말고, 다음 한 단계만 안내해주세요."
+Codex: "$work-mission-discovery 로 AI CLI 온보딩을 시작해줘."
+Claude Code: "work-mission-discovery skill로 AI CLI 온보딩을 시작해주세요."
 ```
 
 Claude Code의 skill은 slash command가 아니라 설명을 보고 자동 선택되는 기능이다. 명시하고 싶을 때는 위처럼 skill 이름을 문장에 넣는다.
@@ -746,7 +827,7 @@ logs/
 | --- | --- |
 | `work-map.md` | 역할, 성과, 업무 영역, 업무 흐름 |
 | `ontology-seeds.md` | 사람, 문서, 데이터, 도구, 상태, 규칙, 관계 |
-| `mission-backlog.md` | 자동화 후보, 우선순위, 난이도, 위험도 |
+| `mission-backlog.md` | 자동화 후보, 우선순위, 난이도, 위험도, 상태, 다음 행동 |
 | `missions/*.md` | 개별 자동화 미션 정의 |
 | `logs/*.md` | 인터뷰와 실행 과정에서 나온 결정 기록 |
 
@@ -763,7 +844,7 @@ logs/
 
 ## 포함된 Skills
 
-이 저장소에는 같은 Mission Discovery 흐름을 Codex와 Claude Code에서 각각 쓸 수 있는 skill로 포함한다.
+이 저장소에는 같은 Mission Discovery 흐름을 Codex와 Claude Code에서 각각 쓸 수 있는 skill로 포함한다. 기본 온보딩 설치에는 `work-mission-discovery`만 복사한다.
 
 | 대상 | 위치 | 사용 예 |
 | --- | --- | --- |
@@ -771,6 +852,15 @@ logs/
 | Claude Code | `.claude/skills/work-mission-discovery/SKILL.md` | `work-mission-discovery skill을 사용해주세요` |
 
 두 skill 모두 `Work Environment Setup → Work Grounding → Automation Exploration → Mission Backlog` 흐름을 따른다. 공통 개념은 유지하고, 도구별 호출 방식만 다르게 둔다.
+
+### 별도 재사용 Skill
+
+`concept-board`는 온보딩에 자동 설치하지 않는 별도 skill이다. 작업 repo의 현재 상태, Git 흐름, 의사결정, 업무 지도, 자동화 후보를 `.concept-board/` 아래 HTML/SVG 보드로 시각화할 때 사용한다.
+
+| 대상 | 위치 | 사용 예 |
+| --- | --- | --- |
+| Codex | `.agents/skills/concept-board/SKILL.md` | `$concept-board 현재 repo의 decision map을 만들어줘.` |
+| Claude Code | `.claude/skills/concept-board/SKILL.md` | `concept-board skill로 현재 repo의 Git 흐름을 시각화해주세요.` |
 
 ## 인터뷰 완료 조건
 

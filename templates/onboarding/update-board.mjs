@@ -130,6 +130,18 @@ function normalizeRisk(value) {
   return stripMarkdown(value);
 }
 
+function normalizeStatus(value, fallback = "후보") {
+  const clean = stripMarkdown(value).toLowerCase();
+  if (!clean) return fallback;
+  if (/완료|done|complete|closed/.test(clean)) return "완료";
+  if (/진행|doing|in[\s_-]*progress|active/.test(clean)) return "진행";
+  if (/선택|추천|accepted|selected|ready|m001/.test(clean)) return "선택";
+  if (/보류|defer|later|backlog|나중/.test(clean)) return "보류";
+  if (/제외|not[\s_-]*in[\s_-]*scope|out[\s_-]*of[\s_-]*scope/.test(clean)) return "제외";
+  if (/대기|todo|pending|candidate|후보/.test(clean)) return "후보";
+  return stripMarkdown(value);
+}
+
 function normalizeTask(text, index, extra = {}) {
   const clean = stripMarkdown(text);
   const type = extra.type || classify(clean);
@@ -139,6 +151,10 @@ function normalizeTask(text, index, extra = {}) {
     type,
     risk: normalizeRisk(extra.risk) || riskLabel(type, clean),
     score: Number.isFinite(Number(extra.score)) ? Number(extra.score) : scoreTask(type, clean),
+    value: stripMarkdown(extra.value || ""),
+    verification: stripMarkdown(extra.verification || ""),
+    status: normalizeStatus(extra.status || "", extra.id === "M001" ? "선택" : "후보"),
+    nextAction: stripMarkdown(extra.nextAction || ""),
     source: extra.source || ""
   };
 }
@@ -156,7 +172,11 @@ function parseTableTasks(markdown, source) {
   const idIndex = findIndex([/^id$/, /번호/, /미션\s*id/, /mission\s*id/]);
   const textIndex = findIndex([/작업/, /업무/, /후보/, /^task$/, /mission/, /description/]);
   const typeIndex = findIndex([/유형/, /분류/, /^type$/, /category/]);
+  const valueIndex = findIndex([/가치/, /효과/, /^value$/]);
   const riskIndex = findIndex([/위험/, /^risk$/]);
+  const verificationIndex = findIndex([/검증/, /확인/, /^verification$/]);
+  const statusIndex = findIndex([/상태/, /^status$/]);
+  const nextActionIndex = findIndex([/다음/, /next/, /action/]);
   const scoreIndex = findIndex([/추천/, /점수/, /^score$/, /priority/, /우선/]);
 
   return tableRows.slice(1)
@@ -169,7 +189,11 @@ function parseTableTasks(markdown, source) {
       return normalizeTask(text, index, {
         id: id || undefined,
         type: typeIndex >= 0 ? cells[typeIndex] : cells.find((cell) => /수집|정리|작성|변환|검토|판단|실행|모니터링/.test(cell)),
+        value: valueIndex >= 0 ? cells[valueIndex] : "",
         risk: riskIndex >= 0 ? cells[riskIndex] : cells.find((cell) => /낮음|중간|높음|low|medium|high/i.test(cell)),
+        verification: verificationIndex >= 0 ? cells[verificationIndex] : "",
+        status: statusIndex >= 0 ? cells[statusIndex] : "",
+        nextAction: nextActionIndex >= 0 ? cells[nextActionIndex] : "",
         score: scoreIndex >= 0 ? cells[scoreIndex] : cells.find((cell) => /^\d{1,3}$/.test(cell)),
         source
       });
@@ -183,13 +207,37 @@ function parseBulletTasks(markdown, source) {
     const type = line.match(/(?:유형|type)\s*[:： ]\s*([^\s/]+)/i)?.[1];
     const risk = line.match(/(?:위험|risk)\s*[:： ]\s*(낮음|중간|높음|low|medium|high)/i)?.[1];
     const score = line.match(/(?:추천|score)\s*[:： ]\s*(\d{1,3})/i)?.[1];
+    const status = line.match(/(?:상태|status)\s*[:： ]\s*([^\s/]+)/i)?.[1];
+    const nextAction = line.match(/(?:다음\s*행동|next\s*action)\s*[:： ]\s*([^/]+)/i)?.[1];
+    const verification = line.match(/(?:검증|verification)\s*[:： ]\s*([^/]+)/i)?.[1];
+    const value = line.match(/(?:가치|value)\s*[:： ]\s*([^/]+)/i)?.[1];
     const text = line
       .replace(/^(T\d+|M\d+)\s*[:：.-]\s*/i, "")
       .replace(/\/?\s*(?:유형|type)\s*[:： ]\s*[^\s/]+/gi, "")
       .replace(/\/?\s*(?:위험|risk)\s*[:： ]\s*(?:낮음|중간|높음|low|medium|high)/gi, "")
-      .replace(/\/?\s*(?:추천|score)\s*[:： ]\s*\d{1,3}/gi, "");
-    return normalizeTask(text, index, { id, type, risk, score, source });
+      .replace(/\/?\s*(?:추천|score)\s*[:： ]\s*\d{1,3}/gi, "")
+      .replace(/\/?\s*(?:상태|status)\s*[:： ]\s*[^\s/]+/gi, "")
+      .replace(/\/?\s*(?:다음\s*행동|next\s*action)\s*[:： ]\s*[^/]+/gi, "")
+      .replace(/\/?\s*(?:검증|verification)\s*[:： ]\s*[^/]+/gi, "")
+      .replace(/\/?\s*(?:가치|value)\s*[:： ]\s*[^/]+/gi, "");
+    return normalizeTask(text, index, { id, type, risk, score, status, nextAction, verification, value, source });
   }).filter((task) => task.text);
+}
+
+function parseMissionDoc(doc, index) {
+  const heading = lines(doc.text).map((line) => line.match(/^#\s+(.+)$/)?.[1]).find(Boolean) || "";
+  const id = heading.match(/^(M\d+)/i)?.[1] || doc.path.match(/(M\d+)/i)?.[1] || `M${String(index + 1).padStart(3, "0")}`;
+  const title = stripMarkdown(heading.replace(/^M\d+\s*[:：.-]\s*/i, "")) || id;
+  const verification = firstParagraph(headingSection(doc.text, [/검증/, /verification/i])) || labeledValue(doc.text, ["검증", "Verification"]);
+  const nextAction = labeledValue(doc.text, ["다음 행동", "Next Action", "Next"]) || firstParagraph(headingSection(doc.text, [/다음 행동/, /next action/i]));
+  const status = labeledValue(doc.text, ["상태", "Status"]) || (id === "M001" ? "선택" : "후보");
+  return normalizeTask(title, index, {
+    id,
+    status,
+    verification,
+    nextAction,
+    source: doc.path
+  });
 }
 
 async function readMissionFiles() {
@@ -208,6 +256,36 @@ async function readMissionFiles() {
 
 function unique(values) {
   return [...new Set(values.map(stripMarkdown).filter(Boolean))];
+}
+
+function statusRank(status) {
+  return {
+    "진행": 0,
+    "선택": 1,
+    "후보": 2,
+    "보류": 3,
+    "완료": 4,
+    "제외": 5
+  }[normalizeStatus(status)] ?? 6;
+}
+
+function mergeTasks(tasks) {
+  const merged = new Map();
+  for (const task of tasks.filter((item) => item && item.text)) {
+    const key = task.id && /^(?:T|M)\d+/i.test(task.id) ? task.id.toLowerCase() : task.text.toLowerCase();
+    const prev = merged.get(key);
+    if (!prev) {
+      merged.set(key, task);
+      continue;
+    }
+    merged.set(key, {
+      ...prev,
+      ...Object.fromEntries(Object.entries(task).filter(([, value]) => value !== "" && value !== null && value !== undefined)),
+      score: Math.max(prev.score || 0, task.score || 0),
+      source: unique([prev.source, task.source]).join(", ")
+    });
+  }
+  return [...merged.values()].sort((a, b) => statusRank(a.status) - statusRank(b.status) || b.score - a.score);
 }
 
 async function mirrorBoardIfWebExists(serialized) {
@@ -241,15 +319,18 @@ async function main() {
     ...parseTableTasks(backlog, "mission-backlog.md"),
     ...parseBulletTasks(backlog, "mission-backlog.md")
   ];
-  const tasks = (parsedTasks.length ? parsedTasks : works.map((work, index) => normalizeTask(work, index, { source: "work-map.md" })))
-    .filter((task, index, list) => list.findIndex((other) => other.text === task.text) === index)
-    .sort((a, b) => b.score - a.score);
+  const missionTasks = missionDocs.map(parseMissionDoc);
+  const tasks = mergeTasks([
+    ...(parsedTasks.length ? parsedTasks : works.map((work, index) => normalizeTask(work, index, { source: "work-map.md" }))),
+    ...missionTasks
+  ]);
 
   const firstMissionDoc = missionDocs[0];
-  const firstMissionText = firstParagraph(firstMissionDoc?.text || "") || firstParagraph(automation);
-  const firstMission = firstMissionText
-    ? normalizeTask(firstMissionText, 0, { id: "M001", source: firstMissionDoc?.path || "automation-brief.md" })
-    : tasks[0] || null;
+  const firstMissionTask = missionTasks[0] || null;
+  const firstMissionText = firstMissionTask?.text || firstParagraph(automation) || firstParagraph(firstMissionDoc?.text || "");
+  const firstMission = firstMissionTask || (firstMissionText
+    ? normalizeTask(firstMissionText, 0, { id: "M001", status: "선택", source: firstMissionDoc?.path || "automation-brief.md" })
+    : tasks.find((task) => task.id === "M001" || ["진행", "선택"].includes(normalizeStatus(task.status))) || tasks[0] || null);
 
   const sourceSummary = [...docs, ...missionDocs].map((doc) => ({
     path: doc.path,
