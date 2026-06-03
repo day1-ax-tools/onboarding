@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "tool": "claude",
+  "os": "mac",
+  "shell": "bash",
+  "hooks": {
+    "enabled": true,
+    "disposeWhen": "all-required-steps-done",
+    "disposedAt": null
+  },
+  "currentStep": "work-root",
+  "updatedAt": "2026-06-02T15:19:00.123Z",
+  "steps": {
+    "cli-install": {
+      "status": "done",
+      "label": "CLI install",
+      "branch": "main/onboarding",
+      "required": true,
+      "updatedAt": "2026-06-02T15:19:00.079Z",
+      "evidence": [
+        {
+          "at": "2026-06-02T15:19:00.079Z",
+          "text": "Claude Code CLI 실행 확인됨"
+        }
+      ]
+    },
+    "auth": {
+      "status": "done",
+      "label": "CLI auth",
+      "branch": "main/onboarding",
+      "required": true,
+      "updatedAt": "2026-06-02T15:19:00.102Z",
+      "evidence": [
+        {
+          "at": "2026-06-02T15:19:00.102Z",
+          "text": "Claude Code 인증 완료 (현재 세션 실행 중)"
+        }
+      ]
+    },
+    "cli-handoff": {
+      "status": "done",
+      "label": "CLI handoff",
+      "branch": "main/onboarding",
+      "required": true,
+      "updatedAt": "2026-06-02T15:19:00.123Z",
+      "evidence": [
+        {
+          "at": "2026-06-02T15:19:00.123Z",
+          "text": "웹 프롬프트를 Claude Code CLI에 전달 완료"
+        }
+      ]
+    },
+    "kit-install": {
+      "status": "done",
+      "label": "Project instruction and skill install",
+      "branch": "setup/env",
+      "required": true,
+      "updatedAt": "2026-06-02T15:18:43.606Z",
+      "evidence": [
+        {
+          "at": "2026-06-02T15:18:43.606Z",
+          "text": "CLAUDE.md, AGENTS.md, work-mission-discovery skill, .onboarding 상태 hook 설치 완료"
+        }
+      ]
+    },
+    "work-root": {
+      "status": "active",
+      "label": "Work root and repo placement",
+      "branch": "setup/env",
+      "required": true,
+      "updatedAt": "2026-06-02T15:19:00.123Z",
+      "evidence": []
+    },
+    "github-auth": {
+      "status": "pending",
+      "label": "GitHub auth and remote",
+      "branch": "setup/env",
+      "required": true,
+      "updatedAt": null,
+      "evidence": []
+    },
+    "git-loop": {
+      "status": "pending",
+      "label": "Git loop practice",
+      "branch": "setup/env",
+      "required": true,
+      "updatedAt": null,
+      "evidence": []
+    },
+    "role-map": {
+      "status": "pending",
+      "label": "Role and outcome map",
+      "branch": "work-map",
+      "required": true,
+      "updatedAt": null,
+      "evidence": []
+    },
+    "task-split": {
+      "status": "pending",
+      "label": "Task decomposition",
+      "branch": "work-map",
+      "required": true,
+      "updatedAt": null,
+      "evidence": []
+    },
+    "mission-select": {
+      "status": "pending",
+      "label": "First mission selection",
+      "branch": "mission",
+      "required": true,
+      "updatedAt": null,
+      "evidence": []
+    }
+  }
+}

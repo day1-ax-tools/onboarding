@@ -53,6 +53,26 @@ Once the user hands the web prompt to the CLI, repeat this loop:
 6. Run `.onboarding/update-state.mjs` only after a step's completion condition is verified.
 7. Tell the user what changed, what evidence was checked, and the next small action.
 
+The CLI should run safe inspection commands itself when tool access is available. Do not ask a beginner to run `pwd`, `git status`, `git remote -v`, or `gh auth status` just so the model can read the output. Ask the user to act only for interactive login, account choice, repository creation approval, permission prompts, external side effects, or when the CLI truly cannot access the environment.
+
+Keep the onboarding kit folder separate from the user's selected work repo. If `.onboarding/state.json` exists in the onboarding kit checkout, ignore it as active project state unless the user explicitly chose the onboarding kit itself as the work repo. The active brief board state is installed into the selected work repo.
+
+Do not claim that a state, blocker, or decision was recorded unless a source artifact was written and verified. If the hook or artifact is not installed yet, say the item is "noted in this conversation" and record it only after installation.
+
+After the user confirms the selected work repo, verify whether project-local onboarding files exist:
+
+```bash
+test -f CLAUDE.md
+test -d .claude/skills/work-mission-discovery
+test -f .onboarding/update-state.mjs
+test -f .onboarding/update-board.mjs
+test -f .onboarding/brief-board.html
+```
+
+If they are missing, install them before moving from environment setup to work grounding, or clearly say that the brief board is not active yet and that the current notes are ordinary markdown. Do not imply board-backed progress before the hooks exist.
+
+When updating `environment-state.md`, record durable evidence. Avoid making the document chase momentary Git states such as "currently staged" unless the user is explicitly learning that state in the current step. If a state will change in the next command, explain it in chat and record the durable outcome after the command instead.
+
 The brief board is a dashboard, not the place where the user enters work data.
 
 ### Codex
@@ -134,6 +154,18 @@ Expected: Codex uses AGENTS.md guidance and the skill's Work Grounding flow.
 
 Expected: Claude Code selects the skill from `.claude/skills`. Skills are model-invoked, not slash commands.
 
+After the first setup pass, explain the permission prompts the user just saw. Keep the explanation experiential: reads inspect files, bash commands verify or copy setup assets, edits write onboarding artifacts. Then explain the permission modes briefly:
+
+| Mode | Explain after setup |
+| --- | --- |
+| `default` | Asks before most changes and commands; safest starting point. |
+| `acceptEdits` | Auto-accepts edits and common filesystem actions while still keeping more command prompts visible. |
+| `plan` | Read/planning mode for exploring before changing files. |
+| `auto` | Reduces prompt fatigue when account, authentication provider, and settings allow it; available modes can be reached with `Shift+Tab` when enabled. |
+| `bypassPermissions` | Skips permission checks and should be reserved for isolated containers or VMs. |
+
+Tell the user that `Shift+Tab` cycles the available in-session modes. Do not recommend `bypassPermissions` for a normal local onboarding folder.
+
 ## Onboarding State Hook Contract
 
 Use the state hook after a step's completion condition is verified. This is a project-local onboarding contract, not an OS-level hook and not a long-lived background monitor.
@@ -203,7 +235,11 @@ gh --version
 gh auth status
 ```
 
-Also verify the selected AI CLI with the product's normal version or doctor command. Do not move on silently if `git`, `gh`, or authentication is missing. Explain the missing piece in plain outcome terms.
+Run these checks yourself when tool access is available. Also verify the selected AI CLI with the product's normal version or doctor command. Do not move on silently if `git`, `gh`, or authentication is missing. Explain the missing piece in plain outcome terms.
+
+For GitHub CLI, first run `command -v gh` or `gh --version`. If `gh` exists, run `gh auth status` yourself and summarize the result. Do not ask "GitHub 계정이 있으신가요?" before checking the local auth state. Ask the user only when login is needed or when account/organization choice affects repository creation.
+
+If `gh` is missing, do not assume one package manager unless the OS and shell are known from the web entry or from detection. Explain that GitHub work can be blocked while local repo learning can continue. Record `github-auth` or remote setup as blocked only after an artifact or state hook exists.
 
 ### 2. Choose Local Work Root
 
@@ -279,6 +315,16 @@ git remote -v
 git branch --show-current
 ```
 
+Creating a GitHub repo, adding a remote, pushing commits, or opening a PR changes external state. Never make that the automatic next action. Present 2-3 options first:
+
+| Option | When to use |
+| --- | --- |
+| Connect an existing GitHub repo | The user already has a repository for this work |
+| Create a new private repo | The user explicitly wants GitHub backup/collaboration now |
+| Continue local-only for now | The user is practicing or GitHub setup is blocked |
+
+Proceed only after the user chooses the external-state option.
+
 ### 5. Practice The Git Loop
 
 Use a harmless file such as `README.md` or `onboarding-notes.md`.
@@ -286,6 +332,8 @@ Use a harmless file such as `README.md` or `onboarding-notes.md`.
 ```text
 edit -> status -> add -> commit -> push -> pull
 ```
+
+Prefer `onboarding-notes.md` for practice so existing files are not overwritten. If editing an existing file, inspect it first and avoid `>` redirection unless replacement is explicitly intended. Use append or a normal file edit with a clear explanation.
 
 The user should see:
 

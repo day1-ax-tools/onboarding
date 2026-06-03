@@ -17,9 +17,17 @@ Use this skill to run a model-neutral onboarding flow that first stabilizes the 
 - Prefer low-risk, high-repetition, easy-to-verify work for the first mission.
 - Keep product-specific concepts out of the main explanation unless the user asks.
 - When writing artifacts, keep them current-state focused and avoid historical narration.
+- Record durable setup facts in `environment-state.md`; avoid chasing transient Git states such as "currently staged" unless the step is explicitly teaching that state. Prefer evidence lines such as "local commit `<hash>` recorded environment state" over state lines that become stale after the next Git command.
 - When creating HTML views, use the clearest visual structure for the concept instead of repeating text cards. Prefer git branch graphs for onboarding state, flow diagrams for local/remote movement, folder trees for workspace layout, tables for artifact state, and risk/value matrices for automation candidates.
 - When `.onboarding/update-state.mjs` exists, treat onboarding progress as CLI-owned state. After each verified step completion, call the updater with the matching step id and evidence. Do not ask the user to update progress in the browser.
 - When `.onboarding/update-board.mjs` exists and work or mission artifacts change, run it so `.onboarding/board-data.json` refreshes the brief board. Treat `board-data.json` as display summary data, not the source of truth.
+- Keep the onboarding kit folder and the user's work repo distinct. Do not treat `.onboarding/state.json` in the onboarding kit folder as the user's active project state. The active state belongs inside the selected work repo only.
+- After the user confirms the selected work repo, install or verify project-local instructions, skill, `.onboarding` hooks, and brief board before relying on board-backed progress. If they are not installed yet, say the brief board is not active and keep any notes as ordinary markdown until installation.
+- Run safe inspection commands yourself when the CLI has tool access: `pwd`, `ls`, `git status`, `git remote -v`, `git branch --show-current`, `gh auth status`, and file existence checks. Ask the user to run commands only when the command is interactive, requires credentials, changes external state, or the CLI cannot access the required environment.
+- Do not say that state was recorded unless an artifact was actually written and verified. If writing is not possible, say what would be recorded and mark it as pending or blocked.
+- Never create a GitHub repo, push to GitHub, open a PR, or change a remote as the default next action. Present the choice, explain the side effect, and wait for explicit user approval.
+- Avoid destructive shell snippets in teaching steps. Do not overwrite existing user files with `>` unless the user explicitly asked for replacement and the current file was inspected. Prefer creating `onboarding-notes.md` or appending with a clearly explained command.
+- In Claude Code, early onboarding may trigger repeated permission prompts for reading files, running shell commands, and writing setup files. Let the user experience this friction first; after initial setup is complete, explain what the prompts meant and summarize `default`, `acceptEdits`, `plan`, `auto`, and `bypassPermissions` modes.
 - After file edits, verify with the closest available check, at minimum `git diff --check`.
 
 ## Workflow
@@ -37,7 +45,7 @@ Select one path:
 | User already chose a task to automate | Automation Exploration Phase 1 |
 | User already has a mission brief | Mission Execution shaping |
 
-If uncertain, first check whether the current folder is a Git repo with a connected remote. If not, start with Work Environment Setup.
+When the user asks to start AI CLI onboarding, start with Work Environment Setup Env-0 unless `environment-state.md` or `.onboarding/state.json` in the selected work repo proves setup is already complete. If uncertain, first check the current folder, selected work repo candidate, Git status, remote, branch, and GitHub auth before asking role/work questions.
 
 ### 2. Work Environment Setup
 

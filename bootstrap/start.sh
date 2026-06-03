@@ -85,23 +85,67 @@ PY
   fi
 }
 
+local_repo_path() {
+  case "$REPO_URL" in
+    file://*)
+      printf '%s\n' "${REPO_URL#file://}"
+      ;;
+    *)
+      printf '%s\n' ""
+      ;;
+  esac
+}
+
+copy_local_repo() {
+  source_dir="$1"
+  [ -d "$source_dir/web" ] || fail "로컬 온보딩 키트 위치를 찾을 수 없습니다: $source_dir"
+  rm -rf "$TARGET_DIR"
+  mkdir -p "$TARGET_DIR" || fail "온보딩 키트를 복사할 폴더를 만들 수 없습니다."
+
+  if have tar; then
+    (cd "$source_dir" && tar --exclude .git --exclude .tmp -cf - .) | (cd "$TARGET_DIR" && tar -xf -)
+    return
+  fi
+
+  for item in "$source_dir"/* "$source_dir"/.[!.]* "$source_dir"/..?*; do
+    [ -e "$item" ] || continue
+    name="${item##*/}"
+    [ "$name" = ".git" ] && continue
+    [ "$name" = ".tmp" ] && continue
+    cp -R "$item" "$TARGET_DIR/"
+  done
+}
+
 open_page() {
   index_file="$TARGET_DIR/web/index.html"
-  query="?tool=$TOOL&os=$OS_NAME&shell=$SHELL_NAME&bootstrapped=1"
+  query="?tool=$TOOL&os=$OS_NAME&shell=$SHELL_NAME&bootstrapped=1&repo=$TARGET_DIR"
   file_url="file://$index_file"
   file_url="${file_url// /%20}$query"
 
   if [ "${ONBOARDING_NO_OPEN:-}" = "1" ]; then
-    printf '\n%s\n%s\n' "브라우저 열기를 건너뜁니다." "$file_url"
+    printf '\n%s\n' "온보딩 시작 페이지를 직접 열어주세요."
+    printf '%s\n' "$file_url"
+    printf '%s\n' "페이지가 열리면 CLI 설치와 로그인 단계를 이어가세요."
     return
   fi
 
   if have open; then
     open "$file_url"
+    printf '\n%s\n' "온보딩 시작 페이지를 열었습니다."
+    printf '%s\n' "열린 페이지에서 CLI 설치와 로그인 단계를 이어가세요."
   elif have xdg-open; then
-    xdg-open "$file_url" >/dev/null 2>&1 || true
+    if xdg-open "$file_url" >/dev/null 2>&1; then
+      printf '\n%s\n' "온보딩 시작 페이지를 열었습니다."
+      printf '%s\n' "열린 페이지에서 CLI 설치와 로그인 단계를 이어가세요."
+    else
+      printf '\n%s\n' "온보딩 시작 페이지를 직접 열어주세요."
+      printf '%s\n' "$file_url"
+      printf '%s\n' "페이지가 열리면 CLI 설치와 로그인 단계를 이어가세요."
+    fi
   else
-    printf '\n%s\n%s\n' "브라우저를 자동으로 열 수 없습니다. 아래 파일을 직접 열어주세요." "$index_file"
+    printf '\n%s\n' "온보딩 시작 페이지를 직접 열어주세요."
+    printf '%s\n' "$file_url"
+    printf '%s\n' "페이지가 열리면 CLI 설치와 로그인 단계를 이어가세요."
   fi
 }
 
@@ -109,16 +153,18 @@ log "AI CLI 온보딩 키트를 준비합니다."
 mkdir -p "$ORG_DIR" || fail "작업 폴더를 만들 수 없습니다: $ORG_DIR"
 
 if [ -d "$TARGET_DIR/.git" ] && have git; then
-  log "이미 받은 onboarding 저장소를 최신 상태로 갱신합니다."
-  git -C "$TARGET_DIR" pull --ff-only || log "자동 갱신은 건너뜁니다. 기존 로컬 파일로 계속 진행합니다."
+  log "온보딩 키트를 최신 상태로 준비합니다."
+  git -C "$TARGET_DIR" pull --ff-only --quiet || log "기존 온보딩 키트로 계속 진행합니다."
 elif [ -d "$TARGET_DIR" ]; then
-  log "이미 onboarding 폴더가 있습니다. 기존 폴더를 사용합니다."
+  log "기존 온보딩 키트를 사용합니다."
 else
+  log "온보딩 키트를 받는 중입니다."
+  local_source="$(local_repo_path)"
   if have git; then
-    log "Git으로 onboarding 저장소를 가져옵니다."
-    git clone "$REPO_URL" "$TARGET_DIR" || fail "git clone에 실패했습니다."
+    git clone --quiet "$REPO_URL" "$TARGET_DIR" || fail "온보딩 키트를 받을 수 없습니다."
+  elif [ -n "$local_source" ] && [ -d "$local_source" ]; then
+    copy_local_repo "$local_source"
   else
-    log "Git이 없어 zip 파일로 onboarding 저장소를 가져옵니다."
     tmpdir="$(mktemp -d)"
     archive="$tmpdir/onboarding.zip"
     download_zip "$archive"
@@ -128,19 +174,21 @@ else
     mv "$extracted" "$TARGET_DIR" || fail "onboarding 폴더를 이동할 수 없습니다."
     rm -rf "$tmpdir"
   fi
+  log "온보딩 키트를 받았습니다."
 fi
 
-log "기본 도구 상태를 확인합니다."
+missing_tools=()
 for command_name in git gh node python3; do
-  if have "$command_name"; then
-    printf '  ✓ %s\n' "$command_name"
-  else
-    printf '  - %s 없음: 이후 CLI 온보딩에서 설치 또는 대체 경로를 안내합니다.\n' "$command_name"
-  fi
+  have "$command_name" || missing_tools+=("$command_name")
 done
 
-log "온보딩 시작 페이지를 엽니다."
-open_page
+if [ "${#missing_tools[@]}" -gt 0 ]; then
+  log "다음 CLI 온보딩에서 이어서 설치할 도구입니다."
+  for command_name in "${missing_tools[@]}"; do
+    printf '  - %s\n' "$command_name"
+  done
+else
+  log "기본 도구가 준비되어 있습니다."
+fi
 
-printf '\n%s\n' "로컬 위치: $TARGET_DIR"
-printf '%s\n' "브라우저가 열리면 CLI 설치와 로그인 단계를 이어가세요."
+open_page

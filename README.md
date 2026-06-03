@@ -59,6 +59,8 @@
 
 웹페이지는 진입점 역할만 한다. 초보자는 GitHub 저장소를 미리 내려받지 않는다. 먼저 hosted web entry를 열고, 자신의 환경을 고른 뒤 Codex 또는 Claude Code 설치, PATH 반영, 설치 확인을 진행한다. 설치 자체도 이후 다른 상황에서 반복할 학습 경험이므로 온보딩 키트 없이 먼저 진행한다. CLI 명령이 실행 가능한 것을 확인한 뒤 같은 터미널에서 bootstrap 명령으로 onboarding kit를 내 컴퓨터에 받고, 그 다음 CLI를 실행해 인증한 뒤 지침 파일, skill, 상태 hook, 온보딩 보드를 AI와 함께 작업하려는 폴더에 설치한다.
 
+이미 Codex 또는 Claude Code가 설치된 사용자는 설치 명령을 다시 실행하지 않는다. 웹 entry의 “이미 설치한 사용자” 경로에서 설치 확인으로 이동해 `codex --version` 또는 `claude --version`으로 현재 터미널에서 실행 가능한지만 확인한다. 버전이 출력되면 온보딩 키트 받기 단계로 이동한다.
+
 권장 hosted entry:
 
 ```text
@@ -98,11 +100,13 @@ $script = irm https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bo
 - 설치 확인 명령 안내
 - 설치 확인 뒤 실행할 bootstrap 명령 제공
 - 로그인 시작 명령 안내
-- CLI에 붙여넣을 첫 입력문 제공
+- CLI에 붙여넣을 짧은 시작 문장 제공
 
 설치 처리 기준:
 
 - CLI 설치, PATH 반영, 설치 확인은 bootstrap보다 먼저 진행한다.
+- 이미 CLI가 설치되어 있으면 설치 명령은 건너뛰고 설치 확인부터 진행한다. 단, 확인 명령의 성공 출력이 있어야 다음 단계로 넘어간다.
+- Codex installer가 `Start Codex now? [y/N]`를 물으면 `Enter` 또는 `n`을 선택한다. 첫 실행과 로그인은 설치 확인 뒤 별도 단계에서 진행한다.
 - bootstrap을 실행한 뒤 CLI 첫 실행과 로그인을 진행한다.
 - bootstrap은 `~/Documents/AI-Work/day1-ax-tools/onboarding` 또는 `Documents\AI-Work\day1-ax-tools\onboarding`을 기본 위치로 쓴다.
 - Git이 있으면 `git clone` 또는 `git pull --ff-only`를 사용한다.
@@ -110,6 +114,87 @@ $script = irm https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bo
 - macOS, Linux, WSL은 `bash`와 `zsh` 중 사용자가 쓰는 shell을 선택한다.
 - 실제 CLI 설치 명령은 shell별로 거의 같고, 설치 직후 PATH 반영과 shell refresh만 다르게 제공한다.
 - Windows는 PowerShell만 권장 경로로 둔다. Windows 화면에서는 bash/zsh 선택을 숨기고 PowerShell 명령만 보여준다.
+
+### CLI Sandbox Testing
+
+개발자의 로컬 컴퓨터에 Codex와 Claude Code가 이미 설치되어 있으면 초보자의 “설치 전” 상태를 확인하기 어렵다. 이때는 `.tmp/` 아래에 격리된 HOME/PATH를 만들고, 실제 로컬 설치를 숨긴 상태로 테스트한다. 기본 sandbox는 `codex`, `claude`, `claude-1`, `claude-2`뿐 아니라 `git`, `node`, `python`, `python3`도 숨긴다.
+
+현재 sandbox 스크립트는 macOS/Linux/WSL용이다. Windows PowerShell 테스트는 같은 개념을 쓰되 별도 PowerShell sandbox 스크립트로 분리한다.
+
+Codex 설치 과정만 테스트:
+
+```bash
+node scripts/cli-sandbox.mjs --mode missing --tool codex --support-tools real --system-tools all --name codex-install --reset
+REPO_ROOT="$(pwd)"
+source .tmp/cli-sandbox/codex-install/enter.sh
+command -v codex || echo "codex hidden"
+command -v git
+command -v node
+command -v python3
+command -v tar
+command -v ln
+command -v shasum || command -v openssl
+"$AI_CLI_SANDBOX_ROOT/install-codex.sh"
+```
+
+Codex installer가 `Start Codex now? [y/N]`를 물으면 설치만 확인할 때는 `Enter` 또는 `n`을 누른다. Codex 첫 실행 UI까지 바로 확인하려면 `y`를 누른다. 이 sandbox 명령은 `curl | sh`를 직접 쓰지 않고 installer를 파일로 내려받아 실행하므로, Codex가 터미널 입력을 읽을 수 있다.
+
+설치 전 상태 테스트:
+
+```bash
+node scripts/cli-sandbox.mjs --mode missing --tool both --name missing-cli --reset
+REPO_ROOT="$(pwd)"
+source .tmp/cli-sandbox/missing-cli/enter.sh
+command -v codex || echo "codex hidden"
+command -v claude || echo "claude hidden"
+command -v claude-1 || echo "claude-1 hidden"
+command -v claude-2 || echo "claude-2 hidden"
+command -v git || echo "git hidden"
+command -v node || echo "node hidden"
+command -v python3 || echo "python3 hidden"
+```
+
+Claude Code와 기본 도구가 모두 없는 상태 테스트:
+
+```bash
+node scripts/cli-sandbox.mjs --mode missing --tool both --support-tools hidden --system-tools all --name claude-bare --reset
+REPO_ROOT="$(pwd)"
+source .tmp/cli-sandbox/claude-bare/enter.sh
+command -v claude || echo "claude hidden"
+command -v claude-1 || echo "claude-1 hidden"
+command -v claude-2 || echo "claude-2 hidden"
+command -v git || echo "git hidden"
+command -v gh || echo "gh hidden"
+command -v node || echo "node hidden"
+command -v python3 || echo "python3 hidden"
+/bin/bash "$REPO_ROOT/bootstrap/start.sh" --tool claude --os mac --shell zsh --work-root "$AI_WORK_ROOT"
+```
+
+이 테스트는 로컬 checkout을 복사해서 온보딩 키트를 준비한다. 그래서 사용자가 아직 `git`, `node`, `python3`을 설치하지 않은 경우에도 시작 페이지 이후의 설치 안내 흐름을 확인할 수 있다.
+
+설치 후 첫 실행 상태 테스트:
+
+```bash
+node scripts/cli-sandbox.mjs --mode fake --tool both --name fake-cli --reset
+REPO_ROOT="$(pwd)"
+source .tmp/cli-sandbox/fake-cli/enter.sh
+codex --version
+claude --version
+claude-1 --version
+claude-2 --version
+```
+
+각 sandbox 안에서는 `AI_WORK_ROOT`가 sandbox 내부로 잡히고, `ONBOARDING_REPO_URL`은 현재 checkout을 가리킨다. 따라서 bootstrap 테스트도 실제 사용자 폴더를 건드리지 않는다. Claude Code는 환경에 따라 `claude`, `claude-1`, `claude-2` 중 하나로 실행될 수 있으므로 sandbox가 세 명령을 모두 숨기거나 가짜 명령으로 대체한다.
+
+```bash
+/bin/bash "$REPO_ROOT/bootstrap/start.sh" --tool codex --os mac --shell zsh --work-root "$AI_WORK_ROOT"
+```
+
+`git`, `node`, `python3`가 설치된 상태에서의 후속 hook 테스트가 필요하면 support tools를 명시적으로 켠다.
+
+```bash
+node scripts/cli-sandbox.mjs --mode fake --tool both --support-tools real --name fake-with-tools --reset
+```
 
 `web/brief-board.html`이 담당하는 것:
 
@@ -251,7 +336,7 @@ CLI 인터뷰 진행
 | 업무 분해 | hierarchy tree, swimlane, dependency map |
 | 산출물 상태 | checklist table, artifact matrix |
 
-기본 화면은 조작 가능한 실제 경험이어야 한다. 설명용 문장만 있는 화면은 피하고, 입력, 선택, 그래프, 표, 복사 가능한 CLI handoff가 함께 동작하게 만든다.
+기본 화면은 조작 가능한 실제 경험이어야 한다. 설명용 문장만 있는 화면은 피하고, 입력, 선택, 그래프, 표, 복사 가능한 CLI handoff가 함께 동작하게 만든다. CLI handoff는 긴 내부 지시문이 아니라 사용자가 이해할 수 있는 짧은 시작 문장이어야 하며, 세부 절차는 지침 파일과 skill이 담당한다.
 
 ## Stage -1: CLI Handoff And Onboarding Kit Installation
 
@@ -318,8 +403,8 @@ cp /path/to/onboarding/web/brief-board.html .onboarding/brief-board.html
 사용 확인:
 
 ```text
-Codex: "$work-mission-discovery 를 사용해서 제 업무 온보딩 인터뷰를 시작해주세요."
-Claude Code: "work-mission-discovery skill을 사용해서 제 업무 온보딩 인터뷰를 시작해주세요."
+Codex: "$work-mission-discovery 로 AI CLI 온보딩을 시작해줘. 먼저 현재 폴더, 작업 repo, Git/GitHub CLI 상태를 직접 확인해줘. 한 번에 설명하지 말고, 다음 한 단계만 안내해줘."
+Claude Code: "work-mission-discovery skill로 AI CLI 온보딩을 시작해주세요. 먼저 현재 폴더, 작업 repo, Git/GitHub CLI 상태를 직접 확인해주세요. 한 번에 설명하지 말고, 다음 한 단계만 안내해주세요."
 ```
 
 Claude Code의 skill은 slash command가 아니라 설명을 보고 자동 선택되는 기능이다. 명시하고 싶을 때는 위처럼 skill 이름을 문장에 넣는다.
