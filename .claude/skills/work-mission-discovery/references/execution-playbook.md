@@ -222,7 +222,7 @@ Step ids:
 
 When all required steps are `done`, the updater sets `hooks.enabled=false`. After that, do not keep writing onboarding hook updates unless the user explicitly restarts onboarding.
 
-For a live project-local board, serve the user's working folder over local HTTP and open `.onboarding/brief-board.html`. The board reads `.onboarding/state.json` and `.onboarding/board-data.json` from the same folder.
+For a live project-local board, use `.onboarding/open-board.mjs` to serve the user's working folder over local HTTP and open `.onboarding/brief-board.html`. `update-state.mjs` and `update-board.mjs` call it after verified changes, so the board should open or regain focus whenever onboarding state or board data changes. `ONBOARDING_NO_OPEN=1` disables this for sandbox and automated tests. The board reads `.onboarding/state.json` and `.onboarding/board-data.json` from the same folder.
 
 ## Work Environment Setup Flow
 

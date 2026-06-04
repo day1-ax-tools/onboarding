@@ -27,8 +27,8 @@ Use this sequence while onboarding runs in the CLI:
 2. Ask only the next 1-3 useful questions.
 3. Use commands to verify installs, auth, Git state, files, and generated artifacts.
 4. Write or update the source artifacts: `environment-state.md`, `interview-state.md`, `work-map.md`, `ontology-seeds.md`, `mission-backlog.md`, `automation-brief.md`, `missions/*.md`, and `logs/*.md`.
-5. If `.onboarding/update-board.mjs` exists, run it after changing work or mission artifacts so the brief board can refresh.
-6. If `.onboarding/update-state.mjs` exists, update the matching onboarding step only after its completion condition is verified.
+5. If `.onboarding/update-board.mjs` exists, run it after changing work or mission artifacts so the brief board can refresh and regain browser focus.
+6. If `.onboarding/update-state.mjs` exists, update the matching onboarding step only after its completion condition is verified. The updater opens or focuses the brief board after recording the change.
 7. Tell the user what changed, what evidence was checked, and the next small question or action.
 
 ## Onboarding State Hooks
@@ -56,6 +56,8 @@ node .onboarding/update-board.mjs
 ```
 
 `.onboarding/board-data.json` is only a display file for the board. Do not use it as the source of truth.
+
+`update-state.mjs` and `update-board.mjs` call `.onboarding/open-board.mjs` after changes. This starts or reuses a local HTTP server for `.onboarding/brief-board.html` and focuses the browser page. If the user set `ONBOARDING_NO_OPEN=1`, do not try to open or focus the browser.
 
 When all required steps are done, let the updater dispose the hooks by setting `hooks.enabled=false`. After disposal, keep normal project artifacts current but stop forcing onboarding state hook updates.
 

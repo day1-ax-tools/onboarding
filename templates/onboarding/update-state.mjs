@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { access, copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { constants } from "node:fs";
+import { spawn } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -125,6 +126,22 @@ async function mirrorStateIfBoardExists(serialized) {
   await writeFile(path.join(webDir, "onboarding-state.json"), serialized);
 }
 
+async function focusBriefBoard() {
+  if (process.env.ONBOARDING_NO_OPEN === "1") {
+    return;
+  }
+  const openBoardPath = path.join(stateDir, "open-board.mjs");
+  if (!(await exists(openBoardPath))) {
+    return;
+  }
+  const child = spawn(process.execPath, [openBoardPath, "--view", "onboarding"], {
+    detached: true,
+    stdio: "ignore",
+    windowsHide: true
+  });
+  child.unref();
+}
+
 async function main() {
   const { positional, options } = parseArgs(process.argv.slice(2));
   const command = positional[0];
@@ -153,6 +170,7 @@ async function main() {
   const serialized = `${JSON.stringify(state, null, 2)}\n`;
   await writeFile(statePath, serialized);
   await mirrorStateIfBoardExists(serialized);
+  await focusBriefBoard();
   console.log(`${state.currentStep || "complete"} ${state.hooks.enabled === false ? "hooks-disposed" : "hooks-enabled"}`);
 }
 

@@ -248,6 +248,8 @@ CLI 단계 완료
 templates/onboarding/state.json
 templates/onboarding/update-state.mjs
 templates/onboarding/update-board.mjs
+templates/onboarding/open-board.mjs
+templates/onboarding/board-server.mjs
 web/brief-board.html
 ```
 
@@ -257,11 +259,13 @@ AI와 함께 작업하려는 폴더에 설치되는 위치:
 .onboarding/state.json
 .onboarding/update-state.mjs
 .onboarding/update-board.mjs
+.onboarding/open-board.mjs
+.onboarding/board-server.mjs
 .onboarding/board-data.json
 .onboarding/brief-board.html
 ```
 
-`web/brief-board.html`은 AI와 함께 작업하려는 폴더에 복사될 보드 템플릿이다. 실제 진행 상태를 보려면 CLI가 상태 hook을 설치한 뒤 그 작업 폴더에 복사된 `.onboarding/brief-board.html`을 로컬 HTTP 서버로 연다. 이 보드는 같은 폴더의 `state.json`과 `board-data.json`을 읽는다. 상태 파일 없이 열리면 `Hook 미설치`로 표시하고, board-data 없이 열리면 `산출물 대기`로 표시한다.
+`web/brief-board.html`은 AI와 함께 작업하려는 폴더에 복사될 보드 템플릿이다. 실제 진행 상태를 보려면 CLI가 상태 hook을 설치한 뒤 그 작업 폴더에 복사된 `.onboarding/brief-board.html`을 로컬 HTTP 서버로 연다. `update-state.mjs`와 `update-board.mjs`는 갱신이 끝날 때 `.onboarding/open-board.mjs`를 호출해 보드를 열거나 다시 focus한다. `ONBOARDING_NO_OPEN=1`이면 sandbox나 자동 테스트를 위해 이 동작을 끈다. 이 보드는 같은 폴더의 `state.json`과 `board-data.json`을 읽는다. 상태 파일 없이 열리면 `Hook 미설치`로 표시하고, board-data 없이 열리면 `산출물 대기`로 표시한다.
 
 공통 명령:
 
@@ -286,6 +290,7 @@ CLI 인터뷰 진행
 → .onboarding/board-data.json 갱신
 → node .onboarding/update-state.mjs <step-id> done 실행
 → brief-board.html이 state + board-data를 읽어 갱신
+→ 브라우저의 brief board 페이지가 다시 열리거나 focus됨
 ```
 
 권위 구분:
@@ -339,6 +344,8 @@ python3 "$VALIDATE_SKILL" .claude/skills/concept-board
 
 node --check templates/onboarding/update-board.mjs
 node --check templates/onboarding/update-state.mjs
+node --check templates/onboarding/open-board.mjs
+node --check templates/onboarding/board-server.mjs
 node --check scripts/cli-sandbox.mjs
 git diff --check
 ```
