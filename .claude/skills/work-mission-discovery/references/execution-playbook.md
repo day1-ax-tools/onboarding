@@ -104,7 +104,9 @@ The bootstrap-installed user-level skill is only an entry point. For Codex it ma
    mkdir -p .onboarding
    cp -R /path/to/onboarding/templates/onboarding/. .onboarding/
    cp /path/to/onboarding/web/brief-board.html .onboarding/brief-board.html
-   node .onboarding/update-state.mjs kit-install done --tool codex --evidence "AGENTS.md and work-mission-discovery copied"
+   node .onboarding/install-artifact-placeholders.mjs
+   node .onboarding/update-board.mjs
+   node .onboarding/update-state.mjs kit-install done --tool codex --evidence "AGENTS.md, work-mission-discovery, hooks, and placeholders copied"
    ```
 
    If Node is unavailable, copy the files and update `.onboarding/state.json` directly with valid JSON.
@@ -140,7 +142,9 @@ Expected: Codex uses AGENTS.md guidance and the skill's Work Grounding flow.
    mkdir -p .onboarding
    cp -R /path/to/onboarding/templates/onboarding/. .onboarding/
    cp /path/to/onboarding/web/brief-board.html .onboarding/brief-board.html
-   node .onboarding/update-state.mjs kit-install done --tool claude --evidence "CLAUDE.md and work-mission-discovery copied"
+   node .onboarding/install-artifact-placeholders.mjs
+   node .onboarding/update-board.mjs
+   node .onboarding/update-state.mjs kit-install done --tool claude --evidence "CLAUDE.md, work-mission-discovery, hooks, and placeholders copied"
    ```
 
    Windows PowerShell uses the same updater:
@@ -149,7 +153,9 @@ Expected: Codex uses AGENTS.md guidance and the skill's Work Grounding flow.
    New-Item -ItemType Directory -Force ".onboarding" | Out-Null
    Copy-Item "C:\path\to\onboarding\templates\onboarding\*" ".onboarding" -Recurse -Force
    Copy-Item "C:\path\to\onboarding\web\brief-board.html" ".onboarding\brief-board.html" -Force
-   node .onboarding\update-state.mjs kit-install done --tool claude --os windows --shell powershell --evidence "CLAUDE.md and work-mission-discovery copied"
+   node .onboarding\install-artifact-placeholders.mjs
+   node .onboarding\update-board.mjs
+   node .onboarding\update-state.mjs kit-install done --tool claude --os windows --shell powershell --evidence "CLAUDE.md, work-mission-discovery, hooks, and placeholders copied"
    ```
 
    If Node is unavailable, copy the files and update `.onboarding/state.json` directly with valid JSON.

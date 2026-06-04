@@ -2,6 +2,8 @@
 
 Use these templates when creating work discovery artifacts. Keep them concise and current-state oriented.
 
+Project setup may first copy placeholder artifacts from `.onboarding/artifact-templates/`. Those placeholders are scaffolds with `artifact_state: placeholder`, `status: draft`, and `needs_input: yes`; they are not completion evidence. Preserve existing user-authored files, then replace placeholder content only after the relevant facts are verified.
+
 ## environment-state.md
 
 ```md

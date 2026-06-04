@@ -27,9 +27,10 @@ Use this sequence while onboarding runs in the CLI:
 2. Ask only the next 1-3 useful questions.
 3. Use commands to verify installs, auth, Git state, files, and generated artifacts.
 4. Write or update the source artifacts: `environment-state.md`, `interview-state.md`, `work-map.md`, `ontology-seeds.md`, `mission-backlog.md`, `automation-brief.md`, `missions/*.md`, and `logs/*.md`.
-5. If `.onboarding/update-board.mjs` exists, run it after changing work or mission artifacts so the brief board can refresh and regain browser focus.
-6. If `.onboarding/update-state.mjs` exists, update the matching onboarding step only after its completion condition is verified. The updater opens or focuses the brief board after recording the change.
-7. Tell the user what changed, what evidence was checked, and the next small question or action.
+5. If `.onboarding/install-artifact-placeholders.mjs` exists and the source artifacts are missing, run it once after project-local onboarding files are installed. Do not overwrite existing artifacts; placeholder files are drafts, not completion evidence.
+6. If `.onboarding/update-board.mjs` exists, run it after changing work or mission artifacts so the brief board can refresh and regain browser focus.
+7. If `.onboarding/update-state.mjs` exists, update the matching onboarding step only after its completion condition is verified. The updater opens or focuses the brief board after recording the change.
+8. Tell the user what changed, what evidence was checked, and the next small question or action.
 
 ## Onboarding State Hooks
 

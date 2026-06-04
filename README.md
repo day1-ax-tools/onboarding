@@ -447,6 +447,7 @@ brief board 시각화의 상세 계약과 단계별 샘플 화면은 [docs/brief
 | 지속 지침 | `AGENTS.md` | `CLAUDE.md` | 매 세션 반복할 작업 방식 저장 |
 | Skill | `.agents/skills/work-mission-discovery/` | `.claude/skills/work-mission-discovery/` | 업무 인터뷰와 미션 백로그 생성 |
 | 온보딩 상태 hook | `.onboarding/state.json`, `.onboarding/update-state.mjs` | 동일 | CLI 완료 상태를 brief board 그래프로 전달 |
+| 산출물 placeholder | `.onboarding/artifact-templates/`에서 복사 | 동일 | 보드와 파일 구조를 먼저 열되 완료로 오해하지 않게 표시 |
 | 환경 상태 | `environment-state.md` | `environment-state.md` | 작업 루트, repo, remote, branch, GitHub auth 상태 저장 |
 | 인터뷰 상태 | `interview-state.md` | `interview-state.md` | 끊긴 대화를 이어갈 위치 저장 |
 | 산출물 | `work-map.md`, `ontology-seeds.md`, `mission-backlog.md`, `missions/`, `logs/` | 동일 | 다음 작업의 맥락 자산 |
@@ -485,6 +486,8 @@ cp -R /path/to/onboarding/.agents/skills/work-mission-discovery .agents/skills/
 mkdir -p .onboarding
 cp -R /path/to/onboarding/templates/onboarding/. .onboarding/
 cp /path/to/onboarding/web/brief-board.html .onboarding/brief-board.html
+node .onboarding/install-artifact-placeholders.mjs
+node .onboarding/update-board.mjs
 
 # Claude Code project skill
 mkdir -p .claude/skills
@@ -492,6 +495,8 @@ cp -R /path/to/onboarding/.claude/skills/work-mission-discovery .claude/skills/
 mkdir -p .onboarding
 cp -R /path/to/onboarding/templates/onboarding/. .onboarding/
 cp /path/to/onboarding/web/brief-board.html .onboarding/brief-board.html
+node .onboarding/install-artifact-placeholders.mjs
+node .onboarding/update-board.mjs
 ```
 
 이 온보딩 저장소 자체에서는 이미 두 위치에 skill이 들어 있다.

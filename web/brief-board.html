@@ -3017,7 +3017,7 @@ cp -R "$ONBOARDING_REPO/.agents/skills/work-mission-discovery" .agents/skills/
 mkdir -p .onboarding
 cp -R "$ONBOARDING_REPO/templates/onboarding/." .onboarding/
 cp "$ONBOARDING_REPO/web/brief-board.html" .onboarding/brief-board.html
-if command -v node >/dev/null 2>&1; then node .onboarding/update-state.mjs kit-install done --tool codex --os ${setup.os} --shell ${setup.shell} --evidence "AGENTS.md and work-mission-discovery copied"; fi`;
+if command -v node >/dev/null 2>&1; then node .onboarding/install-artifact-placeholders.mjs; node .onboarding/update-board.mjs; node .onboarding/update-state.mjs kit-install done --tool codex --os ${setup.os} --shell ${setup.shell} --evidence "AGENTS.md, work-mission-discovery, hooks, and placeholders copied"; fi`;
       }
       return `ONBOARDING_REPO="${path}"
 mkdir -p .claude/skills
@@ -3028,7 +3028,7 @@ cp -R "$ONBOARDING_REPO/.claude/skills/work-mission-discovery" .claude/skills/
 mkdir -p .onboarding
 cp -R "$ONBOARDING_REPO/templates/onboarding/." .onboarding/
 cp "$ONBOARDING_REPO/web/brief-board.html" .onboarding/brief-board.html
-if command -v node >/dev/null 2>&1; then node .onboarding/update-state.mjs kit-install done --tool claude --os ${setup.os} --shell ${setup.shell} --evidence "CLAUDE.md and work-mission-discovery copied"; fi`;
+if command -v node >/dev/null 2>&1; then node .onboarding/install-artifact-placeholders.mjs; node .onboarding/update-board.mjs; node .onboarding/update-state.mjs kit-install done --tool claude --os ${setup.os} --shell ${setup.shell} --evidence "CLAUDE.md, work-mission-discovery, hooks, and placeholders copied"; fi`;
     }
 
     function windowsInstall(path, codex) {
@@ -3041,7 +3041,7 @@ Copy-Item "$onboardingRepo\\.agents\\skills\\work-mission-discovery" ".agents\\s
 New-Item -ItemType Directory -Force ".onboarding" | Out-Null
 Copy-Item "$onboardingRepo\\templates\\onboarding\\*" ".onboarding" -Recurse -Force
 Copy-Item "$onboardingRepo\\web\\brief-board.html" ".onboarding\\brief-board.html" -Force
-if (Get-Command node -ErrorAction SilentlyContinue) { node .onboarding\\update-state.mjs kit-install done --tool codex --os windows --shell powershell --evidence "AGENTS.md and work-mission-discovery copied" }`;
+if (Get-Command node -ErrorAction SilentlyContinue) { node .onboarding\\install-artifact-placeholders.mjs; node .onboarding\\update-board.mjs; node .onboarding\\update-state.mjs kit-install done --tool codex --os windows --shell powershell --evidence "AGENTS.md, work-mission-discovery, hooks, and placeholders copied" }`;
       }
       return `$onboardingRepo = "${path}"
 New-Item -ItemType Directory -Force ".claude\\skills" | Out-Null
@@ -3052,7 +3052,7 @@ Copy-Item "$onboardingRepo\\.claude\\skills\\work-mission-discovery" ".claude\\s
 New-Item -ItemType Directory -Force ".onboarding" | Out-Null
 Copy-Item "$onboardingRepo\\templates\\onboarding\\*" ".onboarding" -Recurse -Force
 Copy-Item "$onboardingRepo\\web\\brief-board.html" ".onboarding\\brief-board.html" -Force
-if (Get-Command node -ErrorAction SilentlyContinue) { node .onboarding\\update-state.mjs kit-install done --tool claude --os windows --shell powershell --evidence "CLAUDE.md and work-mission-discovery copied" }`;
+if (Get-Command node -ErrorAction SilentlyContinue) { node .onboarding\\install-artifact-placeholders.mjs; node .onboarding\\update-board.mjs; node .onboarding\\update-state.mjs kit-install done --tool claude --os windows --shell powershell --evidence "CLAUDE.md, work-mission-discovery, hooks, and placeholders copied" }`;
     }
 
     function render() {

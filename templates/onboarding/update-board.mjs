@@ -11,6 +11,7 @@ const boardPath = path.join(boardDir, "board-data.json");
 
 const sourceFiles = [
   "environment-state.md",
+  "interview-state.md",
   "work-map.md",
   "ontology-seeds.md",
   "mission-backlog.md",
@@ -32,11 +33,20 @@ async function readMarkdown(relativePath) {
     return null;
   }
   const stats = await stat(filePath);
+  const text = await readFile(filePath, "utf8");
   return {
     path: relativePath,
     mtime: stats.mtime.toISOString(),
-    text: await readFile(filePath, "utf8")
+    placeholder: isPlaceholderMarkdown(text),
+    text
   };
+}
+
+function isPlaceholderMarkdown(value) {
+  const text = String(value || "");
+  return /artifact_state\s*:\s*placeholder/i.test(text)
+    || /needs_input\s*:\s*yes/i.test(text)
+    || /Status\s*:\s*draft/i.test(text);
 }
 
 function stripMarkdown(value) {
@@ -177,7 +187,8 @@ function normalizeTask(text, index, extra = {}) {
     verification: stripMarkdown(extra.verification || ""),
     status: normalizeStatus(extra.status || "", extra.id === "M001" ? "선택" : "후보"),
     nextAction: stripMarkdown(extra.nextAction || ""),
-    source: extra.source || ""
+    source: extra.source || "",
+    placeholder: Boolean(extra.placeholder)
   };
 }
 
@@ -255,10 +266,11 @@ function parseMissionDoc(doc, index) {
   const status = labeledValue(doc.text, ["상태", "Status"]) || (id === "M001" ? "선택" : "후보");
   return normalizeTask(title, index, {
     id,
-    status,
+    status: doc.placeholder ? "대기" : status,
     verification,
     nextAction,
-    source: doc.path
+    source: doc.path,
+    placeholder: doc.placeholder
   });
 }
 
@@ -314,6 +326,20 @@ async function readMissionFiles() {
   const result = [];
   for (const file of markdownFiles) {
     const relativePath = path.join("missions", file);
+    const doc = await readMarkdown(relativePath);
+    if (doc) result.push(doc);
+  }
+  return result;
+}
+
+async function readLogFiles() {
+  const logsDir = path.join(repoRoot, "logs");
+  if (!(await exists(logsDir))) return [];
+  const files = await readdir(logsDir);
+  const markdownFiles = files.filter((file) => file.endsWith(".md")).sort();
+  const result = [];
+  for (const file of markdownFiles) {
+    const relativePath = path.join("logs", file);
     const doc = await readMarkdown(relativePath);
     if (doc) result.push(doc);
   }
@@ -379,8 +405,11 @@ async function focusBriefBoard() {
 async function main() {
   const docs = (await Promise.all(sourceFiles.map(readMarkdown))).filter(Boolean);
   const missionDocs = await readMissionFiles();
-  const byPath = Object.fromEntries(docs.map((doc) => [doc.path, doc]));
-  const combined = docs.map((doc) => doc.text).join("\n\n");
+  const logDocs = await readLogFiles();
+  const activeDocs = docs.filter((doc) => !doc.placeholder);
+  const activeMissionDocs = missionDocs.filter((doc) => !doc.placeholder);
+  const byPath = Object.fromEntries(activeDocs.map((doc) => [doc.path, doc]));
+  const combined = activeDocs.map((doc) => doc.text).join("\n\n");
   const workMap = byPath["work-map.md"]?.text || combined;
   const backlog = byPath["mission-backlog.md"]?.text || "";
   const automation = byPath["automation-brief.md"]?.text || "";
@@ -403,34 +432,50 @@ async function main() {
     ...parseBulletTasks(backlog, "mission-backlog.md")
   ];
   const missionTasks = missionDocs.map(parseMissionDoc);
+  const activeMissionTasks = missionTasks.filter((task) => !task.placeholder);
   const tasks = mergeTasks([
     ...(parsedTasks.length ? parsedTasks : works.map((work, index) => normalizeTask(work, index, { source: "work-map.md" }))),
-    ...missionTasks
+    ...activeMissionTasks
   ]);
 
-  const firstMissionDoc = missionDocs[0];
-  const firstMissionTask = missionTasks[0] || null;
+  const firstMissionDoc = activeMissionDocs[0];
+  const displayedMissionDoc = firstMissionDoc || missionDocs[0];
+  const displayedLogDoc = logDocs[logDocs.length - 1] || null;
+  const firstMissionTask = activeMissionTasks[0] || null;
   const firstMissionText = firstMissionTask?.text || firstParagraph(automation) || firstParagraph(firstMissionDoc?.text || "");
   const firstMission = firstMissionTask || (firstMissionText
     ? normalizeTask(firstMissionText, 0, { id: "M001", status: "선택", source: firstMissionDoc?.path || "automation-brief.md" })
     : tasks.find((task) => task.id === "M001" || ["진행", "선택"].includes(normalizeStatus(task.status))) || tasks[0] || null);
 
-  const sourceSummary = [...docs, ...missionDocs].map((doc) => ({
+  const sourceSummary = [...docs, ...missionDocs, ...logDocs].map((doc) => ({
     path: doc.path,
-    kind: doc.path.startsWith("missions/") ? "mission" : "source",
+    kind: doc.path.startsWith("missions/") ? "mission" : doc.path.startsWith("logs/") ? "log" : "source",
+    state: doc.placeholder ? "placeholder" : "ready",
     updatedAt: doc.mtime
   }));
 
   const artifacts = [
     ["environment-state.md", "환경, GitHub, local/remote, Git 루프 상태"],
+    ["interview-state.md", "인터뷰 단계, 다음 질문, 이어가기 메모"],
     ["work-map.md", "역할, 성과, 반복 업무와 작업 지도"],
     ["ontology-seeds.md", "역할, 업무, 입력, 산출물, 규칙 후보"],
     ["mission-backlog.md", "자동화 후보, 우선순위, 위험도"],
     ["automation-brief.md", "첫 자동화 미션의 범위와 검증 기준"],
-    [firstMissionDoc?.path || "missions/M001-<slug>.md", "개별 미션 정의"]
-  ].map(([name, desc]) => ({ name, desc, source: sourceSummary.find((item) => item.path === name)?.updatedAt || "" }));
+    [displayedMissionDoc?.path || "missions/M001-<slug>.md", "개별 미션 정의"],
+    [displayedLogDoc?.path || "logs/<YYYY-MM-DD>-mission-discovery.md", "세션별 상세 기록"]
+  ].map(([name, desc]) => {
+    const source = sourceSummary.find((item) => item.path === name);
+    const state = source?.state || "waiting";
+    return {
+      name,
+      desc: state === "placeholder" ? `초안 placeholder: ${desc}` : desc,
+      state,
+      source: source ? (state === "placeholder" ? "초안 placeholder" : source.updatedAt) : ""
+    };
+  });
 
-  const hasSource = (name) => sourceSummary.some((item) => item.path === name);
+  const sourceState = (name) => sourceSummary.find((item) => item.path === name)?.state || "";
+  const hasReadySource = (name) => sourceState(name) === "ready";
   const visualizations = [
     { id: "environment-concept", type: "concept-flow", title: "현재 폴더와 local/remote 개념", source: "environment-state.md" },
     { id: "onboarding-progress", type: "branch-graph", title: "온보딩 진행 브랜치 그래프", source: ".onboarding/state.json" },
@@ -442,7 +487,7 @@ async function main() {
     { id: "artifact-authority", type: "artifact-table", title: "산출물 원본 기준", source: "board-data.json" }
   ].map((item) => ({
     ...item,
-    status: item.source === ".onboarding/state.json" || item.source === "board-data.json" || hasSource(item.source) ? "ready" : "waiting"
+    status: item.source === ".onboarding/state.json" || item.source === "board-data.json" || hasReadySource(item.source) ? "ready" : "waiting"
   }));
 
   const boardData = {

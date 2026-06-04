@@ -524,23 +524,26 @@ Claude Code:
 Claude Code 설치 예:
 
 ```bash
-cp templates/CLAUDE.md CLAUDE.md
-mkdir -p .claude/skills
+cp templates/CLAUDE.md <target-repo>/CLAUDE.md
+cp templates/AGENTS.md <target-repo>/AGENTS.md
+mkdir -p <target-repo>/.claude/skills
 cp -R .claude/skills/work-mission-discovery <target-repo>/.claude/skills/
 mkdir -p <target-repo>/.onboarding
 cp -R templates/onboarding/. <target-repo>/.onboarding/
 cp web/brief-board.html <target-repo>/.onboarding/brief-board.html
+(cd <target-repo> && node .onboarding/install-artifact-placeholders.mjs && node .onboarding/update-board.mjs)
 ```
 
 Codex 설치 예:
 
 ```bash
-cp templates/AGENTS.md AGENTS.md
-mkdir -p .agents/skills
+cp templates/AGENTS.md <target-repo>/AGENTS.md
+mkdir -p <target-repo>/.agents/skills
 cp -R .agents/skills/work-mission-discovery <target-repo>/.agents/skills/
 mkdir -p <target-repo>/.onboarding
 cp -R templates/onboarding/. <target-repo>/.onboarding/
 cp web/brief-board.html <target-repo>/.onboarding/brief-board.html
+(cd <target-repo> && node .onboarding/install-artifact-placeholders.mjs && node .onboarding/update-board.mjs)
 ```
 
 설치 완료 후:
