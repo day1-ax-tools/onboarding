@@ -45,7 +45,7 @@ codex exec resume --last \
   - < <turn-prompt-file>
 ```
 
-Important E2E caveat: the first `codex exec` turn used `workspace-write`, but `codex exec resume --last` reported `sandbox: danger-full-access`. This should be treated as a test harness risk. A real beginner-facing E2E should either use the interactive TUI, or verify how to preserve sandbox settings across resumed non-interactive turns.
+Important E2E caveat: the first `codex exec` turn used `workspace-write`, but `codex exec resume --last` reported `danger-full-access`. This should be treated as a test harness risk. A real beginner-facing E2E should either use the interactive TUI, or verify how to preserve permission settings across resumed non-interactive turns.
 
 ## Executive Review
 
@@ -64,7 +64,7 @@ Tuning points:
 
 - Raw non-interactive stdout is noisy because Codex emits skill loader warnings and command logs. User-facing docs should use the final assistant message, not raw stdout.
 - Resume mode changed to `danger-full-access` in this E2E harness.
-- The onboarding-kit copy lived under the current repo's `.tmp`, so `git status` in `onboarding-kit` saw the parent repo's dirty state. Future E2E sandboxes should be outside the source repo, or should isolate the copied kit with its own Git boundary.
+- The onboarding-kit copy lived under the current repo's `.tmp`, so `git status` in `onboarding-kit` saw the parent repo's dirty state. Future E2E runs should be outside the source repo, or should isolate the copied kit with its own Git boundary.
 - Codex wrote `environment-state.md` before installing `.onboarding` hooks and brief board files into `user-work`. That is acceptable for a local-only E2E, but the intended user journey should install project instructions, skill, hooks, and brief board before relying on board updates.
 - Codex repeatedly updated `environment-state.md` to describe the current Git state. This was accurate, but it can create extra local changes immediately after a commit.
 - The transition to work grounding was good, but it left uncommitted environment updates. It did disclose that state, which is good.
@@ -422,4 +422,4 @@ Review:
 
 5. For E2E harnesses, place temporary onboarding kits outside the source repo so `git status` does not accidentally resolve to the parent repo.
 
-6. For non-interactive Codex E2E, avoid relying on `resume --last` until sandbox preservation is confirmed.
+6. For non-interactive Codex E2E, avoid relying on `resume --last` until permission preservation is confirmed.

@@ -119,87 +119,6 @@ $script = irm https://raw.githubusercontent.com/day1-ax-tools/onboarding/main/bo
 - 실제 CLI 설치 명령은 shell별로 거의 같고, 설치 직후 PATH 반영과 shell refresh만 다르게 제공한다.
 - Windows는 PowerShell만 권장 경로로 둔다. Windows 화면에서는 bash/zsh 선택을 숨기고 PowerShell 명령만 보여준다.
 
-### CLI Sandbox Testing
-
-개발자의 로컬 컴퓨터에 Codex와 Claude Code가 이미 설치되어 있으면 초보자의 “설치 전” 상태를 확인하기 어렵다. 이때는 `.tmp/` 아래에 격리된 HOME/PATH를 만들고, 실제 로컬 설치를 숨긴 상태로 테스트한다. 기본 sandbox는 `codex`, `claude`, `claude-1`, `claude-2`뿐 아니라 `git`, `node`, `python`, `python3`도 숨긴다.
-
-현재 sandbox 스크립트는 macOS/Linux/WSL용이다. Windows PowerShell 테스트는 같은 개념을 쓰되 별도 PowerShell sandbox 스크립트로 분리한다.
-
-Codex 설치 과정만 테스트:
-
-```bash
-node scripts/cli-sandbox.mjs --mode missing --tool codex --support-tools real --system-tools all --name codex-install --reset
-REPO_ROOT="$(pwd)"
-source .tmp/cli-sandbox/codex-install/enter.sh
-command -v codex || echo "codex hidden"
-command -v git
-command -v node
-command -v python3
-command -v tar
-command -v ln
-command -v shasum || command -v openssl
-"$AI_CLI_SANDBOX_ROOT/install-codex.sh"
-```
-
-Codex installer가 `Start Codex now? [y/N]`를 물으면 설치만 확인할 때는 `Enter` 또는 `n`을 누른다. Codex 첫 실행 UI까지 바로 확인하려면 `y`를 누른다. 이 sandbox 명령은 `curl | sh`를 직접 쓰지 않고 installer를 파일로 내려받아 실행하므로, Codex가 터미널 입력을 읽을 수 있다.
-
-설치 전 상태 테스트:
-
-```bash
-node scripts/cli-sandbox.mjs --mode missing --tool both --name missing-cli --reset
-REPO_ROOT="$(pwd)"
-source .tmp/cli-sandbox/missing-cli/enter.sh
-command -v codex || echo "codex hidden"
-command -v claude || echo "claude hidden"
-command -v claude-1 || echo "claude-1 hidden"
-command -v claude-2 || echo "claude-2 hidden"
-command -v git || echo "git hidden"
-command -v node || echo "node hidden"
-command -v python3 || echo "python3 hidden"
-```
-
-Claude Code와 기본 도구가 모두 없는 상태 테스트:
-
-```bash
-node scripts/cli-sandbox.mjs --mode missing --tool both --support-tools hidden --system-tools all --name claude-bare --reset
-REPO_ROOT="$(pwd)"
-source .tmp/cli-sandbox/claude-bare/enter.sh
-command -v claude || echo "claude hidden"
-command -v claude-1 || echo "claude-1 hidden"
-command -v claude-2 || echo "claude-2 hidden"
-command -v git || echo "git hidden"
-command -v gh || echo "gh hidden"
-command -v node || echo "node hidden"
-command -v python3 || echo "python3 hidden"
-/bin/bash "$REPO_ROOT/bootstrap/start.sh" --tool claude --os mac --shell zsh --work-root "$AI_WORK_ROOT"
-```
-
-이 테스트는 로컬 checkout을 복사해서 온보딩 키트를 준비한다. 그래서 사용자가 아직 `git`, `node`, `python3`을 설치하지 않은 경우에도 시작 페이지 이후의 설치 안내 흐름을 확인할 수 있다.
-
-설치 후 첫 실행 상태 테스트:
-
-```bash
-node scripts/cli-sandbox.mjs --mode fake --tool both --name fake-cli --reset
-REPO_ROOT="$(pwd)"
-source .tmp/cli-sandbox/fake-cli/enter.sh
-codex --version
-claude --version
-claude-1 --version
-claude-2 --version
-```
-
-각 sandbox 안에서는 `AI_WORK_ROOT`가 sandbox 내부로 잡히고, `ONBOARDING_REPO_URL`은 현재 checkout을 가리킨다. 따라서 bootstrap 테스트도 실제 사용자 폴더를 건드리지 않는다. Claude Code는 환경에 따라 `claude`, `claude-1`, `claude-2` 중 하나로 실행될 수 있으므로 sandbox가 세 명령을 모두 숨기거나 가짜 명령으로 대체한다.
-
-```bash
-/bin/bash "$REPO_ROOT/bootstrap/start.sh" --tool codex --os mac --shell zsh --work-root "$AI_WORK_ROOT"
-```
-
-`git`, `node`, `python3`가 설치된 상태에서의 후속 hook 테스트가 필요하면 support tools를 명시적으로 켠다.
-
-```bash
-node scripts/cli-sandbox.mjs --mode fake --tool both --support-tools real --name fake-with-tools --reset
-```
-
 `web/brief-board.html`이 담당하는 것:
 
 - 온보딩 진행 단계를 git branch graph 형태로 보여준다.
@@ -265,7 +184,7 @@ AI와 함께 작업하려는 폴더에 설치되는 위치:
 .onboarding/brief-board.html
 ```
 
-`web/brief-board.html`은 AI와 함께 작업하려는 폴더에 복사될 보드 템플릿이다. 실제 진행 상태를 보려면 CLI가 상태 hook을 설치한 뒤 그 작업 폴더에 복사된 `.onboarding/brief-board.html`을 로컬 HTTP 서버로 연다. `update-state.mjs`와 `update-board.mjs`는 갱신이 끝날 때 `.onboarding/open-board.mjs`를 호출해 보드를 열거나 다시 focus한다. `ONBOARDING_NO_OPEN=1`이면 sandbox나 자동 테스트를 위해 이 동작을 끈다. 이 보드는 같은 폴더의 `state.json`과 `board-data.json`을 읽는다. 상태 파일 없이 열리면 `Hook 미설치`로 표시하고, board-data 없이 열리면 `산출물 대기`로 표시한다.
+`web/brief-board.html`은 AI와 함께 작업하려는 폴더에 복사될 보드 템플릿이다. 실제 진행 상태를 보려면 CLI가 상태 hook을 설치한 뒤 그 작업 폴더에 복사된 `.onboarding/brief-board.html`을 로컬 HTTP 서버로 연다. `update-state.mjs`와 `update-board.mjs`는 갱신이 끝날 때 `.onboarding/open-board.mjs`를 호출해 보드를 열거나 다시 focus한다. `ONBOARDING_NO_OPEN=1`이면 자동 테스트에서 이 동작을 끈다. 이 보드는 같은 폴더의 `state.json`과 `board-data.json`을 읽는다. 상태 파일 없이 열리면 `Hook 미설치`로 표시하고, board-data 없이 열리면 `산출물 대기`로 표시한다.
 
 공통 명령:
 
@@ -330,7 +249,7 @@ CLI 인터뷰 진행
 
 ### E2E Verification
 
-전체 E2E는 실제 사용자 홈이나 설치된 AI CLI를 바꾸지 않도록 `.tmp/` 아래 sandbox와 임시 업무 repo만 사용한다. 검증 목표는 웹 진입점, bootstrap, CLI handoff, 상태 hook, brief board 표시가 끊기지 않고 이어지는지 확인하는 것이다.
+전체 E2E는 실제 사용자 홈이나 설치된 AI CLI를 바꾸지 않도록 임시 디렉터리와 임시 업무 repo만 사용한다. 검증 목표는 웹 진입점, bootstrap, CLI handoff, 상태 hook, brief board 표시가 끊기지 않고 이어지는지 확인하는 것이다.
 
 정적 검증:
 
@@ -346,7 +265,7 @@ node --check templates/onboarding/update-board.mjs
 node --check templates/onboarding/update-state.mjs
 node --check templates/onboarding/open-board.mjs
 node --check templates/onboarding/board-server.mjs
-node --check scripts/cli-sandbox.mjs
+node --check templates/onboarding/install-artifact-placeholders.mjs
 git diff --check
 ```
 
@@ -366,29 +285,27 @@ python3 -m http.server 8790 --bind 127.0.0.1 --directory web
 | Claude Code 개념 보드 | `http://127.0.0.1:8790/brief-board.html?tool=claude&os=windows&shell=powershell&view=concept` |
 | 시각화 샘플 화면 | `http://127.0.0.1:8790/brief-board-visualization-samples.html` |
 
-설치 전 bootstrap smoke test:
+bootstrap smoke test:
 
 ```bash
 REPO_ROOT="$(pwd)"
-node scripts/cli-sandbox.mjs --mode missing --tool codex --support-tools hidden --system-tools all --name e2e-codex --reset
-source .tmp/cli-sandbox/e2e-codex/enter.sh
+tmpdir="$(mktemp -d)"
+mkdir -p "$tmpdir/home"
+HOME="$tmpdir/home"
 export ONBOARDING_REPO_URL="file://$REPO_ROOT"
 export ONBOARDING_NO_OPEN=1
-/bin/bash "$REPO_ROOT/bootstrap/start.sh" --tool codex --os mac --shell zsh --work-root "$AI_WORK_ROOT"
+/bin/bash "$REPO_ROOT/bootstrap/start.sh" --tool codex --os mac --shell zsh --work-root "$tmpdir/AI-Work"
+test -f "$tmpdir/home/.agents/skills/work-mission-discovery/SKILL.md"
+rm -rf "$tmpdir"
 ```
 
-Claude Code도 같은 방식으로 `--tool claude`와 다른 sandbox 이름을 사용해 반복한다.
+Claude Code도 같은 방식으로 `--tool claude`를 사용해 반복한다.
 
 설치 후 CLI handoff smoke test:
 
 ```bash
-node scripts/cli-sandbox.mjs --mode fake --tool both --support-tools real --system-tools all --name e2e-fake-cli --reset
-source .tmp/cli-sandbox/e2e-fake-cli/enter.sh
-
 codex --version
 claude --version
-claude-1 --version
-claude-2 --version
 
 printf '%s\n' '$work-mission-discovery 로 AI CLI 온보딩을 시작해줘.' | codex
 printf '%s\n' 'work-mission-discovery skill로 AI CLI 온보딩을 시작해주세요.' | claude
@@ -402,7 +319,6 @@ printf '%s\n' 'work-mission-discovery skill로 AI CLI 온보딩을 시작해주�
 | --- | --- |
 | Web entry | 선택한 tool/os/shell에 맞는 설치, PATH, bootstrap, 첫 실행 화면이 보인다 |
 | CLI handoff | 긴 내부 지시문이 아니라 짧은 skill 시작 문장만 CLI에 전달된다 |
-| Sandbox | 실제 로컬 설치와 별개로 missing/fake CLI 상태를 재현한다 |
 | State hook | 완료 조건이 확인된 step만 `done`이 되고, 모든 필수 step 완료 후 hook이 폐기된다 |
 | Brief board | 개념 보드와 온보딩 보드가 분리되고, repo/session/tool 상태와 마지막 업데이트가 보인다 |
 | 작업 현황 보드 | `mission-backlog.md`와 `missions/*.md`의 자동화 과제가 상태별로 이어갈 수 있게 표시된다 |
@@ -892,7 +808,7 @@ logs/
 | --- | --- | --- |
 | 지침 파일 | `AGENTS.md` | `CLAUDE.md` |
 | 상태 점검 | `codex doctor` | `claude doctor` |
-| 권한 관리 | sandbox, approval | permissions, modes |
+| 권한 관리 | workspace trust, approval | permissions, modes |
 | 클라우드/GitHub 연결 | Codex cloud, review | Claude web, web setup |
 
 ## 포함된 Skills
