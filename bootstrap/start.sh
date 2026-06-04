@@ -149,6 +149,33 @@ open_page() {
   fi
 }
 
+shell_quote() {
+  printf '%q' "$1"
+}
+
+verify_onboarding_assets() {
+  case "$TOOL" in
+    claude)
+      instruction_file="$TARGET_DIR/CLAUDE.md"
+      skill_file="$TARGET_DIR/.claude/skills/work-mission-discovery/SKILL.md"
+      ;;
+    *)
+      instruction_file="$TARGET_DIR/AGENTS.md"
+      skill_file="$TARGET_DIR/.agents/skills/work-mission-discovery/SKILL.md"
+      ;;
+  esac
+
+  [ -f "$instruction_file" ] || fail "지침 파일을 찾을 수 없습니다: $instruction_file"
+  [ -f "$skill_file" ] || fail "work-mission-discovery skill을 찾을 수 없습니다: $skill_file"
+}
+
+print_cli_entry_hint() {
+  log "CLI handoff 준비가 확인되었습니다."
+  printf '%s\n' "아래 명령처럼 온보딩 키트 폴더에서 ${TOOL} 명령을 실행하면 skill을 읽을 수 있습니다."
+  printf '  cd %s\n' "$(shell_quote "$TARGET_DIR")"
+  printf '  %s\n' "$TOOL"
+}
+
 log "AI CLI 온보딩 키트를 준비합니다."
 mkdir -p "$ORG_DIR" || fail "작업 폴더를 만들 수 없습니다: $ORG_DIR"
 
@@ -191,4 +218,6 @@ else
   log "기본 도구가 준비되어 있습니다."
 fi
 
+verify_onboarding_assets
+print_cli_entry_hint
 open_page

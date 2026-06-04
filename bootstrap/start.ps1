@@ -52,6 +52,34 @@ function Open-StartPage {
   }
 }
 
+function Test-OnboardingAssets {
+  if ($Tool -eq "claude") {
+    $instructionFile = Join-Path $targetDir "CLAUDE.md"
+    $skillFile = Join-Path $targetDir ".claude\skills\work-mission-discovery\SKILL.md"
+  } else {
+    $instructionFile = Join-Path $targetDir "AGENTS.md"
+    $skillFile = Join-Path $targetDir ".agents\skills\work-mission-discovery\SKILL.md"
+  }
+
+  if (!(Test-Path $instructionFile)) {
+    throw "지침 파일을 찾을 수 없습니다: $instructionFile"
+  }
+  if (!(Test-Path $skillFile)) {
+    throw "work-mission-discovery skill을 찾을 수 없습니다: $skillFile"
+  }
+}
+
+function Quote-PowerShellPath($Path) {
+  return "'" + $Path.Replace("'", "''") + "'"
+}
+
+function Write-CliEntryHint {
+  Write-Step "CLI handoff 준비가 확인되었습니다."
+  Write-Host "아래 명령처럼 온보딩 키트 폴더에서 ${Tool} 명령을 실행하면 skill을 읽을 수 있습니다."
+  Write-Host ("  Set-Location " + (Quote-PowerShellPath $targetDir))
+  Write-Host "  $Tool"
+}
+
 Write-Step "AI CLI 온보딩 키트를 준비합니다."
 New-Item -ItemType Directory -Force $orgDir | Out-Null
 
@@ -100,4 +128,6 @@ if ($missingTools.Count -gt 0) {
   Write-Step "기본 도구가 준비되어 있습니다."
 }
 
+Test-OnboardingAssets
+Write-CliEntryHint
 Open-StartPage
