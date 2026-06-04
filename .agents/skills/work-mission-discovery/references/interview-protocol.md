@@ -91,6 +91,48 @@ Present 2-4 candidates. For each candidate, state:
 
 Recommend one default.
 
+## Grounding Completion Gates
+
+Do not move to the next grounding step just because the user answered once. Move on only when the current step has enough evidence to make the next step useful.
+
+| Step | Completion condition | If incomplete, ask |
+| --- | --- | --- |
+| Pre-0 Role definition | Role, responsibility, stakeholder, and decision authority are summarized in one current-state paragraph. | "그 결과를 누가 사용하거나 영향을 받나요?" |
+| Pre-1 Outcome definition | 1-3 outcomes are written as state changes with direction, current pain, and rough frequency or impact. | "이 결과가 좋아졌다는 것을 어떤 변화로 알 수 있나요?" |
+| Pre-2 Work area map | 3-7 recurring work areas are listed, each linked to at least one outcome and frequency. | "그 결과를 만들기 위해 반복적으로 하는 일은 무엇인가요?" |
+| Pre-3 Workflow decomposition | At least one high-value recurring work area is decomposed to leaf tasks with trigger, inputs, steps, output, human decision, tools, and completion evidence. | "이 작업은 무엇을 보면 시작되고, 끝났다는 증거는 무엇인가요?" |
+| Pre-4 Automation classification | Each leaf task has an automation type, risk label, verification method, and first-mission suitability. | "이 결과물은 사람이 어떻게 확인할 수 있나요?" |
+| Pre-5 Candidate selection | 2-4 candidates are compared, one default is recommended, and the user accepts it or the open decision is recorded. | "이 중 이번에 먼저 해볼 작업으로 어떤 것이 가장 부담이 낮나요?" |
+
+## Decomposition Depth
+
+Stop decomposing when a leaf task has all of these:
+
+- A clear trigger.
+- Available or obtainable inputs.
+- A sequence of 3-7 human-readable steps.
+- A concrete output or changed state.
+- A human decision point, or an explicit "no human decision needed" note.
+- Completion evidence that can be checked by the user or CLI.
+- An automation type and risk label.
+
+Keep decomposing when a task still uses broad verbs such as "관리", "처리", "검토", "운영", "분석", or "정리" without saying input, output, and evidence. Do not decompose into implementation details such as function names, API calls, or shell commands until a mission is selected.
+
+## Visualization Contract
+
+Every phase transition should leave a visible representation in both the CLI conversation and, when installed, the brief board.
+
+| Moment | AI CLI visualization | Web visualization source |
+| --- | --- | --- |
+| Situation-specific concept explained | 3-5 step flow with source references | `.onboarding/concepts/current-concept.json` → "현재 설명" |
+| Role and outcomes confirmed | 3-line summary: role, outcome, stakeholder | `work-map.md` role/outcome sections → "내 업무 현황" |
+| Work areas mapped | Compact table: area, outcome link, frequency, pain | `work-map.md` work area table → "생성되는 작업 지도" |
+| Workflow decomposed | Flow table or tree: trigger → inputs → steps → output → evidence | `work-map.md` workflow decomposition table → brief board flow diagram |
+| Candidates classified | Risk/value matrix or scored table | `mission-backlog.md` → "작업 현황 보드" |
+| First mission selected | Scope block: included/excluded/deferred/unverified | `missions/M001-*.md` and `automation-brief.md` → artifact and mission panels |
+
+If `.onboarding/update-board.mjs` exists, run it after updating `work-map.md`, `mission-backlog.md`, `automation-brief.md`, or `missions/*.md`. If the board cannot refresh, still show the same structure in the CLI and record the blocker in `interview-state.md`.
+
 ## Automation Exploration Detail
 
 ### Phase 1: Purpose Refinement
@@ -178,3 +220,14 @@ Present:
 ```
 
 Proceed to artifact creation only after this scope is accepted or if the user explicitly asks for a draft.
+
+## Exploration Completion Gates
+
+| Phase | Completion condition |
+| --- | --- |
+| Phase 1 Purpose refinement | The selected candidate is reframed as a desired outcome, with primary value such as time saved, error reduction, consistency, or decision support. |
+| Phase 2 Work area exploration | Related people, documents, data, tools, rules, and decisions are listed, and any scope-widening item is marked included or deferred. |
+| Phase 3 Current-state sharing | The current workflow is restated in order and the user has corrected or accepted it. |
+| Phase 4 Scenario exploration | At least one real scenario has input, expected output, AI-supported steps, and human-only decisions. |
+| Phase 5 Assumption validation | Critical assumptions have a verification method or fallback. |
+| Phase 6 Mission scope agreement | Included, excluded, deferred, unverified, verification method, and first implementation step are recorded. |

@@ -39,6 +39,8 @@ The board must not depend on user-managed checkboxes or user-entered board forms
 
 Use the brief board's concept board as the companion visual surface for Git and workspace explanations. Map current folder/work root explanations to "작업 위치", local/remote explanations to "Local / Remote", commit practice to "Commit", and upload/download sync explanations to "Push / Pull".
 
+When the explanation depends on the user's current repo, current branch, exact remote, workflow decomposition, or mission decision, write `.onboarding/concepts/current-concept.json` instead of relying only on the built-in concept tabs. Keep it as structured display data with `title`, `description`, `sourceRefs`, `nodes`, `edges`, `rows`, `note`, and `updatedAt`. Do not store hidden reasoning, secrets, credentials, or private chat traces. The brief board polls this file directly, so `.onboarding/update-board.mjs` is not required unless markdown source artifacts also changed.
+
 Shell policy:
 
 - macOS, Linux, and WSL show bash/zsh choices because PATH refresh differs by shell.
@@ -226,7 +228,7 @@ For a live project-local board, serve the user's working folder over local HTTP 
 
 Use this before Work Grounding when the user is new to AI CLI work, has not chosen a local workspace, or cannot explain how the local repo relates to GitHub.
 
-Goal: the user knows where AI work happens on their computer, how that folder connects to GitHub, and how to repeat the first Git loop without losing context.
+Goal: the user knows where AI work happens on their computer, whether a GitHub account is ready, how that folder connects to GitHub, and how to repeat the first Git loop without losing context.
 
 ### 1. Confirm Terminal Context
 
@@ -241,7 +243,9 @@ gh auth status
 
 Run these checks yourself when tool access is available. Also verify the selected AI CLI with the product's normal version or doctor command. Do not move on silently if `git`, `gh`, or authentication is missing. Explain the missing piece in plain outcome terms.
 
-For GitHub CLI, first run `command -v gh` or `gh --version`. If `gh` exists, run `gh auth status` yourself and summarize the result. Do not ask "GitHub 계정이 있으신가요?" before checking the local auth state. Ask the user only when login is needed or when account/organization choice affects repository creation.
+For GitHub CLI, first run `command -v gh` or `gh --version`. If `gh` exists, run `gh auth status` yourself and summarize the result. Do not ask "GitHub 계정이 있으신가요?" before checking the local auth state. Ask the user only when login is needed, when the user may need to create an account, or when account/organization choice affects repository creation.
+
+If `gh auth status` shows no logged-in account, explain that GitHub needs a user-owned account before remote repo work can continue. If the user has no account, guide them to create one in the browser at `https://github.com/signup`, then return to the CLI and run `gh auth login`. Do not create the account for the user, do not collect passwords or recovery codes, and record GitHub account creation or login as an interactive user action.
 
 If `gh` is missing, do not assume one package manager unless the OS and shell are known from the web entry or from detection. Explain that GitHub work can be blocked while local repo learning can continue. Record `github-auth` or remote setup as blocked only after an artifact or state hook exists.
 
@@ -369,7 +373,7 @@ Create these only when they help the user's understanding:
 | `git-cycle.html` | Explain edit, status, add, commit, push, pull |
 | `repo-dashboard.html` | Summarize current path, remote, branch, and dirty state |
 
-Work Environment Setup is done when the user has a work root, verified GitHub auth, a repo in a known location, a connected remote, one demonstrated Git loop, and a saved `environment-state.md`.
+Work Environment Setup is done when the user has a work root, known GitHub account readiness, verified GitHub auth or a recorded blocker, a repo in a known location, a connected remote or recorded local-only exception, one demonstrated Git loop, and a saved `environment-state.md`.
 
 ## Continuity Flow
 

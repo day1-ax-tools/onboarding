@@ -18,10 +18,10 @@
    브라우저에서 Codex 또는 Claude Code 설치까지만 안내한다
 
 -1. CLI Handoff
-   설치된 CLI에서 지침/skill/GitHub 연결/인터뷰를 이어간다
+   설치된 CLI에서 지침/skill/GitHub 계정 준비와 연결/인터뷰를 이어간다
 
 0. Work Environment Setup
-   로컬 작업 루트, GitHub 연결, local/remote, commit/push/pull 루프를 익힌다
+   로컬 작업 루트, GitHub 회원가입/로그인, local/remote, commit/push/pull 루프를 익힌다
 
 1. Work Grounding
    나의 역할, 목적, 성과, 업무 영역을 정의한다
@@ -46,6 +46,7 @@
 | 파일 변경 | AI CLI도 파일을 읽고 수정하고 차이를 만든다 |
 | 증거 기반 완료 | 성공 여부는 출력, diff, 테스트, PR URL 같은 증거로 확인한다 |
 | Git 상태 | 작업 폴더 변경, stage, commit, push는 서로 다른 단계다 |
+| GitHub 계정 | remote repo를 만들고 접근하려면 사용자 본인의 GitHub 계정이 필요하다 |
 | 원격 저장소 | GitHub는 내 컴퓨터 밖에 있는 협업 저장소다 |
 | 작업 루트 | AI와 함께 일할 로컬 기준 폴더를 정한다 |
 | Local/Remote | 내 컴퓨터의 작업 폴더와 GitHub 저장소는 연결된 한 쌍이다 |
@@ -58,6 +59,8 @@
 ## Stage -2: Web Entry
 
 웹페이지는 진입점 역할만 한다. 초보자는 GitHub 저장소를 미리 내려받지 않는다. 먼저 hosted web entry를 열고, 자신의 환경을 고른 뒤 Codex 또는 Claude Code 설치, PATH 반영, 설치 확인을 진행한다. 설치 자체도 이후 다른 상황에서 반복할 학습 경험이므로 온보딩 키트 없이 먼저 진행한다. CLI 명령이 실행 가능한 것을 확인한 뒤 같은 터미널에서 bootstrap 명령으로 onboarding kit를 내 컴퓨터에 받고, 그 다음 CLI를 실행해 인증한 뒤 지침 파일, skill, 상태 hook, 온보딩 보드를 AI와 함께 작업하려는 폴더에 설치한다.
+
+GitHub 회원가입은 CLI 설치보다 앞에 강제하지 않는다. AI CLI가 실행된 뒤 Work Environment Setup에서 `gh auth status`와 remote 상태를 확인하고, GitHub 계정이 없을 때만 브라우저에서 회원가입을 안내한다. 가입이 끝나면 다시 CLI로 돌아와 `gh auth login`과 `gh auth status`로 연결을 확인한다.
 
 이미 Codex 또는 Claude Code가 설치된 사용자는 설치 명령을 다시 실행하지 않는다. 웹 entry의 “이미 설치한 사용자” 경로에서 설치 확인으로 이동해 `codex --version` 또는 `claude --version`으로 현재 터미널에서 실행 가능한지만 확인한다. 버전이 출력되면 온보딩 키트 받기 단계로 이동한다.
 
@@ -76,6 +79,7 @@ Pages는 repository settings에서 `main` branch root를 source로 지정하면 
 index.html
 web/index.html
 web/brief-board.html
+web/brief-board-visualization-samples.html
 bootstrap/start.sh
 bootstrap/start.ps1
 ```
@@ -204,9 +208,11 @@ node scripts/cli-sandbox.mjs --mode fake --tool both --support-tools real --name
 - CLI가 갱신한 `.onboarding/state.json` 또는 `web/onboarding-state.json`을 읽어 그래프 node 상태를 바꾼다.
 - 상태 파일을 읽지 못하면 `Hook 미설치`로 표시한다. hook 설치 전에는 보드를 활성 상태로 간주하지 않는다.
 - `.onboarding/board-data.json`을 읽어 역할, 성과, 반복 업무, 작업 지도, 자동화 후보, 산출물을 현황판처럼 보여준다.
+- `.onboarding/concepts/current-concept.json`이 있으면 CLI가 현재 상황에 맞춰 생성한 개념 설명을 `현재 설명` 탭에 우선 표시한다.
 - `mission-backlog.md`와 `missions/*.md`를 읽어 자동화 과제를 `이어갈 작업`, `후보 목록`, `나중에 검토`, `완료/제외` 상태로 보여주는 작업 현황 보드를 제공한다.
 - CLI가 Git이나 작업 폴더 개념을 설명할 때는 개념 보드를 함께 보며 같은 개념을 그림으로 확인하게 한다.
 - `board-data.json`은 원본이 아니다. `environment-state.md`, `work-map.md`, `ontology-seeds.md`, `mission-backlog.md`, `automation-brief.md`, `missions/*.md`에서 다시 만들 수 있는 화면 표시용 요약 데이터다.
+- `current-concept.json`도 원본이 아니다. 현재 설명을 시각화하기 위한 표시용 데이터이며, 참조 기준은 `sourceRefs`와 실제 markdown/repo 상태다.
 - CLI에 붙여넣을 업무 요약문과, 자동 설치가 안 될 때 대신 실행할 작업 폴더용 지침/skill 설치 명령을 제공한다.
 
 ### Onboarding State Hooks
@@ -351,6 +357,7 @@ python3 -m http.server 8790 --bind 127.0.0.1 --directory web
 | Claude Code 설치 진입 | `http://127.0.0.1:8790/index.html?tool=claude&os=windows&shell=powershell` |
 | Codex 온보딩 보드 | `http://127.0.0.1:8790/brief-board.html?tool=codex&os=mac&shell=zsh&view=onboarding` |
 | Claude Code 개념 보드 | `http://127.0.0.1:8790/brief-board.html?tool=claude&os=windows&shell=powershell&view=concept` |
+| 시각화 샘플 화면 | `http://127.0.0.1:8790/brief-board-visualization-samples.html` |
 
 설치 전 bootstrap smoke test:
 
@@ -417,6 +424,8 @@ printf '%s\n' 'work-mission-discovery skill로 AI CLI 온보딩을 시작해주�
 
 기본 화면은 조작 가능한 실제 경험이어야 한다. 설명용 문장만 있는 화면은 피하고, 입력, 선택, 그래프, 표, 복사 가능한 CLI handoff가 함께 동작하게 만든다. CLI handoff는 긴 내부 지시문이 아니라 사용자가 이해할 수 있는 짧은 시작 문장이어야 하며, 세부 절차는 지침 파일과 skill이 담당한다.
 
+brief board 시각화의 상세 계약과 단계별 샘플 화면은 [docs/brief-board-visualization-plan.md](docs/brief-board-visualization-plan.md)와 `web/brief-board-visualization-samples.html`을 기준으로 한다. 기본 렌더링은 외부 라이브러리 없이 HTML/CSS/JS와 inline SVG를 사용한다. `board-data.json`의 `visualizations` 필드는 어떤 source를 어떤 renderer로 보여줄지 기록하고, `.onboarding/concepts/current-concept.json`은 CLI가 현재 설명을 상황별로 시각화할 때 갱신하는 표시용 데이터다.
+
 ## Stage -1: CLI Handoff And Onboarding Kit Installation
 
 이 단계의 목적은 설치된 CLI가 사용자의 실제 업무 저장소에서 온보딩을 이어받게 만드는 것이다.
@@ -479,7 +488,7 @@ cp /path/to/onboarding/web/brief-board.html .onboarding/brief-board.html
 
 이 온보딩 저장소 자체에서는 이미 두 위치에 skill이 들어 있다.
 
-`concept-board` skill도 이 저장소에 별도 재사용 자산으로 들어 있지만, 기본 온보딩 설치 명령에는 포함하지 않는다. 온보딩 중에는 `web/brief-board.html`의 내장 개념 보드를 사용하고, 다른 작업 repo에서 별도 시각화 보드가 필요할 때만 `concept-board`를 복사해 쓴다.
+`concept-board` skill도 이 저장소에 별도 재사용 자산으로 들어 있지만, 기본 온보딩 설치 명령에는 포함하지 않는다. 온보딩 중에는 `web/brief-board.html`의 내장 개념 보드와 `.onboarding/concepts/current-concept.json`을 사용하고, 다른 작업 repo에서 독립 시각화 보드가 필요할 때만 `concept-board`를 복사해 쓴다.
 
 사용 확인:
 
@@ -499,12 +508,13 @@ Claude Code의 skill은 slash command가 아니라 설명을 보고 자동 선�
 | 개념 | 설명 |
 | --- | --- |
 | 작업 루트 | AI와 함께 작업할 모든 repo를 모아둘 로컬 기준 폴더 |
+| GitHub 계정 | GitHub remote repo를 만들고 접근하기 위한 사용자 본인의 계정 |
 | Repo 폴더 | 하나의 GitHub repo와 연결된 하나의 local folder |
 | Local | 내 컴퓨터에 있는 실제 파일과 Git 기록 |
 | Remote | GitHub에 있는 원격 저장소 |
 | Clone | remote repo를 local folder로 가져오는 일 |
-| Commit | local repo에 의미 있는 변경 단위를 저장하는 일 |
-| Push | local commit을 GitHub remote로 올리는 일 |
+| Commit | repo history에 의미 있는 변경 단위를 저장하는 일. 보통 local에서 먼저 만들고 push 후 remote에도 존재 |
+| Push | local에 있는 commit을 GitHub remote에 반영하는 일 |
 | Pull | GitHub remote의 최신 변경을 local로 가져오는 일 |
 | Branch | 한 repo 안에서 독립적으로 작업하는 흐름 |
 | PR | branch 변경을 검토하고 합치기 위한 GitHub 대화 공간 |
@@ -556,6 +566,7 @@ GitHub repo는 웹에 있는 remote입니다.
 
 ```text
 작업 루트 폴더 선택 또는 생성
+→ GitHub 계정 생성 또는 기존 계정 확인
 → GitHub 로그인 확인
 → 비공개 GitHub 저장소 생성
 → 작업 루트 아래에 clone
@@ -594,6 +605,7 @@ HTML은 개념 설명용 도구로 계속 사용할 수 있다. CLI가 필요할
 
 ### 완료 기준
 
+- GitHub 계정이 있거나, 계정 생성이 필요한 상태가 blocker로 기록되어 있다.
 - `gh auth status`에서 GitHub 로그인 상태를 확인한다.
 - AI 작업 루트 폴더가 정해져 있다.
 - repo가 작업 루트 아래의 예측 가능한 위치에 있다.
@@ -772,6 +784,34 @@ Automation Exploration
 ```
 
 대안은 사용자가 먼저 말한 뒤에 제시한다. AI가 먼저 선택지를 던지면 사용자의 실제 맥락을 놓칠 수 있다.
+
+### 단계별 완료조건과 표시 방식
+
+각 단계는 사용자가 한 번 답했다고 끝나지 않는다. 다음 단계로 넘어가도 될 만큼의 증거가 생겼을 때 완료로 본다.
+
+| 단계 | 완료조건 | CLI 표시 | Web 표시 |
+| --- | --- | --- | --- |
+| 역할 정의 | 역할, 책임 결과, 이해관계자, 의사결정 권한이 한 문단으로 정리됨 | 역할/성과/이해관계자 3줄 요약 | `내 업무 현황` |
+| 성과 정의 | 좋아져야 할 결과 1-3개가 변화 방향과 현재 불편으로 정리됨 | 성과별 현재/개선 방향 표 | `내 업무 현황` |
+| 업무 영역 지도 | 반복 업무 영역 3-7개가 성과와 연결됨 | 업무 영역, 빈도, pain 표 | `생성되는 작업 지도` |
+| 업무 분해 | 최소 1개 업무 영역이 trigger, input, step, output, decision, evidence가 있는 leaf task로 분해됨 | trigger → input → step → output → evidence 트리 또는 표 | `생성되는 작업 지도`의 흐름 시각화 |
+| 자동화 분류 | leaf task마다 자동화 유형, 위험, 검증 방법이 붙음 | 후보별 유형/위험/검증 표 | `작업 현황 보드` |
+| 미션 선택 | 2-4개 후보를 비교하고 M001 또는 보류 사유가 정리됨 | 추천 후보와 제외/보류 이유 요약 | `작업 현황 보드`, `만들어질 산출물` |
+
+업무 분해는 구현 세부사항까지 내려가지 않는다. 아래 조건이 모두 채워지면 분해를 멈춘다.
+
+```text
+Trigger
+Inputs
+3-7개 수준의 사람이 이해 가능한 steps
+Output
+Human decision 또는 판단 불필요 표시
+Completion evidence
+Automation type
+Risk
+```
+
+`관리`, `처리`, `검토`, `운영`, `분석`, `정리`처럼 넓은 동사만 남아 있으면 아직 덜 쪼갠 것이다. 반대로 함수명, API 호출, shell command 같은 구현 단위는 첫 미션이 선택된 뒤 Mission Execution에서 다룬다.
 
 ## 업무 영역 탐색 방법
 

@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "id": "git-local-remote-current",
+  "label": "현재 설명",
+  "type": "step-flow",
+  "title": "local에서 만든 commit은 push 후 GitHub remote에도 존재합니다",
+  "description": "현재 repo 기준으로 local에서 commit을 만들고, push 후 remote history에도 같은 commit이 반영되는 순서를 보여줍니다.",
+  "updatedAt": "2026-06-04T00:00:00.000Z",
+  "sourceRefs": ["environment-state.md", "git status", "git remote -v"],
+  "nodes": [
+    { "id": "edit", "label": "1. Edit", "detail": "파일 수정", "lane": "local", "status": "done" },
+    { "id": "stage", "label": "2. Status/Add", "detail": "확인과 선택", "lane": "local", "status": "done" },
+    { "id": "commit", "label": "3. Commit", "detail": "history 기록", "lane": "local", "status": "current" },
+    { "id": "remote", "label": "GitHub", "detail": "remote repo", "lane": "remote" },
+    { "id": "pull", "label": "5. Pull", "detail": "remote 변경 반영", "lane": "local" }
+  ],
+  "edges": [
+    { "from": "edit", "to": "stage", "label": "git status" },
+    { "from": "stage", "to": "commit", "label": "git commit" },
+    { "from": "commit", "to": "remote", "label": "push" },
+    { "from": "remote", "to": "pull", "label": "pull", "kind": "pull" }
+  ],
+  "rows": [
+    ["local repo", "내 컴퓨터에 있는 작업 폴더"],
+    ["commit", "repo history에 남는 기록 단위. local에도 remote에도 존재할 수 있음"],
+    ["push", "local에 있는 commit을 GitHub remote에 반영"],
+    ["pull", "GitHub remote 변경을 local로 가져오기"]
+  ],
+  "note": "이 실습에서는 local에서 commit을 먼저 만들고, push한 뒤 GitHub remote에도 같은 commit이 존재하는지 확인합니다."
+}

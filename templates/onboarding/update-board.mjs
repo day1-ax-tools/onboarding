@@ -53,6 +53,27 @@ function lines(value) {
   return String(value || "").split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
 }
 
+function markdownTables(markdown) {
+  const tables = [];
+  let current = [];
+  for (const line of String(markdown || "").split(/\r?\n/)) {
+    if (/^\s*\|.*\|\s*$/.test(line)) {
+      current.push(line.trim());
+      continue;
+    }
+    if (current.length) {
+      tables.push(current);
+      current = [];
+    }
+  }
+  if (current.length) tables.push(current);
+  return tables
+    .map((table) => table
+      .map((line) => line.split("|").slice(1, -1).map(stripMarkdown))
+      .filter((cells) => cells.length && !cells.every((cell) => /^:?-{2,}:?$/.test(cell))))
+    .filter((table) => table.length >= 2);
+}
+
 function headingSection(markdown, patterns) {
   const sourceLines = String(markdown || "").split(/\r?\n/);
   for (let index = 0; index < sourceLines.length; index += 1) {
@@ -240,6 +261,50 @@ function parseMissionDoc(doc, index) {
   });
 }
 
+function parseWorkFlows(markdown, source = "work-map.md") {
+  const flows = [];
+  for (const tableRows of markdownTables(markdown)) {
+    const headers = tableRows[0].map((cell) => cell.toLowerCase());
+    const findIndex = (patterns) => headers.findIndex((header) => patterns.some((pattern) => pattern.test(header)));
+    const areaIndex = findIndex([/업무\s*영역/, /^area$/, /work\s*area/]);
+    const taskIndex = findIndex([/작업/, /^task$/, /업무$/]);
+    const triggerIndex = findIndex([/trigger/, /시작/, /발생/]);
+    const inputsIndex = findIndex([/input/, /입력/, /자료/]);
+    const stepsIndex = findIndex([/step/, /단계/, /절차/, /흐름/]);
+    const outputIndex = findIndex([/output/, /출력/, /결과물/, /산출물/]);
+    const decisionIndex = findIndex([/decision/, /판단/]);
+    const evidenceIndex = findIndex([/evidence/, /완료/, /증거/, /검증/]);
+    const typeIndex = findIndex([/type/, /유형/, /분류/]);
+    const riskIndex = findIndex([/risk/, /위험/]);
+    const candidateIndex = findIndex([/candidate/, /후보/, /미션/]);
+
+    if (taskIndex < 0 && stepsIndex < 0 && outputIndex < 0) continue;
+
+    tableRows.slice(1).forEach((cells, index) => {
+      const task = taskIndex >= 0 ? cells[taskIndex] : "";
+      const steps = stepsIndex >= 0 ? cells[stepsIndex] : "";
+      const output = outputIndex >= 0 ? cells[outputIndex] : "";
+      if (!task && !steps && !output) return;
+      flows.push({
+        id: `WF${String(flows.length + 1).padStart(2, "0")}`,
+        area: areaIndex >= 0 ? cells[areaIndex] : "",
+        task: task || `Workflow ${index + 1}`,
+        trigger: triggerIndex >= 0 ? cells[triggerIndex] : "",
+        inputs: inputsIndex >= 0 ? cells[inputsIndex] : "",
+        steps,
+        output,
+        decision: decisionIndex >= 0 ? cells[decisionIndex] : "",
+        evidence: evidenceIndex >= 0 ? cells[evidenceIndex] : "",
+        type: typeIndex >= 0 ? cells[typeIndex] : "",
+        risk: riskIndex >= 0 ? cells[riskIndex] : "",
+        candidate: candidateIndex >= 0 ? cells[candidateIndex] : "",
+        source
+      });
+    });
+  }
+  return flows;
+}
+
 async function readMissionFiles() {
   const missionsDir = path.join(repoRoot, "missions");
   if (!(await exists(missionsDir))) return [];
@@ -314,6 +379,7 @@ async function main() {
   const works = unique(bullets(worksSection));
   const inputs = unique(bullets(inputsSection));
   const risks = unique(bullets(risksSection));
+  const workFlows = parseWorkFlows(workMap);
 
   const parsedTasks = [
     ...parseTableTasks(backlog, "mission-backlog.md"),
@@ -347,6 +413,21 @@ async function main() {
     [firstMissionDoc?.path || "missions/M001-<slug>.md", "개별 미션 정의"]
   ].map(([name, desc]) => ({ name, desc, source: sourceSummary.find((item) => item.path === name)?.updatedAt || "" }));
 
+  const hasSource = (name) => sourceSummary.some((item) => item.path === name);
+  const visualizations = [
+    { id: "environment-concept", type: "concept-flow", title: "현재 폴더와 local/remote 개념", source: "environment-state.md" },
+    { id: "onboarding-progress", type: "branch-graph", title: "온보딩 진행 브랜치 그래프", source: ".onboarding/state.json" },
+    { id: "work-definition", type: "work-map-tree", title: "역할에서 업무 영역까지", source: "work-map.md" },
+    { id: "workflow-decomposition", type: "workflow-flow", title: "업무 분해 흐름", source: "work-map.md" },
+    { id: "candidate-comparison", type: "risk-value-matrix", title: "자동화 후보 비교", source: "mission-backlog.md" },
+    { id: "mission-status", type: "mission-kanban", title: "미션 작업 현황", source: "mission-backlog.md" },
+    { id: "mission-scope", type: "decision-map", title: "미션 범위와 가정", source: firstMissionDoc?.path || "automation-brief.md" },
+    { id: "artifact-authority", type: "artifact-table", title: "산출물 원본 기준", source: "board-data.json" }
+  ].map((item) => ({
+    ...item,
+    status: item.source === ".onboarding/state.json" || item.source === "board-data.json" || hasSource(item.source) ? "ready" : "waiting"
+  }));
+
   const boardData = {
     version: 1,
     updatedAt: new Date().toISOString(),
@@ -354,11 +435,13 @@ async function main() {
     role,
     outcomes,
     works,
+    workFlows,
     inputs,
     risks,
     tasks,
     firstMission,
     artifacts,
+    visualizations,
     summary: firstMission ? `${firstMission.id}: ${firstMission.text}` : ""
   };
 

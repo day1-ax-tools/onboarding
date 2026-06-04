@@ -30,6 +30,7 @@ Use these templates when creating work discovery artifacts. Keep them concise an
 | AI CLI | Todo | |
 | git | Todo | |
 | gh | Todo | |
+| GitHub account | Todo | |
 | GitHub auth | Todo | |
 
 ## Local And Remote Model
@@ -263,16 +264,29 @@ Use these templates when creating work discovery artifacts. Keep them concise an
 
 ## Work Areas
 
-### <Work Area>
+| Area | Outcome Link | Frequency | Current Pain | Status |
+| --- | --- | --- | --- | --- |
+|  |  |  |  |  |
 
-- Trigger:
-- Inputs:
-- Steps:
-- Output:
-- Tools:
-- Decision points:
-- Completion evidence:
-- Pain points:
+## Workflow Decomposition
+
+Stop decomposing a task when trigger, inputs, steps, output, decision point, completion evidence, automation type, and risk are all known. Keep decomposing broad verbs such as "관리", "처리", "검토", "운영", "분석", or "정리" until that evidence exists.
+
+| Area | Task | Trigger | Inputs | Steps | Output | Human Decision | Evidence | Automation Type | Risk | Candidate |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |  |  |  |  |  |
+
+## CLI Summary View
+
+```text
+역할 → 성과 → 업무 영역 → 실행 작업 → 자동화 후보
+```
+
+## Board View
+
+- `내 업무 현황`: role, outcomes, work areas.
+- `생성되는 작업 지도`: workflow decomposition table rendered as trigger → inputs → steps → output → evidence.
+- `작업 현황 보드`: mission-backlog candidates grouped by status.
 ```
 
 ## ontology-seeds.md

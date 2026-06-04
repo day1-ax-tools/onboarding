@@ -837,6 +837,73 @@
       overflow-wrap: anywhere;
     }
 
+    .work-flow {
+      grid-column: 1 / -1;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 12px;
+      min-width: 0;
+    }
+
+    .work-flow-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .work-flow-head strong {
+      color: var(--ink);
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .flow-path {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.2fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .flow-node {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      padding: 10px;
+      min-width: 0;
+    }
+
+    .flow-node span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+      margin-bottom: 4px;
+    }
+
+    .flow-node p {
+      margin: 0;
+      color: var(--body);
+      overflow-wrap: anywhere;
+    }
+
+    .flow-arrow {
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .flow-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
     .task-grid,
     .artifact-grid {
       display: grid;
@@ -1285,6 +1352,14 @@
         grid-template-columns: 1fr;
       }
 
+      .flow-path {
+        grid-template-columns: 1fr;
+      }
+
+      .flow-arrow {
+        display: none;
+      }
+
       aside {
         position: static;
       }
@@ -1446,6 +1521,7 @@
       </div>
       <div class="section-body">
         <div class="concept-tabs" aria-label="개념 보드 보기 선택">
+          <button type="button" data-concept="dynamic" id="dynamic-concept-tab" hidden>현재 설명</button>
           <button class="active" type="button" data-concept="location">작업 위치</button>
           <button type="button" data-concept="local-remote">Local / Remote</button>
           <button type="button" data-concept="commit">Commit</button>
@@ -1669,6 +1745,13 @@
       "/.onboarding/board-data.json"
     ].filter(Boolean);
 
+    const conceptSources = [
+      params.get("concept"),
+      "concepts/current-concept.json",
+      "../.onboarding/concepts/current-concept.json",
+      "/.onboarding/concepts/current-concept.json"
+    ].filter(Boolean);
+
     const stepDefinitions = [
       { id: "cli-install", branch: "main", label: "CLI 설치", meta: setup.tool === "claude" ? "Claude Code" : "Codex" },
       { id: "auth", branch: "main", label: "인증", meta: "로그인" },
@@ -1688,6 +1771,9 @@
     let boardData = defaultBoardData();
     let boardSource = "보드 데이터 대기";
     let hasBoardData = false;
+    let dynamicConcept = null;
+    let conceptSource = "개념 데이터 대기";
+    let hasDynamicConcept = false;
     let selectedConcept = "location";
     let conceptManuallySelected = false;
     let selectedBoardTab = params.get("view") === "onboarding" ? "onboarding" : "concept";
@@ -1889,10 +1975,12 @@
         role: "",
         outcomes: [],
         works: [],
+        workFlows: [],
         inputs: [],
         risks: [],
         tasks: [],
         artifacts: [],
+        visualizations: [],
         firstMission: null,
         summary: ""
       };
@@ -1949,6 +2037,41 @@
       };
     }
 
+    function normalizeWorkFlow(item, index) {
+      if (!item || typeof item !== "object") {
+        return {
+          id: `WF${String(index + 1).padStart(2, "0")}`,
+          area: "",
+          task: String(item || "").trim(),
+          trigger: "",
+          inputs: "",
+          steps: "",
+          output: "",
+          decision: "",
+          evidence: "",
+          type: "",
+          risk: "",
+          candidate: "",
+          source: ""
+        };
+      }
+      return {
+        id: String(item.id || `WF${String(index + 1).padStart(2, "0")}`),
+        area: String(item.area || item.workArea || ""),
+        task: String(item.task || item.title || item.name || ""),
+        trigger: String(item.trigger || ""),
+        inputs: String(item.inputs || item.input || ""),
+        steps: String(item.steps || item.step || ""),
+        output: String(item.output || ""),
+        decision: String(item.decision || item.humanDecision || ""),
+        evidence: String(item.evidence || item.completionEvidence || item.verification || ""),
+        type: String(item.type || ""),
+        risk: String(item.risk || ""),
+        candidate: String(item.candidate || ""),
+        source: String(item.source || "")
+      };
+    }
+
     function normalizeBoardData(raw) {
       const base = defaultBoardData();
       if (!raw || typeof raw !== "object") {
@@ -1967,15 +2090,98 @@
       base.role = String(raw.role || raw.jobRole || "");
       base.outcomes = asList(raw.outcomes || raw.responsibleOutcomes);
       base.works = asList(raw.works || raw.recurringWorks);
+      base.workFlows = (Array.isArray(raw.workFlows) ? raw.workFlows : []).map(normalizeWorkFlow).filter((flow) => flow.task || flow.steps || flow.output);
       base.inputs = asList(raw.inputs || raw.tools || raw.inputTools);
       base.risks = asList(raw.risks || raw.constraints);
       base.tasks = sortMissionTasks(tasks.map(normalizeTask).filter((task) => task.text));
       base.artifacts = (Array.isArray(raw.artifacts) ? raw.artifacts : []).map(normalizeArtifact);
+      base.visualizations = Array.isArray(raw.visualizations) ? raw.visualizations : [];
       base.firstMission = raw.firstMission || raw.mission
         ? normalizeTask(raw.firstMission || raw.mission, 0)
         : base.tasks[0] || null;
       base.summary = String(raw.summary || "");
       return base;
+    }
+
+    function normalizeConceptRows(value) {
+      const rows = Array.isArray(value) ? value : [];
+      return rows.map((row) => {
+        if (Array.isArray(row)) {
+          return [String(row[0] || "").trim(), String(row[1] || "").trim()];
+        }
+        if (row && typeof row === "object") {
+          return [
+            String(row.term || row.label || row.name || row.title || "").trim(),
+            String(row.meaning || row.description || row.value || row.detail || "").trim()
+          ];
+        }
+        return ["", ""];
+      }).filter(([term, meaning]) => term || meaning);
+    }
+
+    function normalizeConceptNode(item, index) {
+      if (!item || typeof item !== "object") {
+        const text = String(item || "").trim();
+        return {
+          id: `n${index + 1}`,
+          label: text,
+          detail: "",
+          lane: "",
+          status: ""
+        };
+      }
+      return {
+        id: String(item.id || `n${index + 1}`),
+        label: String(item.label || item.title || item.name || item.id || `단계 ${index + 1}`).trim(),
+        detail: String(item.detail || item.description || item.summary || item.meta || "").trim(),
+        lane: String(item.lane || item.group || item.kind || "").trim().toLowerCase(),
+        status: String(item.status || "").trim().toLowerCase()
+      };
+    }
+
+    function normalizeConceptEdge(item) {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+      const from = String(item.from || item.source || "").trim();
+      const to = String(item.to || item.target || "").trim();
+      if (!from || !to) {
+        return null;
+      }
+      return {
+        from,
+        to,
+        label: String(item.label || item.action || "").trim(),
+        kind: String(item.kind || item.type || "").trim().toLowerCase()
+      };
+    }
+
+    function normalizeConceptData(raw) {
+      if (!raw || typeof raw !== "object") {
+        return null;
+      }
+      const rows = normalizeConceptRows(raw.rows || raw.terms || raw.table);
+      const nodes = (Array.isArray(raw.nodes) ? raw.nodes : []).map(normalizeConceptNode).filter((node) => node.label);
+      const edges = (Array.isArray(raw.edges) ? raw.edges : []).map(normalizeConceptEdge).filter(Boolean);
+      const title = String(raw.title || raw.name || "").trim();
+      const description = String(raw.description || raw.summary || "").trim();
+      if (!title && !description && !rows.length && !nodes.length) {
+        return null;
+      }
+      return {
+        version: raw.version || 1,
+        id: String(raw.id || "current-concept"),
+        label: String(raw.label || "현재 설명"),
+        type: String(raw.type || "step-flow"),
+        title: title || "현재 상황 설명",
+        description: description || "CLI가 현재 단계에 맞춰 생성한 설명입니다.",
+        note: String(raw.note || "이 내용은 CLI가 현재 사용자의 상황을 바탕으로 만든 표시용 설명입니다. 원본은 markdown 산출물과 실제 repo 상태입니다."),
+        updatedAt: raw.updatedAt || raw.generatedAt || null,
+        sourceRefs: Array.isArray(raw.sourceRefs) ? raw.sourceRefs.map(String) : [],
+        rows,
+        nodes,
+        edges
+      };
     }
 
     async function refreshBoardData() {
@@ -1995,6 +2201,30 @@
       boardData = defaultBoardData();
       boardSource = location.protocol === "file:" ? "file://에서는 보드 데이터 자동 로드 제한" : "보드 데이터 대기";
       hasBoardData = false;
+      render();
+    }
+
+    async function refreshConceptData() {
+      for (const source of conceptSources) {
+        try {
+          const response = await fetch(`${source}${source.includes("?") ? "&" : "?"}_=${Date.now()}`, { cache: "no-store" });
+          if (!response.ok) {
+            continue;
+          }
+          const nextConcept = normalizeConceptData(await response.json());
+          if (!nextConcept) {
+            continue;
+          }
+          dynamicConcept = nextConcept;
+          conceptSource = source;
+          hasDynamicConcept = true;
+          render();
+          return;
+        } catch (_) {}
+      }
+      dynamicConcept = null;
+      conceptSource = location.protocol === "file:" ? "file://에서는 개념 데이터 자동 로드 제한" : "개념 데이터 대기";
+      hasDynamicConcept = false;
       render();
     }
 
@@ -2257,35 +2487,44 @@
       },
       "local-remote": {
         label: "Local / Remote",
-        title: "Local repo와 GitHub remote는 연결된 두 장소입니다",
-        description: "내 컴퓨터의 repo와 GitHub의 repo는 같은 프로젝트를 다루지만 자동으로 항상 같아지지는 않습니다.",
+        title: "local에서 만든 commit은 push 후 GitHub remote에도 존재합니다",
+        description: "commit은 저장소 history의 기록 단위입니다. 이 실습 흐름에서는 local에서 commit을 만든 뒤 push해서 GitHub remote에도 같은 commit을 반영합니다.",
         rows: [
-          ["Local repo", "내 컴퓨터에 있는 작업 폴더"],
-          ["Remote repo", "GitHub에 있는 협업 저장소"],
-          ["연결", "`origin` 같은 이름으로 둘 사이의 주소를 기억"]
+          ["1. Edit", "local repo에서 파일을 수정"],
+          ["2. Status/Add", "무엇이 바뀌었는지 확인하고 commit에 담을 변경 선택"],
+          ["3. Commit", "repo history에 기록 단위 생성"],
+          ["4. Push", "local에 있는 commit을 GitHub remote에 반영"],
+          ["5. Pull", "GitHub remote의 변경을 local로 가져옴"]
         ],
-        note: "CLI가 `git remote -v`를 확인하면 local repo가 어느 GitHub remote와 연결되어 있는지 보는 중입니다.",
+        note: "CLI가 local/remote를 설명할 때는 commit 자체보다 그 commit이 어느 저장소에 존재하는지를 보면 헷갈림이 줄어듭니다.",
         diagram: () => `
           ${conceptDefs()}
-          ${conceptBox(54, 92, 230, 142, "local", ["Local repo", "내 컴퓨터", "files + .git"])}
-          ${conceptBox(438, 92, 230, 142, "remote", ["GitHub remote", "웹 저장소", "origin/main"])}
-          ${conceptArrow(292, 128, 430, 128)}
-          ${conceptText(["push"], 361, 104, "concept-code", "middle")}
-          ${conceptArrow(430, 194, 292, 194, "secondary")}
-          ${conceptText(["pull"], 361, 216, "concept-code", "middle")}
-          ${conceptBox(230, 290, 262, 58, "", ["remote URL", "GitHub 위치를 local에 기록"])}
+          ${conceptBox(30, 70, 126, 72, "local", ["1. Edit", "파일 수정"])}
+          ${conceptArrow(164, 106, 214, 106, "secondary")}
+          ${conceptBox(222, 70, 142, 72, "", ["2. Status/Add", "확인과 선택"])}
+          ${conceptArrow(372, 106, 422, 106, "secondary")}
+          ${conceptBox(430, 70, 126, 72, "primary", ["3. Commit", "기록 단위"])}
+          ${conceptArrow(564, 106, 632, 106)}
+          ${conceptText(["4. push"], 598, 88, "concept-code", "middle")}
+          ${conceptBox(640, 70, 64, 72, "remote", ["GitHub", "remote"])}
+
+          ${conceptBox(640, 226, 64, 72, "remote", ["Remote", "변경"])}
+          ${conceptArrow(632, 262, 378, 262, "secondary")}
+          ${conceptText(["5. pull"], 505, 246, "concept-code", "middle")}
+          ${conceptBox(222, 226, 148, 72, "warn", ["Local updated", "변경 반영"])}
+          ${conceptText(["commit은 저장소 history의 기록 단위입니다.", "push 후에는 remote에도 같은 commit이 존재합니다."], 360, 344, "concept-small", "middle")}
         `
       },
       commit: {
         label: "Commit",
-        title: "Commit은 local repo 안에 남기는 저장 지점입니다",
-        description: "파일을 바꾸는 것, stage하는 것, commit하는 것은 서로 다른 단계입니다. commit 전까지는 GitHub에 올라가지 않습니다.",
+        title: "Commit은 repo history에 남는 기록 단위입니다",
+        description: "파일을 바꾸는 것, stage하는 것, commit하는 것은 서로 다른 단계입니다. local에서 만든 commit은 push 후 GitHub remote history에도 존재합니다.",
         rows: [
           ["working tree", "아직 저장 지점이 아닌 파일 변경"],
           ["stage", "이번 commit에 담을 변경 선택"],
-          ["commit", "local repo에 남는 스냅샷"]
+          ["commit", "local 또는 remote repo history에 남는 스냅샷"]
         ],
-        note: "CLI가 `status → add → commit`을 설명하면, 변경을 local 기록으로 만드는 과정을 다루는 중입니다.",
+        note: "CLI가 `status → add → commit`을 설명하면, 지금은 local history에 기록을 만드는 중입니다. push하면 remote에도 같은 commit이 반영됩니다.",
         diagram: () => `
           ${conceptDefs()}
           ${conceptBox(36, 90, 170, 110, "warn", ["Working tree", "수정된 파일"])}
@@ -2294,20 +2533,20 @@
           ${conceptBox(304, 90, 170, 110, "primary", ["Stage", "담을 변경 선택"])}
           ${conceptArrow(480, 145, 566, 145)}
           ${conceptText(["git commit"], 523, 118, "concept-code", "middle")}
-          ${conceptBox(572, 90, 142, 110, "local", ["Commit", "로컬 기록"])}
+          ${conceptBox(572, 90, 142, 110, "local", ["Commit", "history 기록"])}
           <circle class="commit-node done" cx="592" cy="292" r="10" />
           <circle class="commit-node done" cx="636" cy="292" r="10" />
           <circle class="commit-node active" cx="680" cy="292" r="10" />
           <path class="branch-line active" d="M592 292 H680" />
-          ${conceptText(["commit history는 local repo 안에 먼저 쌓입니다."], 360, 330, "concept-small", "middle")}
+          ${conceptText(["이 실습에서는 local history에 먼저 만들고", "push 후 remote history에도 같은 commit이 생깁니다."], 360, 326, "concept-small", "middle")}
         `
       },
       sync: {
         label: "Push / Pull",
         title: "Push와 Pull은 local과 GitHub를 맞추는 이동입니다",
-        description: "push는 내 local commit을 GitHub로 올리고, pull은 GitHub의 commit을 내 local로 가져옵니다.",
+        description: "push는 local에 있는 commit을 GitHub remote에 반영하고, pull은 GitHub remote의 commit을 local로 가져옵니다.",
         rows: [
-          ["push", "local commit → GitHub remote"],
+          ["push", "local에 있는 commit → GitHub remote"],
           ["pull", "GitHub remote → local repo"],
           ["주의", "commit 없이 push할 수 없고, remote 변경은 pull 전까지 local에 없음"]
         ],
@@ -2359,14 +2598,159 @@
       return "location";
     }
 
+    function dynamicConceptDefinition(data) {
+      const rows = data.rows.length
+        ? data.rows
+        : data.nodes.map((node) => [node.label, node.detail || node.lane || "현재 설명의 한 단계"]);
+      const sourceRows = data.sourceRefs.map((source) => ["참조", source]);
+      return {
+        label: data.label || "현재 설명",
+        title: data.title,
+        description: data.description,
+        rows: rows.length ? rows : sourceRows,
+        note: data.note,
+        diagram: () => dynamicConceptDiagram(data)
+      };
+    }
+
+    function truncateConceptLine(value, length = 24) {
+      const text = String(value || "").trim();
+      if (text.length <= length) {
+        return text;
+      }
+      return `${text.slice(0, Math.max(1, length - 3))}...`;
+    }
+
+    function conceptVariantForNode(node, index) {
+      if (node.status === "blocked" || node.status === "risk") return "warn";
+      if (node.status === "active" || node.status === "current") return "primary";
+      if (node.status === "done" || node.status === "verified") return "local";
+      if (/remote|github|cloud|web/.test(node.lane)) return "remote";
+      if (/local|repo|folder|work/.test(node.lane)) return "local";
+      return index === 0 ? "primary" : "";
+    }
+
+    function dynamicNodeLayout(nodes) {
+      const visible = nodes.slice(0, 6);
+      const hasLane = visible.some((node) => node.lane);
+      if (visible.length <= 5) {
+        const step = visible.length > 1 ? 620 / (visible.length - 1) : 0;
+        const width = visible.length > 4 ? 112 : 132;
+        return visible.map((node, index) => {
+          const centerX = visible.length === 1 ? 360 : 50 + index * step;
+          const lane = node.lane;
+          const centerY = hasLane && /remote|github|cloud|web|output|result/.test(lane) ? 258 : 126;
+          return {
+            node,
+            x: Math.max(16, Math.min(720 - width - 16, centerX - width / 2)),
+            y: centerY - 42,
+            width,
+            height: 84,
+            cx: Math.max(16, Math.min(720 - width - 16, centerX - width / 2)) + width / 2,
+            cy: centerY
+          };
+        });
+      }
+      const firstRow = visible.slice(0, 3);
+      const secondRow = visible.slice(3);
+      return [...firstRow, ...secondRow].map((node, index) => {
+        const row = index < 3 ? 0 : 1;
+        const rowIndex = row === 0 ? index : index - 3;
+        const rowCount = row === 0 ? firstRow.length : secondRow.length;
+        const step = rowCount > 1 ? 250 : 0;
+        const centerX = rowCount === 1 ? 360 : 110 + rowIndex * step;
+        const centerY = row === 0 ? 112 : 264;
+        return {
+          node,
+          x: centerX - 62,
+          y: centerY - 42,
+          width: 124,
+          height: 84,
+          cx: centerX,
+          cy: centerY
+        };
+      });
+    }
+
+    function dynamicConceptDiagram(data) {
+      const fallbackNodes = data.rows.slice(0, 5).map(([term, meaning], index) => ({
+        id: `row-${index + 1}`,
+        label: term,
+        detail: meaning,
+        lane: "",
+        status: index === 0 ? "current" : ""
+      }));
+      const nodes = data.nodes.length ? data.nodes : fallbackNodes;
+      const layout = dynamicNodeLayout(nodes);
+      if (!layout.length) {
+        return `
+          ${conceptDefs()}
+          ${conceptText(["아직 시각화할 단계 데이터가 없습니다.", "CLI가 현재 설명을 생성하면 이 영역이 바뀝니다."], 360, 172, "concept-small", "middle")}
+        `;
+      }
+      const byId = new Map(layout.map((item) => [item.node.id, item]));
+      const sequentialEdges = layout.slice(1).map((item, index) => ({
+        from: layout[index].node.id,
+        to: item.node.id,
+        label: "",
+        kind: ""
+      }));
+      const edges = data.edges.length ? data.edges : sequentialEdges;
+      const edgeMarkup = edges.map((edge) => {
+        const from = byId.get(edge.from);
+        const to = byId.get(edge.to);
+        if (!from || !to) {
+          return "";
+        }
+        const variant = /pull|return|optional|reference|remote/.test(edge.kind) ? "secondary" : "";
+        const distance = Math.hypot(to.cx - from.cx, to.cy - from.cy);
+        const keepLabel = /push|pull|remote|sync/i.test(edge.label) || /push|pull|remote|sync/.test(edge.kind);
+        const label = edge.label && (keepLabel || distance > 220)
+          ? conceptText([truncateConceptLine(edge.label, 16)], (from.cx + to.cx) / 2, (from.cy + to.cy) / 2 - 16, "concept-code", "middle")
+          : "";
+        return `${conceptArrow(from.cx, from.cy, to.cx, to.cy, variant)}${label}`;
+      }).join("");
+      const nodeMarkup = layout.map((item, index) => {
+        const lines = [
+          truncateConceptLine(item.node.label, 18),
+          truncateConceptLine(item.node.detail || item.node.lane || "", 22)
+        ].filter(Boolean);
+        return conceptBox(item.x, item.y, item.width, item.height, conceptVariantForNode(item.node, index), lines);
+      }).join("");
+      const sourceLine = data.sourceRefs.length
+        ? `참조: ${truncateConceptLine(data.sourceRefs.join(", "), 76)}`
+        : "CLI가 현재 상황에 맞춰 생성한 개념 보드입니다.";
+      const hiddenCount = Math.max(0, nodes.length - layout.length);
+      const hiddenLine = hiddenCount ? `표시하지 않은 단계 ${hiddenCount}개는 오른쪽 표에서 확인합니다.` : "";
+      return `
+        ${conceptDefs()}
+        ${edgeMarkup}
+        ${nodeMarkup}
+        ${conceptText([sourceLine, hiddenLine].filter(Boolean), 360, 350, "concept-small", "middle")}
+      `;
+    }
+
     function renderConceptBoard() {
       const current = currentStep();
-      if (!conceptManuallySelected) {
+      const dynamicAvailable = hasDynamicConcept && dynamicConcept;
+      const dynamicTab = document.getElementById("dynamic-concept-tab");
+      dynamicTab.hidden = !dynamicAvailable;
+      if (selectedConcept === "dynamic" && !dynamicAvailable) {
+        selectedConcept = conceptIdForStep(current.id);
+        conceptManuallySelected = false;
+      }
+      if (dynamicAvailable && !conceptManuallySelected) {
+        selectedConcept = "dynamic";
+      } else if (!conceptManuallySelected) {
         selectedConcept = conceptIdForStep(current.id);
       }
-      const concept = conceptDefinitions[selectedConcept] || conceptDefinitions.location;
+      const concept = selectedConcept === "dynamic" && dynamicAvailable
+        ? dynamicConceptDefinition(dynamicConcept)
+        : conceptDefinitions[selectedConcept] || conceptDefinitions.location;
       const signature = [
         selectedConcept,
+        dynamicAvailable ? dynamicConcept.id : "",
+        dynamicAvailable ? dynamicConcept.updatedAt || "" : "",
         current.id,
         stepStatus(current.id),
         onboardingState.updatedAt || "",
@@ -2374,12 +2758,16 @@
       ].join("|");
       if (signature !== conceptLastSignature) {
         conceptLastSignature = signature;
-        conceptLastUpdatedAt = onboardingState.updatedAt || boardData.updatedAt || new Date().toISOString();
+        conceptLastUpdatedAt = selectedConcept === "dynamic" && dynamicAvailable
+          ? dynamicConcept.updatedAt || new Date().toISOString()
+          : onboardingState.updatedAt || boardData.updatedAt || new Date().toISOString();
       }
       document.querySelectorAll("[data-concept]").forEach((button) => {
         button.classList.toggle("active", button.dataset.concept === selectedConcept);
       });
-      document.getElementById("concept-state").textContent = conceptManuallySelected
+      document.getElementById("concept-state").textContent = selectedConcept === "dynamic"
+        ? `현재 설명 · ${hasDynamicConcept ? "CLI 생성" : "대기"}`
+        : conceptManuallySelected
         ? `${concept.label} · 직접 선택`
         : `${current.label} 단계 설명`;
       document.getElementById("concept-updated-at").textContent = `마지막 업데이트: ${formatTimestamp(conceptLastUpdatedAt)}`;
@@ -2460,23 +2848,56 @@
     function renderWorkMap(tasks) {
       const state = readBoard();
       const outcomes = lines(state.outcomes);
+      const flows = boardData.workFlows || [];
       const map = document.getElementById("work-map");
-      if (!state.role && !outcomes.length && !tasks.length) {
+      if (!state.role && !outcomes.length && !tasks.length && !flows.length) {
         map.innerHTML = `<div class="empty">CLI가 work-map.md를 만들고 node .onboarding/update-board.mjs를 실행하면 작업 지도가 자동 표시됩니다.</div>`;
         return;
       }
       const workItems = tasks.slice(0, 4).map((task) => `<li>${escapeHtml(task.text)}</li>`).join("");
       const outcomesBody = outcomes.length ? outcomes.map((outcome) => escapeHtml(outcome)).join("<br>") : "입력 대기";
+      const flowItems = flows.slice(0, 3).map(workFlow).join("");
       map.innerHTML = [
         lane("역할", state.role ? escapeHtml(state.role) : "입력 대기", "사용자가 책임지는 관점"),
         lane("성과", outcomesBody, "좋아져야 하는 결과"),
         lane("반복 업무", workItems ? `<ul>${workItems}</ul>` : "입력 대기", "자동화 후보의 출발점"),
-        lane("첫 후보", tasks[0] ? `${escapeHtml(tasks[0].text)}<br><span class=\"badge good\">${tasks[0].type}</span>` : "입력 대기", "낮은 위험부터 시작")
+        lane("첫 후보", tasks[0] ? `${escapeHtml(tasks[0].text)}<br><span class=\"badge good\">${tasks[0].type}</span>` : "입력 대기", "낮은 위험부터 시작"),
+        flowItems || `<div class="work-flow"><div class="empty">업무 영역이 trigger, input, step, output, evidence까지 분해되면 여기에 흐름으로 표시됩니다.</div></div>`
       ].join("");
     }
 
     function lane(title, body, foot) {
       return `<div class="lane"><strong>${title}</strong><p>${body}</p><p class="muted">${foot}</p></div>`;
+    }
+
+    function workFlow(flow) {
+      const meta = [
+        flow.decision ? `<span class="badge">판단: ${escapeHtml(flow.decision)}</span>` : "",
+        flow.type ? `<span class="badge good">${escapeHtml(flow.type)}</span>` : "",
+        flow.risk ? `<span class="badge warn">위험: ${escapeHtml(flow.risk)}</span>` : "",
+        flow.candidate ? `<span class="badge">${escapeHtml(flow.candidate)}</span>` : ""
+      ].filter(Boolean).join("");
+      return `
+        <article class="work-flow">
+          <div class="work-flow-head">
+            <strong>${escapeHtml(flow.task || "작업 분해")}</strong>
+            <span>${escapeHtml(flow.area || flow.source || "work-map.md")}</span>
+          </div>
+          <div class="flow-path" aria-label="${escapeHtml(flow.task || "작업")} 흐름">
+            ${flowNode("Trigger", flow.trigger || "시작 조건 대기")}
+            <div class="flow-arrow" aria-hidden="true">→</div>
+            ${flowNode("Input", flow.inputs || "입력 대기")}
+            <div class="flow-arrow" aria-hidden="true">→</div>
+            ${flowNode("Steps", flow.steps || "단계 대기")}
+            <div class="flow-arrow" aria-hidden="true">→</div>
+            ${flowNode("Evidence", flow.evidence || flow.output || "완료 증거 대기")}
+          </div>
+          ${meta ? `<div class="flow-meta">${meta}</div>` : ""}
+        </article>`;
+    }
+
+    function flowNode(label, value) {
+      return `<div class="flow-node"><span>${label}</span><p>${escapeHtml(value)}</p></div>`;
     }
 
     function renderTasks(tasks) {
@@ -2721,13 +3142,16 @@ if (Get-Command node -ErrorAction SilentlyContinue) { node .onboarding\\update-s
     document.getElementById("refresh-board").addEventListener("click", () => {
       refreshOnboardingState();
       refreshBoardData();
+      refreshConceptData();
     });
 
     render();
     refreshOnboardingState();
     refreshBoardData();
+    refreshConceptData();
     window.setInterval(refreshOnboardingState, stateRefreshMs);
     window.setInterval(refreshBoardData, boardRefreshMs);
+    window.setInterval(refreshConceptData, boardRefreshMs);
     let resizeRenderTimer;
     window.addEventListener("resize", () => {
       window.clearTimeout(resizeRenderTimer);

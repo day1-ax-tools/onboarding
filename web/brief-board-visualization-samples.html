@@ -1,0 +1,977 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brief Board Visualization Samples</title>
+  <style>
+    :root {
+      --bg: #f6f5f1;
+      --surface: #ffffff;
+      --surface-2: #f0eee7;
+      --ink: #1f2328;
+      --body: #3d444d;
+      --muted: #667085;
+      --border: #d8d3c8;
+      --green: #1f7a4d;
+      --green-bg: #e9f7ef;
+      --blue: #2563a8;
+      --blue-bg: #e9f2fb;
+      --amber: #9a6700;
+      --amber-bg: #fff5d6;
+      --red: #b42318;
+      --red-bg: #fff0ee;
+      --violet: #6d4aff;
+      --violet-bg: #f0ecff;
+      --radius: 8px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--body);
+      background:
+        linear-gradient(90deg, rgba(31, 35, 40, 0.04) 1px, transparent 1px) 0 0 / 80px 80px,
+        linear-gradient(0deg, rgba(31, 35, 40, 0.035) 1px, transparent 1px) 0 0 / 80px 80px,
+        var(--bg);
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .shell {
+      width: min(1180px, calc(100vw - 28px));
+      margin: 0 auto;
+    }
+
+    header {
+      padding: 22px 0 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(246, 245, 241, 0.94);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      backdrop-filter: blur(10px);
+    }
+
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+      color: var(--ink);
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      color: var(--ink);
+      font-size: 22px;
+      margin-bottom: 6px;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      color: var(--ink);
+      font-size: 15px;
+      margin-bottom: 8px;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 760px;
+      margin-bottom: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .status-tags,
+    .nav-tabs,
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .status-tags {
+      justify-content: flex-end;
+      min-width: 280px;
+    }
+
+    .tag,
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge.good {
+      color: var(--green);
+      background: var(--green-bg);
+      border-color: rgba(31, 122, 77, 0.28);
+    }
+
+    .badge.warn {
+      color: var(--amber);
+      background: var(--amber-bg);
+      border-color: rgba(154, 103, 0, 0.3);
+    }
+
+    .badge.risk {
+      color: var(--red);
+      background: var(--red-bg);
+      border-color: rgba(180, 35, 24, 0.26);
+    }
+
+    .nav-tabs {
+      margin-top: 16px;
+    }
+
+    .nav-tabs a {
+      text-decoration: none;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 999px;
+      padding: 8px 12px;
+      color: var(--body);
+      font-size: 13px;
+      font-weight: 760;
+    }
+
+    main {
+      padding: 24px 0 60px;
+    }
+
+    .stage {
+      padding: 26px 0 30px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stage-head {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
+      gap: 18px;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+
+    .stage-kicker {
+      display: inline-block;
+      margin-bottom: 8px;
+      color: var(--violet);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .stage-copy {
+      line-height: 1.55;
+    }
+
+    .check-table,
+    .candidate-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .check-table th,
+    .check-table td,
+    .candidate-table th,
+    .candidate-table td {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+      overflow-wrap: anywhere;
+      font-size: 13px;
+    }
+
+    .check-table th,
+    .candidate-table th {
+      color: var(--muted);
+      background: var(--surface-2);
+      font-size: 12px;
+    }
+
+    .visual {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 14px;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .visual-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .visual-title p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .svg-wrap {
+      width: 100%;
+      overflow-x: auto;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      min-width: 620px;
+      height: auto;
+    }
+
+    .node {
+      fill: #fff;
+      stroke: var(--border);
+      stroke-width: 1.4;
+    }
+
+    .node.good {
+      fill: var(--green-bg);
+      stroke: var(--green);
+    }
+
+    .node.warn {
+      fill: var(--amber-bg);
+      stroke: var(--amber);
+    }
+
+    .node.blue {
+      fill: var(--blue-bg);
+      stroke: var(--blue);
+    }
+
+    .line {
+      fill: none;
+      stroke: #8b949e;
+      stroke-width: 3;
+      stroke-linecap: round;
+    }
+
+    .line.good {
+      stroke: var(--green);
+    }
+
+    .line.blue {
+      stroke: var(--blue);
+    }
+
+    .label {
+      fill: var(--ink);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .meta {
+      fill: var(--muted);
+      font-size: 11px;
+      font-weight: 650;
+    }
+
+    .folder-grid,
+    .work-grid,
+    .scope-grid,
+    .kanban,
+    .artifact-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .folder-grid {
+      grid-template-columns: 0.9fr 1.1fr;
+    }
+
+    .folder-tree,
+    .mini-panel,
+    .lane,
+    .scope,
+    .artifact {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 12px;
+      min-width: 0;
+    }
+
+    .folder-tree pre {
+      margin: 0;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--body);
+      white-space: pre-wrap;
+    }
+
+    .work-grid {
+      grid-template-columns: 0.8fr 1.2fr;
+    }
+
+    .role-stack {
+      display: grid;
+      gap: 8px;
+    }
+
+    .role-card {
+      border-left: 4px solid var(--blue);
+      background: var(--blue-bg);
+      padding: 10px;
+      border-radius: var(--radius);
+    }
+
+    .role-card:nth-child(2) {
+      border-left-color: var(--green);
+      background: var(--green-bg);
+    }
+
+    .role-card:nth-child(3) {
+      border-left-color: var(--amber);
+      background: var(--amber-bg);
+    }
+
+    .role-card strong,
+    .mini-panel strong,
+    .lane strong,
+    .scope strong,
+    .artifact strong {
+      display: block;
+      color: var(--ink);
+      margin-bottom: 6px;
+      overflow-wrap: anywhere;
+    }
+
+    .role-card p,
+    .mini-panel p,
+    .lane p,
+    .scope p,
+    .artifact p {
+      margin-bottom: 0;
+      overflow-wrap: anywhere;
+      line-height: 1.45;
+    }
+
+    .flow-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1.2fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: stretch;
+      gap: 8px;
+    }
+
+    .flow-node {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      padding: 10px;
+      min-width: 0;
+    }
+
+    .flow-node span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+
+    .flow-node p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .arrow {
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .flow-foot {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: 56px repeat(2, minmax(0, 1fr));
+      grid-template-rows: 40px repeat(2, 138px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--surface);
+    }
+
+    .matrix > div {
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 10px;
+      min-width: 0;
+    }
+
+    .matrix-label {
+      display: grid;
+      place-items: center;
+      background: var(--surface-2);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .matrix-cell {
+      position: relative;
+    }
+
+    .matrix-cell.target {
+      background: var(--green-bg);
+    }
+
+    .matrix-cell.defer {
+      background: var(--amber-bg);
+    }
+
+    .matrix-cell.risky {
+      background: var(--red-bg);
+    }
+
+    .candidate-chip {
+      display: block;
+      margin-bottom: 7px;
+      padding: 7px 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 760;
+      overflow-wrap: anywhere;
+    }
+
+    .kanban {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .lane h3 {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .mission {
+      margin-top: 8px;
+      padding: 9px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+    }
+
+    .mission p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .scope-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .scope ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .artifact-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .sample-note {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-left: 3px solid var(--violet);
+      background: var(--violet-bg);
+      border-radius: var(--radius);
+      color: var(--body);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 980px) {
+      .topline,
+      .stage-head,
+      .folder-grid,
+      .work-grid,
+      .kanban,
+      .scope-grid,
+      .artifact-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .topline {
+        display: grid;
+      }
+
+      .status-tags {
+        justify-content: flex-start;
+        min-width: 0;
+      }
+
+      .flow-row {
+        grid-template-columns: 1fr;
+      }
+
+      .arrow {
+        display: none;
+      }
+
+      .matrix {
+        grid-template-columns: 42px repeat(2, minmax(0, 1fr));
+      }
+
+      svg {
+        min-width: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="shell">
+      <div class="topline">
+        <div>
+          <h1>Brief Board 시각화 샘플</h1>
+          <p class="lead">CLI 인터뷰가 진행될 때 markdown 산출물이 어떤 화면으로 바뀌는지 보여주는 static preview입니다. 실제 진행 상태는 `brief-board.html`이 `.onboarding/state.json`과 `board-data.json`을 읽어 렌더링합니다.</p>
+        </div>
+        <div class="status-tags" aria-label="샘플 상태">
+          <span class="tag">repo: onboarding</span>
+          <span class="tag">session: sample</span>
+          <span class="tag">tool: Codex / Claude Code</span>
+          <span class="tag">updated: 2026-06-04</span>
+        </div>
+      </div>
+      <nav class="nav-tabs" aria-label="샘플 단계">
+        <a href="#environment">1 환경</a>
+        <a href="#onboarding">2 진행</a>
+        <a href="#work-definition">3 업무 정의</a>
+        <a href="#workflow">4 업무 분해</a>
+        <a href="#candidates">5 후보 비교</a>
+        <a href="#mission">6 미션 범위</a>
+        <a href="#backlog">7 백로그</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="stage" id="environment">
+      <div class="stage-head">
+        <div class="stage-copy">
+          <span class="stage-kicker">STEP 1 · Environment and Concept Board</span>
+          <h2>현재 위치와 GitHub 연결을 이해합니다</h2>
+          <p>사용자는 먼저 자기 컴퓨터의 작업 루트, 현재 repo, GitHub remote, push/pull 방향을 봅니다. 이 단계는 "어디에서 명령을 실행하는가"와 "GitHub가 내 폴더와 어떤 관계인가"를 분리해서 보여줍니다.</p>
+        </div>
+        <table class="check-table" aria-label="환경 단계 완료조건">
+          <thead><tr><th>완료조건</th><th>샘플 상태</th></tr></thead>
+          <tbody>
+            <tr><td>작업 루트 선택</td><td><span class="badge good">완료</span> `~/Documents/AI-Work`</td></tr>
+            <tr><td>GitHub 계정/인증</td><td><span class="badge warn">확인 중</span> `gh auth login` 필요</td></tr>
+            <tr><td>local/remote 설명</td><td><span class="badge good">완료</span> push/pull 방향 이해</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="folder-grid">
+        <div class="folder-tree">
+          <h3>작업 루트 구조</h3>
+          <pre>~/Documents/AI-Work/
+  day1-ax-tools/
+    onboarding/
+    customer-report/
+  personal/
+  inbox/
+  archive/</pre>
+        </div>
+        <div class="visual">
+          <div class="visual-title">
+            <h3>Local repo → commit → GitHub remote</h3>
+            <p>concept-flow</p>
+          </div>
+          <div class="svg-wrap">
+            <svg viewBox="0 0 900 360" role="img" aria-labelledby="env-title env-desc">
+              <title id="env-title">Local repo에서 GitHub remote까지의 절차</title>
+              <desc id="env-desc">파일 수정, 상태 확인, commit, push, pull의 선후관계를 보여준다.</desc>
+              <defs>
+                <marker id="arrow-green" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M2 2 L10 6 L2 10 Z" fill="#1f7a4d"></path>
+                </marker>
+                <marker id="arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M2 2 L10 6 L2 10 Z" fill="#2563a8"></path>
+                </marker>
+                <marker id="arrow-gray" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M2 2 L10 6 L2 10 Z" fill="#8b949e"></path>
+                </marker>
+              </defs>
+              <rect x="34" y="40" width="574" height="276" rx="12" fill="#f9fbfc" stroke="#d8d3c8" stroke-dasharray="7 6"></rect>
+              <rect x="642" y="40" width="224" height="276" rx="12" fill="#fff" stroke="#d8d3c8" stroke-dasharray="7 6"></rect>
+              <text class="label" x="56" y="72">내 컴퓨터 Local repo</text>
+              <text class="meta" x="662" y="72">GitHub remote</text>
+
+              <rect class="node blue" x="58" y="104" width="126" height="72" rx="8"></rect>
+              <text class="label" x="78" y="136">1. Edit</text>
+              <text class="meta" x="78" y="156">파일 수정</text>
+
+              <path class="line blue" marker-end="url(#arrow-blue)" d="M188 140 H238"></path>
+              <rect class="node" x="246" y="104" width="142" height="72" rx="8"></rect>
+              <text class="label" x="266" y="136">2. Status / Add</text>
+              <text class="meta" x="266" y="156">변경 확인과 선택</text>
+
+              <path class="line blue" marker-end="url(#arrow-blue)" d="M392 140 H442"></path>
+              <rect class="node good" x="450" y="104" width="126" height="72" rx="8"></rect>
+              <text class="label" x="470" y="136">3. Commit</text>
+              <text class="meta" x="470" y="156">history 기록</text>
+
+              <path class="line good" marker-end="url(#arrow-green)" d="M580 140 C620 140 620 140 660 140"></path>
+              <text class="label" x="610" y="122">4. push</text>
+              <rect class="node" x="668" y="104" width="160" height="72" rx="8"></rect>
+              <text class="label" x="690" y="136">Remote repo</text>
+              <text class="meta" x="690" y="156">웹에 올라간 commit</text>
+
+              <rect class="node" x="668" y="230" width="160" height="58" rx="8"></rect>
+              <text class="label" x="690" y="256">Remote change</text>
+              <text class="meta" x="690" y="274">웹/팀 변경</text>
+              <path class="line" marker-end="url(#arrow-gray)" d="M668 260 C540 260 448 260 330 260"></path>
+              <text class="label" x="492" y="244">5. pull</text>
+              <rect class="node warn" x="164" y="230" width="158" height="58" rx="8"></rect>
+              <text class="label" x="186" y="256">Local updated</text>
+              <text class="meta" x="186" y="274">remote 변경 반영</text>
+
+              <text class="meta" x="58" y="334">핵심: commit은 repo history의 기록 단위입니다. local에서 만든 commit은 push 후 remote에도 존재합니다.</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stage" id="onboarding">
+      <div class="stage-head">
+        <div class="stage-copy">
+          <span class="stage-kicker">STEP 2 · Onboarding Branch Graph</span>
+          <h2>온보딩 진행은 브랜치 그래프로 보여줍니다</h2>
+          <p>설치와 인증, kit 설치, 업무 지도, 미션 선택은 서로 다른 흐름이지만 결국 첫 미션으로 합쳐집니다. 완료 표시는 CLI가 증거를 확인하고 state hook을 갱신했을 때만 바뀝니다.</p>
+        </div>
+        <table class="check-table" aria-label="온보딩 진행 완료조건">
+          <thead><tr><th>단계</th><th>완료 신호</th></tr></thead>
+          <tbody>
+            <tr><td>setup/env</td><td>CLI 설치, 인증, GitHub 상태 확인</td></tr>
+            <tr><td>work-map</td><td>역할과 업무 영역 기록</td></tr>
+            <tr><td>mission</td><td>M001 후보 선택</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="visual">
+        <div class="visual-title">
+          <h3>온보딩 브랜치 그래프</h3>
+          <p>branch-graph</p>
+        </div>
+        <div class="svg-wrap">
+          <svg viewBox="0 0 880 280" role="img" aria-labelledby="branch-title branch-desc">
+            <title id="branch-title">온보딩 브랜치 그래프</title>
+            <desc id="branch-desc">환경 설정, 업무 지도, 미션 브랜치가 첫 미션으로 합쳐진다.</desc>
+            <path class="line good" d="M70 90 C190 90 260 90 360 90 S540 90 660 90"></path>
+            <path class="line blue" d="M220 90 C250 150 310 180 410 180"></path>
+            <path class="line" d="M410 180 C510 180 570 130 660 90"></path>
+            <path class="line" d="M520 90 C545 42 610 40 725 40"></path>
+            <path class="line" d="M725 40 C748 70 736 90 660 90"></path>
+            <circle class="node good" cx="70" cy="90" r="16"></circle>
+            <circle class="node good" cx="220" cy="90" r="16"></circle>
+            <circle class="node good" cx="360" cy="90" r="16"></circle>
+            <circle class="node blue" cx="410" cy="180" r="16"></circle>
+            <circle class="node warn" cx="725" cy="40" r="16"></circle>
+            <circle class="node" cx="660" cy="90" r="16"></circle>
+            <text class="label" x="92" y="96">CLI 설치</text>
+            <text class="label" x="244" y="96">GitHub 연결</text>
+            <text class="label" x="382" y="96">kit 설치</text>
+            <text class="label" x="436" y="186">업무 지도</text>
+            <text class="label" x="748" y="46">후보 비교</text>
+            <text class="label" x="684" y="96">M001</text>
+            <text class="meta" x="196" y="74">setup/env</text>
+            <text class="meta" x="386" y="214">work-map</text>
+            <text class="meta" x="690" y="24">mission</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <section class="stage" id="work-definition">
+      <div class="stage-head">
+        <div class="stage-copy">
+          <span class="stage-kicker">STEP 3 · Work Definition Board</span>
+          <h2>역할과 성과가 반복 업무로 연결됩니다</h2>
+          <p>업무 정의 단계에서는 자동화 아이디어를 바로 묻지 않습니다. 역할, 책임지는 결과, 이해관계자를 먼저 정리한 뒤 그 결과를 만들기 위해 반복되는 업무 영역을 찾습니다.</p>
+        </div>
+        <table class="check-table" aria-label="업무 정의 완료조건">
+          <thead><tr><th>완료조건</th><th>샘플</th></tr></thead>
+          <tbody>
+            <tr><td>역할</td><td>Growth operations lead</td></tr>
+            <tr><td>성과</td><td>주간 리포트 품질과 발송 속도 개선</td></tr>
+            <tr><td>업무 영역</td><td>보고서 작성, 고객 이슈 정리, 캠페인 데이터 확인</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="work-grid">
+        <div class="role-stack">
+          <div class="role-card"><strong>역할</strong><p>Growth operations lead. 매주 캠페인 성과와 고객 반응을 팀에 공유합니다.</p></div>
+          <div class="role-card"><strong>책임지는 결과</strong><p>리포트가 늦지 않고, 같은 기준으로 작성되며, 팀이 다음 행동을 고를 수 있어야 합니다.</p></div>
+          <div class="role-card"><strong>이해관계자</strong><p>마케팅 팀, 영업 리드, 고객 성공 매니저.</p></div>
+        </div>
+        <div class="visual">
+          <div class="visual-title">
+            <h3>역할 → 성과 → 업무 영역</h3>
+            <p>work-map-tree</p>
+          </div>
+          <div class="svg-wrap">
+            <svg viewBox="0 0 780 300" role="img" aria-labelledby="work-title work-desc">
+              <title id="work-title">업무 정의 트리</title>
+              <desc id="work-desc">역할에서 성과와 반복 업무 영역이 갈라진다.</desc>
+              <rect class="node blue" x="40" y="110" width="170" height="70" rx="8"></rect>
+              <text class="label" x="66" y="144">역할</text>
+              <text class="meta" x="66" y="164">Growth ops</text>
+              <path class="line blue" d="M211 145 C280 145 290 80 356 80"></path>
+              <path class="line blue" d="M211 145 C280 145 290 210 356 210"></path>
+              <rect class="node good" x="356" y="48" width="178" height="64" rx="8"></rect>
+              <text class="label" x="382" y="82">성과 A</text>
+              <text class="meta" x="382" y="100">리포트 품질</text>
+              <rect class="node good" x="356" y="178" width="178" height="64" rx="8"></rect>
+              <text class="label" x="382" y="212">성과 B</text>
+              <text class="meta" x="382" y="230">의사결정 속도</text>
+              <path class="line" d="M535 80 C588 80 590 70 650 70"></path>
+              <path class="line" d="M535 80 C588 80 590 140 650 140"></path>
+              <path class="line" d="M535 210 C588 210 590 220 650 220"></path>
+              <rect class="node" x="650" y="48" width="100" height="44" rx="8"></rect>
+              <text class="meta" x="670" y="75">보고서</text>
+              <rect class="node" x="650" y="118" width="100" height="44" rx="8"></rect>
+              <text class="meta" x="668" y="145">이슈 정리</text>
+              <rect class="node" x="650" y="198" width="100" height="44" rx="8"></rect>
+              <text class="meta" x="668" y="225">데이터 확인</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stage" id="workflow">
+      <div class="stage-head">
+        <div class="stage-copy">
+          <span class="stage-kicker">STEP 4 · Workflow Decomposition Board</span>
+          <h2>큰 업무를 자동화 가능한 leaf task로 쪼갭니다</h2>
+          <p>분해는 구현 단위가 아니라 사용자가 이해하는 실행 단위에서 멈춥니다. trigger, input, steps, output, human decision, evidence가 채워지면 충분합니다.</p>
+        </div>
+        <table class="check-table" aria-label="업무 분해 완료조건">
+          <thead><tr><th>필드</th><th>상태</th></tr></thead>
+          <tbody>
+            <tr><td>Trigger / Inputs / Steps</td><td><span class="badge good">채워짐</span></td></tr>
+            <tr><td>Output / Evidence</td><td><span class="badge good">채워짐</span></td></tr>
+            <tr><td>Human decision / Risk</td><td><span class="badge warn">판단 기준 확인 필요</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="visual">
+        <div class="visual-title">
+          <h3>주간 리포트 초안 작성 흐름</h3>
+          <p>workflow-flow</p>
+        </div>
+        <div class="flow-row" aria-label="업무 분해 흐름">
+          <div class="flow-node"><span>Trigger</span><p>매주 월요일 오전, 지난주 캠페인 데이터가 준비됨</p></div>
+          <div class="arrow" aria-hidden="true">→</div>
+          <div class="flow-node"><span>Inputs</span><p>CSV 성과표, 고객 이슈 메모, 지난주 리포트</p></div>
+          <div class="arrow" aria-hidden="true">→</div>
+          <div class="flow-node"><span>Steps</span><p>성과 변화 확인, 이슈 묶기, 주요 원인 가설 작성, 다음 행동 초안 만들기</p></div>
+          <div class="arrow" aria-hidden="true">→</div>
+          <div class="flow-node"><span>Output</span><p>팀 공유용 주간 리포트 초안</p></div>
+          <div class="arrow" aria-hidden="true">→</div>
+          <div class="flow-node"><span>Evidence</span><p>리드가 수치와 문장을 확인하고 발송 가능하다고 판단</p></div>
+        </div>
+        <div class="flow-foot">
+          <span class="badge">Human decision: 원인 가설 승인</span>
+          <span class="badge good">Automation type: 작성 / 검토</span>
+          <span class="badge warn">Risk: 중간</span>
+          <span class="badge good">M001 후보</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="stage" id="candidates">
+      <div class="stage-head">
+        <div class="stage-copy">
+          <span class="stage-kicker">STEP 5 · Automation Candidate Board</span>
+          <h2>후보를 risk/value 기준으로 비교합니다</h2>
+          <p>첫 미션은 가치가 높고 위험이 낮으며, 입력과 검증 방법이 있는 작업을 고릅니다. 표와 matrix를 같이 보여줘서 왜 추천하는지 설명 가능해야 합니다.</p>
+        </div>
+        <table class="candidate-table" aria-label="자동화 후보 비교">
+          <thead><tr><th>ID</th><th>후보</th><th>검증</th><th>상태</th></tr></thead>
+          <tbody>
+            <tr><td>M001</td><td>주간 리포트 초안 작성</td><td>지난주 샘플로 비교</td><td><span class="badge good">선택</span></td></tr>
+            <tr><td>M002</td><td>고객 이슈 모니터링</td><td>권한 확인 필요</td><td><span class="badge warn">보류</span></td></tr>
+            <tr><td>M003</td><td>CSV 정리</td><td>샘플 파일로 확인</td><td><span class="badge">후보</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="visual">
+        <div class="visual-title">
+          <h3>Risk / Value Matrix</h3>
+          <p>risk-value-matrix</p>
+        </div>
+        <div class="matrix" role="img" aria-label="위험과 가치 기준 자동화 후보 비교">
+          <div></div>
+          <div class="matrix-label">낮은 위험</div>
+          <div class="matrix-label">높은 위험</div>
+          <div class="matrix-label">높은 가치</div>
+          <div class="matrix-cell target">
+            <span class="candidate-chip">M001 주간 리포트 초안</span>
+            <span class="candidate-chip">M003 CSV 정리</span>
+          </div>
+          <div class="matrix-cell risky">
+            <span class="candidate-chip">M002 고객 이슈 모니터링</span>
+          </div>
+          <div class="matrix-label">낮은 가치</div>
+          <div class="matrix-cell">
+            <span class="candidate-chip">템플릿 문구 정리</span>
+          </div>
+          <div class="matrix-cell defer">
+            <span class="candidate-chip">CRM 자동 업데이트</span>
+          </div>
+        </div>
+        <p class="sample-note">첫 미션은 좌상단, 즉 가치가 높고 위험이 낮은 후보를 기본 추천합니다. 실행/모니터링처럼 외부 부작용이 큰 작업은 나중에 검토로 보냅니다.</p>
+      </div>
+    </section>
+
+    <section class="stage" id="mission">
+      <div class="stage-head">
+        <div class="stage-copy">
+          <span class="stage-kicker">STEP 6 · Mission Scope Board</span>
+          <h2>M001의 포함, 제외, 보류, 미확인을 합의합니다</h2>
+          <p>미션 선택 이후에는 바로 구현하지 않고 범위를 먼저 고정합니다. 이 보드는 사용자가 무엇을 하기로 했고 무엇을 하지 않기로 했는지 기억하게 합니다.</p>
+        </div>
+        <table class="check-table" aria-label="미션 범위 완료조건">
+          <thead><tr><th>완료조건</th><th>샘플 상태</th></tr></thead>
+          <tbody>
+            <tr><td>입력/출력</td><td><span class="badge good">정의됨</span></td></tr>
+            <tr><td>검증 방법</td><td><span class="badge good">샘플 리포트와 비교</span></td></tr>
+            <tr><td>미확인 가정</td><td><span class="badge warn">데이터 컬럼명 확인</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="scope-grid">
+        <div class="scope">
+          <strong>포함</strong>
+          <ul>
+            <li>CSV 요약</li>
+            <li>이슈 메모 묶기</li>
+            <li>리포트 초안 작성</li>
+          </ul>
+        </div>
+        <div class="scope">
+          <strong>제외</strong>
+          <ul>
+            <li>자동 발송</li>
+            <li>CRM 직접 수정</li>
+          </ul>
+        </div>
+        <div class="scope">
+          <strong>나중에</strong>
+          <ul>
+            <li>Slack 알림</li>
+            <li>월간 리포트 통합</li>
+          </ul>
+        </div>
+        <div class="scope">
+          <strong>미확인</strong>
+          <ul>
+            <li>CSV 컬럼명</li>
+            <li>리드 검토 기준</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="stage" id="backlog">
+      <div class="stage-head">
+        <div class="stage-copy">
+          <span class="stage-kicker">STEP 7 · Mission Backlog Board</span>
+          <h2>온보딩 이후에도 이어갈 작업을 남깁니다</h2>
+          <p>온보딩이 끝나면 hook은 폐기되지만, board는 현황판으로 남습니다. 사용자는 `mission-backlog.md`와 `missions/*.md`를 업데이트하면서 다음 미션을 이어갑니다.</p>
+        </div>
+        <div class="artifact-grid">
+          <div class="artifact"><strong>work-map.md</strong><p>역할, 성과, 업무 영역</p></div>
+          <div class="artifact"><strong>mission-backlog.md</strong><p>후보, 상태, 다음 행동</p></div>
+          <div class="artifact"><strong>missions/M001.md</strong><p>첫 미션 범위와 검증</p></div>
+        </div>
+      </div>
+      <div class="kanban">
+        <section class="lane">
+          <h3>이어갈 작업 <span class="badge good">1</span></h3>
+          <div class="mission"><p><strong>M001</strong> 주간 리포트 초안<br>다음 행동: 샘플 CSV 1개 확보</p></div>
+        </section>
+        <section class="lane">
+          <h3>후보 목록 <span class="badge">1</span></h3>
+          <div class="mission"><p><strong>M003</strong> CSV 정리<br>다음 행동: 컬럼 규칙 확인</p></div>
+        </section>
+        <section class="lane">
+          <h3>나중에 검토 <span class="badge warn">1</span></h3>
+          <div class="mission"><p><strong>M002</strong> 고객 이슈 모니터링<br>다음 행동: 접근 권한 확인</p></div>
+        </section>
+        <section class="lane">
+          <h3>완료/제외 <span class="badge risk">1</span></h3>
+          <div class="mission"><p><strong>M004</strong> CRM 자동 업데이트<br>제외 이유: 외부 부작용 큼</p></div>
+        </section>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

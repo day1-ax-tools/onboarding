@@ -22,6 +22,7 @@ Use this skill to run a model-neutral onboarding flow that first stabilizes the 
 - Record durable setup facts in `environment-state.md`; avoid chasing transient Git states such as "currently staged" unless the step is explicitly teaching that state. Prefer evidence lines such as "local commit `<hash>` recorded environment state" over state lines that become stale after the next Git command.
 - When creating HTML views, use the clearest visual structure for the concept instead of repeating text cards. Prefer git branch graphs for onboarding state, flow diagrams for local/remote movement, folder trees for workspace layout, tables for artifact state, and risk/value matrices for automation candidates.
 - When teaching current folder, work root, local repo, GitHub remote, commit, push, or pull, connect the explanation to the brief board's concept board so the user sees the same idea visually.
+- When the concept explanation should reflect the user's current repo, branch, remote, workflow, or mission decision, write `.onboarding/concepts/current-concept.json` with structured nodes, edges, rows, sourceRefs, and updatedAt. Treat it as display data, not source of truth.
 - When `.onboarding/update-state.mjs` exists, treat onboarding progress as CLI-owned state. After each verified step completion, call the updater with the matching step id and evidence. Do not ask the user to update progress in the browser.
 - When `.onboarding/update-board.mjs` exists and work or mission artifacts change, run it so `.onboarding/board-data.json` refreshes the brief board. Treat `board-data.json` as display summary data, not the source of truth.
 - Keep the onboarding kit folder and the user's work repo distinct. Do not treat `.onboarding/state.json` in the onboarding kit folder as the user's active project state. The active state belongs inside the selected work repo only.
@@ -57,6 +58,9 @@ Goal: make the user's computer, GitHub account, and first repo ready for repeate
 ```text
 Env-0: CLI and auth check
 — Can the selected AI CLI, git, and gh run from the user's terminal?
+
+Env-0.5: GitHub account readiness
+— Does the user have a GitHub account, and can `gh auth login/status` connect it?
 
 Env-1: Work root selection
 — Where will AI work repos live on the local computer?
@@ -109,7 +113,7 @@ git-cycle.html
 repo-dashboard.html
 ```
 
-Work Environment Setup is complete when the user has a chosen work root, GitHub authentication is verified, the current repo is under the work root or explicitly accepted as an exception, local/remote are connected, and the user has completed or watched one small commit/push loop.
+Work Environment Setup is complete when the user has a chosen work root, GitHub account readiness is known, GitHub authentication is verified or the blocker is recorded, the current repo is under the work root or explicitly accepted as an exception, local/remote are connected, and the user has completed or watched one small commit/push loop.
 
 When an environment step is complete, update onboarding state if the hook exists:
 
@@ -161,12 +165,16 @@ Start with:
 
 After each answer, summarize as role, outcome, work areas, tasks, missing context, then ask the next smallest useful question.
 
+Do not advance only because the user answered once. Use the grounding gates in `references/interview-protocol.md`: role/outcome/work areas must be summarized, at least one valuable work area must be decomposed to leaf tasks, and each leaf task must have trigger, inputs, steps, output, decision point, completion evidence, automation type, and risk before it can be treated as a mission candidate.
+
+Show the decomposition twice: first in the CLI as a compact table or tree, then in the brief board by writing `work-map.md` and running `.onboarding/update-board.mjs` when available. If the board is not installed, tell the user that the same structure is saved in markdown and will appear after board installation.
+
 When grounding milestones are verified, update onboarding state if the hook exists:
 
 | Step id | Completion condition |
 | --- | --- |
 | `role-map` | Role and responsible outcomes are recorded |
-| `task-split` | At least one recurring work area is decomposed into executable tasks |
+| `task-split` | At least one recurring work area is decomposed to leaf tasks with trigger, inputs, steps, output, decision point, and completion evidence |
 | `mission-select` | A first automation mission candidate is selected with rationale |
 
 ### 4. Automation Exploration
