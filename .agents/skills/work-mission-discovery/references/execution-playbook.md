@@ -4,7 +4,7 @@ Use this when the user needs an end-to-end, interruption-resistant onboarding ex
 
 ## Installation Flow
 
-Default to project-level installation. Avoid global installation during onboarding unless the user explicitly wants the behavior across all repositories.
+Bootstrap installs the selected tool's user-level entry skill first, so the trigger-only handoff works from any folder. Project-level installation remains the default for repo-local instructions, state hooks, and durable artifacts, and happens only after the selected work repo is confirmed. Avoid installing project files into the current folder during bootstrap.
 
 Web entry uses two static pages:
 
@@ -16,7 +16,7 @@ bootstrap/start.sh
 bootstrap/start.ps1
 ```
 
-For first-time users, start from the hosted web entry rather than asking them to clone the repo. The user selects OS and AI CLI, then installs the selected CLI, refreshes PATH, and verifies the command first. CLI installation is itself part of the learning experience and must not appear to require the onboarding kit. After command verification, the user runs the bootstrap command in the same terminal to obtain the onboarding repo locally, then launches and authenticates the selected CLI.
+For first-time users, start from the hosted web entry rather than asking them to clone the repo. The user selects OS and AI CLI, then installs the selected CLI, refreshes PATH, and verifies the command first. CLI installation is itself part of the learning experience and must not appear to require the onboarding kit. After command verification, the user runs the bootstrap command in the same terminal to obtain the onboarding repo locally and install the selected user-level entry skill, then launches and authenticates the selected CLI.
 
 Use `web/index.html` for CLI installation, PATH refresh, verification, post-verify bootstrap, login, and the first handoff prompt. Do not send the user to the onboarding board until the user's working folder has `.onboarding/state.json`, `.onboarding/update-state.mjs`, `.onboarding/update-board.mjs`, and `.onboarding/brief-board.html`. After project installation, use `.onboarding/brief-board.html` inside the user's working folder as the state-backed board. The board does not create repositories, change files, or call GitHub directly; the AI CLI does that after the user hands off the summary.
 
@@ -45,7 +45,7 @@ Shell policy:
 
 - macOS, Linux, and WSL show bash/zsh choices because PATH refresh differs by shell.
 - Windows shows PowerShell only. Do not ask beginners to choose between PowerShell, cmd, bash, and zsh unless they explicitly need a different shell.
-- Project instruction and skill installation is a normal shell copy operation. Prefer the CLI to inspect paths and perform it; use the board's alternate command only when manual installation is needed.
+- Project instruction and project-local skill installation is a normal shell copy operation after the work repo is confirmed. Prefer the CLI to inspect paths and perform it; use the board's alternate command only when manual installation is needed.
 
 ## CLI Runtime Loop
 
@@ -80,6 +80,8 @@ If they are missing, install them before moving from environment setup to work g
 When updating `environment-state.md`, record durable evidence. Avoid making the document chase momentary Git states such as "currently staged" unless the user is explicitly learning that state in the current step. If a state will change in the next command, explain it in chat and record the durable outcome after the command instead.
 
 The brief board is a dashboard, not the place where the user enters work data.
+
+The bootstrap-installed user-level skill is only an entry point. For Codex it may live at `~/.agents/skills/work-mission-discovery`; for Claude Code it may live at `~/.claude/skills/work-mission-discovery`. Do not store onboarding state there. If the CLI starts in a folder without project-local onboarding files, treat that as first run, confirm the selected work repo, then install project-local instructions, skill, `.onboarding` hooks, and brief board inside that repo.
 
 ### Codex
 

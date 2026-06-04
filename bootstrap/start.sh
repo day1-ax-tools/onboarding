@@ -149,10 +149,6 @@ open_page() {
   fi
 }
 
-shell_quote() {
-  printf '%q' "$1"
-}
-
 verify_onboarding_assets() {
   case "$TOOL" in
     claude)
@@ -169,10 +165,50 @@ verify_onboarding_assets() {
   [ -f "$skill_file" ] || fail "work-mission-discovery skill을 찾을 수 없습니다: $skill_file"
 }
 
+skill_source_dir() {
+  case "$TOOL" in
+    claude)
+      printf '%s\n' "$TARGET_DIR/.claude/skills/work-mission-discovery"
+      ;;
+    *)
+      printf '%s\n' "$TARGET_DIR/.agents/skills/work-mission-discovery"
+      ;;
+  esac
+}
+
+user_skill_dir() {
+  case "$TOOL" in
+    claude)
+      printf '%s\n' "$HOME/.claude/skills/work-mission-discovery"
+      ;;
+    *)
+      printf '%s\n' "$HOME/.agents/skills/work-mission-discovery"
+      ;;
+  esac
+}
+
+install_user_skill() {
+  source_dir="$(skill_source_dir)"
+  destination_dir="$(user_skill_dir)"
+  destination_parent="${destination_dir%/*}"
+
+  [ -f "$source_dir/SKILL.md" ] || fail "설치할 skill을 찾을 수 없습니다: $source_dir"
+  mkdir -p "$destination_parent" || fail "사용자 skill 폴더를 만들 수 없습니다: $destination_parent"
+  rm -rf "$destination_dir" || fail "기존 사용자 skill을 교체할 수 없습니다: $destination_dir"
+  cp -R "$source_dir" "$destination_dir" || fail "사용자 skill을 설치할 수 없습니다: $destination_dir"
+  printf '%s\n' "$destination_dir"
+}
+
+verify_user_skill() {
+  destination_dir="$1"
+  [ -f "$destination_dir/SKILL.md" ] || fail "사용자 skill 설치를 확인할 수 없습니다: $destination_dir"
+}
+
 print_cli_entry_hint() {
-  log "CLI handoff 준비가 확인되었습니다."
-  printf '%s\n' "아래 명령처럼 온보딩 키트 폴더에서 ${TOOL} 명령을 실행하면 skill을 읽을 수 있습니다."
-  printf '  cd %s\n' "$(shell_quote "$TARGET_DIR")"
+  destination_dir="$1"
+  log "사용자 skill 설치가 확인되었습니다."
+  printf '%s\n' "설치 위치: $destination_dir"
+  printf '%s\n' "이제 원하는 작업 폴더에서 ${TOOL} 명령을 실행한 뒤 온보딩 시작 문장을 붙여넣으면 됩니다."
   printf '  %s\n' "$TOOL"
 }
 
@@ -219,5 +255,7 @@ else
 fi
 
 verify_onboarding_assets
-print_cli_entry_hint
+installed_skill_dir="$(install_user_skill)"
+verify_user_skill "$installed_skill_dir"
+print_cli_entry_hint "$installed_skill_dir"
 open_page

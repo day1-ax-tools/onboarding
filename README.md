@@ -58,7 +58,7 @@
 
 ## Stage -2: Web Entry
 
-웹페이지는 진입점 역할만 한다. 초보자는 GitHub 저장소를 미리 내려받지 않는다. 먼저 hosted web entry를 열고, 자신의 환경을 고른 뒤 Codex 또는 Claude Code 설치, PATH 반영, 설치 확인을 진행한다. 설치 자체도 이후 다른 상황에서 반복할 학습 경험이므로 온보딩 키트 없이 먼저 진행한다. CLI 명령이 실행 가능한 것을 확인한 뒤 같은 터미널에서 bootstrap 명령으로 onboarding kit를 내 컴퓨터에 받고, 그 다음 CLI를 실행해 인증한 뒤 지침 파일, skill, 상태 hook, 온보딩 보드를 AI와 함께 작업하려는 폴더에 설치한다.
+웹페이지는 진입점 역할만 한다. 초보자는 GitHub 저장소를 미리 내려받지 않는다. 먼저 hosted web entry를 열고, 자신의 환경을 고른 뒤 Codex 또는 Claude Code 설치, PATH 반영, 설치 확인을 진행한다. 설치 자체도 이후 다른 상황에서 반복할 학습 경험이므로 온보딩 키트 없이 먼저 진행한다. CLI 명령이 실행 가능한 것을 확인한 뒤 같은 터미널에서 bootstrap 명령으로 onboarding kit를 내 컴퓨터에 받고, 선택한 CLI의 사용자 skill을 먼저 설치한다. 그 다음 CLI를 실행해 인증한 뒤 skill이 실제 작업 repo를 확인하고, 지침 파일, project-local skill, 상태 hook, 온보딩 보드를 AI와 함께 작업하려는 폴더에 설치한다.
 
 GitHub 회원가입은 CLI 설치보다 앞에 강제하지 않는다. AI CLI가 실행된 뒤 Work Environment Setup에서 `gh auth status`와 remote 상태를 확인하고, GitHub 계정이 없을 때만 브라우저에서 회원가입을 안내한다. 가입이 끝나면 다시 CLI로 돌아와 `gh auth login`과 `gh auth status`로 연결을 확인한다.
 
@@ -437,12 +437,13 @@ brief board 시각화의 상세 계약과 단계별 샘플 화면은 [docs/brief
 
 이 단계의 목적은 설치된 CLI가 사용자의 실제 업무 저장소에서 온보딩을 이어받게 만드는 것이다.
 
-기본값은 **프로젝트 단위 설치**다. 전역 설치는 모든 저장소에 영향을 주므로 초보자 온보딩에서는 나중 선택지로 둔다.
+기본값은 **사용자-level entry skill 선설치 + 프로젝트 단위 상태 설치**다. 사용자-level skill은 짧은 시작 문장을 어디서든 받기 위한 입구이고, 실제 지침 파일, 상태 hook, 산출물은 선택된 작업 repo 안에만 설치한다.
 
 ### 설치 대상
 
 | 항목 | Codex | Claude Code | 목적 |
 | --- | --- | --- | --- |
+| 사용자 entry skill | `~/.agents/skills/work-mission-discovery/` | `~/.claude/skills/work-mission-discovery/` | 첫 시작 문장을 어디서든 skill로 연결 |
 | 지속 지침 | `AGENTS.md` | `CLAUDE.md` | 매 세션 반복할 작업 방식 저장 |
 | Skill | `.agents/skills/work-mission-discovery/` | `.claude/skills/work-mission-discovery/` | 업무 인터뷰와 미션 백로그 생성 |
 | 온보딩 상태 hook | `.onboarding/state.json`, `.onboarding/update-state.mjs` | 동일 | CLI 완료 상태를 brief board 그래프로 전달 |
@@ -475,7 +476,7 @@ Claude Code: "현재 로드된 memory와 프로젝트 지침을 요약해주세�
 
 ### Skill 설치
 
-이 저장소를 기준으로 대상 업무 저장소에 복사한다.
+Bootstrap은 먼저 사용자 entry skill을 설치한다. 이후 skill이 선택된 업무 저장소를 확인한 뒤, 이 저장소를 기준으로 대상 업무 저장소에 project-local skill과 상태 hook을 복사한다.
 
 ```bash
 # Codex project skill
@@ -891,7 +892,7 @@ logs/
 
 ## 포함된 Skills
 
-이 저장소에는 같은 Mission Discovery 흐름을 Codex와 Claude Code에서 각각 쓸 수 있는 skill로 포함한다. 기본 온보딩 설치에는 `work-mission-discovery`만 복사한다.
+이 저장소에는 같은 Mission Discovery 흐름을 Codex와 Claude Code에서 각각 쓸 수 있는 skill로 포함한다. Bootstrap은 선택한 도구의 사용자 entry skill로 `work-mission-discovery`를 먼저 복사하고, 업무 repo 확정 뒤 같은 skill을 project-local 위치에도 복사한다.
 
 | 대상 | 위치 | 사용 예 |
 | --- | --- | --- |

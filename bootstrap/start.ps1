@@ -69,14 +69,45 @@ function Test-OnboardingAssets {
   }
 }
 
-function Quote-PowerShellPath($Path) {
-  return "'" + $Path.Replace("'", "''") + "'"
+function Get-SkillSourceDir {
+  if ($Tool -eq "claude") {
+    return (Join-Path $targetDir ".claude\skills\work-mission-discovery")
+  }
+  return (Join-Path $targetDir ".agents\skills\work-mission-discovery")
 }
 
-function Write-CliEntryHint {
-  Write-Step "CLI handoff 준비가 확인되었습니다."
-  Write-Host "아래 명령처럼 온보딩 키트 폴더에서 ${Tool} 명령을 실행하면 skill을 읽을 수 있습니다."
-  Write-Host ("  Set-Location " + (Quote-PowerShellPath $targetDir))
+function Get-UserSkillDir {
+  if ($Tool -eq "claude") {
+    return (Join-Path $HOME ".claude\skills\work-mission-discovery")
+  }
+  return (Join-Path $HOME ".agents\skills\work-mission-discovery")
+}
+
+function Install-UserSkill {
+  $sourceDir = Get-SkillSourceDir
+  $destinationDir = Get-UserSkillDir
+  $destinationParent = Split-Path -Parent $destinationDir
+
+  if (!(Test-Path (Join-Path $sourceDir "SKILL.md"))) {
+    throw "설치할 skill을 찾을 수 없습니다: $sourceDir"
+  }
+
+  New-Item -ItemType Directory -Force $destinationParent | Out-Null
+  Remove-Item $destinationDir -Recurse -Force -ErrorAction SilentlyContinue
+  Copy-Item $sourceDir $destinationDir -Recurse -Force
+  return $destinationDir
+}
+
+function Test-UserSkill($DestinationDir) {
+  if (!(Test-Path (Join-Path $DestinationDir "SKILL.md"))) {
+    throw "사용자 skill 설치를 확인할 수 없습니다: $DestinationDir"
+  }
+}
+
+function Write-CliEntryHint($DestinationDir) {
+  Write-Step "사용자 skill 설치가 확인되었습니다."
+  Write-Host "설치 위치: $DestinationDir"
+  Write-Host "이제 원하는 작업 폴더에서 ${Tool} 명령을 실행한 뒤 온보딩 시작 문장을 붙여넣으면 됩니다."
   Write-Host "  $Tool"
 }
 
@@ -129,5 +160,7 @@ if ($missingTools.Count -gt 0) {
 }
 
 Test-OnboardingAssets
-Write-CliEntryHint
+$installedSkillDir = Install-UserSkill
+Test-UserSkill $installedSkillDir
+Write-CliEntryHint $installedSkillDir
 Open-StartPage

@@ -6,9 +6,9 @@
 
 ## 현재 결정
 
-초기 Claude Code CLI 확인에서는 짧은 시작 문장만으로는 충분하지 않아 보였다. 이후 튜닝 결과, 문제는 문장 길이가 아니라 CLI가 지침과 skill을 읽을 수 있는 위치, skill 설치 상태, 그리고 skill 내부 규칙이었다.
+초기 Claude Code CLI 확인에서는 짧은 시작 문장만으로는 충분하지 않아 보였다. 이후 튜닝 결과, 문제는 문장 길이가 아니라 CLI가 skill을 읽을 수 있는 위치, skill 설치 상태, 그리고 skill 내부 규칙이었다.
 
-현재 기준은 trigger-only handoff다. 사용자는 skill 호출 의도만 입력하고, 현재 폴더 확인, 작업 repo 후보 확인, Git/GitHub CLI 상태 확인, 한 단계씩 진행은 `work-mission-discovery` skill이 맡는다.
+현재 기준은 사용자-level skill 선설치 후 trigger-only handoff다. 사용자는 skill 호출 의도만 입력하고, 현재 폴더 확인, 작업 repo 후보 확인, Git/GitHub CLI 상태 확인, 한 단계씩 진행은 `work-mission-discovery` skill이 맡는다.
 
 Codex:
 
@@ -24,26 +24,15 @@ work-mission-discovery skill로 AI CLI 온보딩을 시작해주세요.
 
 ## 실제 확인에서 얻은 결론
 
-Claude Code CLI로 확인한 결과, skill 지침을 읽을 수 없는 위치에서는 짧은 시작 문장만으로 충분하지 않았다.
+Claude Code CLI로 확인한 결과, skill 지침을 읽을 수 없는 위치에서는 짧은 시작 문장만으로 충분하지 않았다. 이제 bootstrap 단계에서 선택한 도구의 사용자-level skill을 먼저 설치해 이 문제를 줄인다.
 
 | 시작 위치 | 관찰된 동작 | 튜닝 결론 |
 | --- | --- | --- |
-| 임의의 빈 폴더 | `work-mission-discovery`를 일반 문구처럼 해석하고, 설치/업무/자동화 중 무엇을 할지 묻는 일반 안내가 나옴 | CLI가 지침과 skill을 읽을 수 있는 위치가 필요하다 |
-| 온보딩 키트 폴더 | `CLAUDE.md`와 skill을 읽고, 작업 루트와 온보딩 흐름을 더 잘 이어감 | 웹에서 CLI 실행 명령은 먼저 온보딩 키트 폴더로 이동해야 한다 |
+| 사용자 skill 없음 | `work-mission-discovery`를 일반 문구처럼 해석하고, 설치/업무/자동화 중 무엇을 할지 묻는 일반 안내가 나옴 | bootstrap에서 사용자-level skill을 먼저 설치한다 |
+| 사용자 skill 있음, project-local 설치 전 | skill이 현재 폴더와 작업 repo 후보를 확인해야 함 | 첫 실행 라우터로 처리하고, 업무 repo 확정 뒤 project-local 설치를 진행한다 |
+| project-local 설치 후 | repo 안의 지침, skill, 상태 hook으로 이어감 | 이후 resume은 repo-local 상태를 기준으로 한다 |
 
-따라서 웹에서 CLI로 넘기는 단계는 아래 형태가 되어야 한다.
-
-```bash
-cd '<local-onboarding-kit-path>'
-claude
-```
-
-Windows PowerShell에서는 아래 형태가 되어야 한다.
-
-```powershell
-Set-Location '<local-onboarding-kit-path>'
-claude
-```
+따라서 웹에서 CLI로 넘기는 단계는 단순히 선택한 CLI를 실행하는 형태가 된다. 실제 업무 repo가 애매하면 skill이 확인 질문을 한다.
 
 그 다음 CLI 입력창에는 trigger-only 시작 문장만 붙여넣는다.
 
@@ -165,7 +154,7 @@ gh auth status
 
 - 실제 대화에서는 작업 repo를 선택한 직후 Claude Code가 접근 권한을 요청할 수 있음을 안내한다.
 - E2E 테스트에서는 `--add-dir <user-work>`를 사용해 작업 repo 접근을 허용한 상태도 별도로 검증한다.
-- 온보딩 키트에서 시작하더라도, 실제 설치 이후에는 작업 repo 안의 `.onboarding/brief-board.html`과 project-local 지침으로 이어져야 한다.
+- 사용자 skill에서 시작하더라도, 실제 설치 이후에는 작업 repo 안의 `.onboarding/brief-board.html`과 project-local 지침으로 이어져야 한다.
 
 ### E2E 관찰 1-3: 권한을 허용하면 Git 상태는 직접 확인했지만 gh 확인은 약했음
 
@@ -348,7 +337,7 @@ CLI 응답은 항상 아래 순서로 짧게 움직인다.
 ```mermaid
 flowchart TD
   A["웹: CLI 설치/검증"] --> B["웹: 온보딩 키트 받기"]
-  B --> C["CLI: 온보딩 키트 폴더에서 실행"]
+  B --> C["Bootstrap: 사용자 skill 선설치"]
   C --> D["CLI: 짧은 시작 문장 입력"]
   D --> E["환경 확인"]
   E --> F["작업 루트 선택"]
@@ -380,7 +369,7 @@ Claude Code:
 좋습니다. 먼저 현재 터미널이 어디를 기준으로 실행되고 있는지 확인하겠습니다.
 
 제가 확인할 것은 세 가지입니다.
-1. 지금 폴더가 온보딩 키트 폴더인지
+1. 지금 폴더가 실제 작업 repo인지, 아니면 작업 repo를 따로 골라야 하는지
 2. 앞으로 실제 작업을 둘 로컬 작업 루트가 있는지
 3. 이 repo에 온보딩 지침과 skill을 설치할 수 있는지
 
@@ -871,7 +860,7 @@ $work-mission-discovery 로 AI CLI 온보딩을 시작해줘.
 
 이 대화 흐름은 아래 조건이 충족되면 잘 작동한 것으로 본다.
 
-- 사용자가 CLI를 온보딩 키트 폴더에서 시작한다.
+- bootstrap이 선택한 CLI의 사용자-level skill을 설치한다.
 - 첫 프롬프트는 짧고, 이후 세부 지시는 skill이 담당한다.
 - 실제 작업 repo에 지침, skill, `.onboarding`, brief board가 설치된다.
 - brief board는 설치 후 현황판으로 열리고, 입력 장소가 되지 않는다.

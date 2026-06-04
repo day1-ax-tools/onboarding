@@ -26,6 +26,7 @@ Run a model-neutral onboarding flow that first stabilizes the user's CLI work en
 - When `.onboarding/update-state.mjs` exists, treat onboarding progress as CLI-owned state. After each verified step completion, call the updater with the matching step id and evidence. Do not ask the user to update progress in the browser.
 - When `.onboarding/update-board.mjs` exists and work or mission artifacts change, run it so `.onboarding/board-data.json` refreshes the brief board. Treat `board-data.json` as display summary data, not the source of truth.
 - Keep the onboarding kit folder and the user's work repo distinct. Do not treat `.onboarding/state.json` in the onboarding kit folder as the user's active project state. The active state belongs inside the selected work repo only.
+- A user-level preinstalled skill may be invoked from any folder. Treat that as a first-run router: inspect the current folder and candidate repo, ask or confirm the selected work repo when it is missing or unsafe, and install project-local instructions, skill, `.onboarding` hooks, and brief board only after the selected work repo is confirmed.
 - After the user confirms the selected work repo, install or verify project-local instructions, skill, `.onboarding` hooks, and brief board before relying on board-backed progress. If they are not installed yet, say the brief board is not active and keep any notes as ordinary markdown until installation.
 - Run safe inspection commands yourself when the CLI has tool access: `pwd`, `ls`, `git status`, `git remote -v`, `git branch --show-current`, `gh auth status`, and file existence checks. Ask the user to run commands only when the command is interactive, requires credentials, changes external state, or the CLI cannot access the required environment.
 - Do not say that state was recorded unless an artifact was actually written and verified. If writing is not possible, say what would be recorded and mark it as pending or blocked.
@@ -49,7 +50,7 @@ Select one path:
 | User already chose a task to automate | Automation Exploration Phase 1 |
 | User already has a mission brief | Mission Execution shaping |
 
-When the user asks to start AI CLI onboarding, start with Work Environment Setup Env-0 unless `environment-state.md` or `.onboarding/state.json` in the selected work repo proves setup is already complete. If uncertain, first check the current folder, selected work repo candidate, Git status, remote, branch, and GitHub auth before asking role/work questions.
+When the user asks to start AI CLI onboarding, start with Work Environment Setup Env-0 unless `environment-state.md` or `.onboarding/state.json` in the selected work repo proves setup is already complete. If the skill is available but the current folder lacks project-local onboarding files, do not treat that as a missing installation; treat it as first run, inspect the current folder, selected work repo candidate, Git status, remote, branch, and GitHub auth before asking role/work questions.
 
 ### 2. Work Environment Setup
 
