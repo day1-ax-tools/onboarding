@@ -1247,21 +1247,7 @@ command -v codex</code></pre>
               <p id="login-note" class="muted">브라우저 로그인 안내가 나오면 ChatGPT 계정 또는 API key 흐름을 따라갑니다. 인증이 끝나면 아래 온보딩 문장을 CLI 입력창에 붙여넣습니다.</p>
             </div>
           </div>
-        </section>
-
-        <section>
-          <h2>CLI로 넘기기</h2>
-          <p class="handoff">아래 짧은 시작 문장을 로그인된 CLI에 붙여넣습니다. 세부 절차는 온보딩 키트 안의 지침과 skill이 이어서 처리합니다.</p>
-          <div class="permission-primer" id="permission-primer" hidden>
-            <p><strong>Claude Code에서 권한 요청이 여러 번 나올 수 있습니다.</strong> 온보딩 키트 설치, 파일 읽기, 상태 파일 작성, 보드 생성에 필요한 요청입니다. 이 온보딩 단계에서는 요청이 나오면 <strong>1. Yes</strong>를 선택해서 계속 진행하세요.</p>
-            <div class="permission-flow" aria-label="Claude Code 권한 요청 진행 흐름">
-              <span>권한 요청 표시</span>
-              <span>1. Yes 선택</span>
-              <span>완료 후 이유 설명</span>
-            </div>
-            <p class="muted">낯선 저장소나 예상 밖의 삭제, 외부 전송, 배포 요청이라면 Yes를 누르기 전에 멈추고 내용을 확인합니다.</p>
-          </div>
-          <div class="ai-cli-window" aria-label="AI CLI 입력 화면 미리보기">
+          <div class="ai-cli-window" aria-label="CLI 첫 실행 및 로그인 화면 예시">
             <div class="ai-cli-top">
               <div class="ai-cli-brand">
                 <span class="ai-cli-mark" id="ai-cli-mark">C</span>
@@ -1269,7 +1255,7 @@ command -v codex</code></pre>
               </div>
             </div>
             <div class="ai-cli-body">
-              <p class="ai-cli-hint" id="ai-cli-hint">Codex가 열린 뒤, 아래 입력창에 붙여넣습니다.</p>
+              <p class="ai-cli-hint" id="ai-cli-hint">Codex 첫 실행에서는 로그인 방식 선택, 시작 전 안내, 작업 폴더 신뢰 확인이 나올 수 있습니다.</p>
               <div class="ai-cli-sequence" id="cli-first-screens" aria-label="CLI 첫 실행 화면 예시">
                 <div class="ai-cli-screen">
                 <div class="ai-cli-screen-head">
@@ -1289,6 +1275,24 @@ Start Codex now? [y/N]</pre>
                 </div>
               </div>
               <p class="ai-cli-next-action" id="cli-next-action">Codex 입력 화면이 나오면 아래 온보딩 문장을 붙여넣습니다.</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>CLI로 넘기기</h2>
+          <p class="handoff">아래 짧은 시작 문장을 로그인된 CLI에 붙여넣습니다. 세부 절차는 온보딩 키트 안의 지침과 skill이 이어서 처리합니다.</p>
+          <div class="permission-primer" id="permission-primer" hidden>
+            <p><strong>Claude Code에서 권한 요청이 여러 번 나올 수 있습니다.</strong> 온보딩 키트 설치, 파일 읽기, 상태 파일 작성, 보드 생성에 필요한 요청입니다. 이 온보딩 단계에서는 요청이 나오면 <strong>1. Yes</strong>를 선택해서 계속 진행하세요.</p>
+            <div class="permission-flow" aria-label="Claude Code 권한 요청 진행 흐름">
+              <span>권한 요청 표시</span>
+              <span>1. Yes 선택</span>
+              <span>완료 후 이유 설명</span>
+            </div>
+            <p class="muted">낯선 저장소나 예상 밖의 삭제, 외부 전송, 배포 요청이라면 Yes를 누르기 전에 멈추고 내용을 확인합니다.</p>
+          </div>
+          <div class="ai-cli-window" aria-label="AI CLI 입력 화면 미리보기">
+            <div class="ai-cli-body">
               <div class="ai-cli-input">
                 <div class="ai-cli-input-row">
                   <span class="ai-cli-input-prompt" id="ai-cli-input-prompt" aria-hidden="true">›</span>
